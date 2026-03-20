@@ -3,121 +3,119 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulador de Prova</title>
+<title>Simulador Profissional</title>
 
 <style>
-body {
-    font-family: Arial;
-    background: #f5f5f5;
-    margin: 0;
-}
-
-.container {
-    max-width: 900px;
-    margin: auto;
-    background: white;
-    padding: 20px;
-}
-
-h1 {
-    text-align: center;
-}
-
-.questao {
-    margin-bottom: 25px;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 15px;
-}
-
-.alternativas label {
-    display: block;
-    margin: 5px 0;
-    cursor: pointer;
-}
-
-button {
-    padding: 10px;
-    margin-top: 10px;
-    cursor: pointer;
-}
-
-#resultado {
-    margin-top: 30px;
-    padding: 15px;
-    background: #eee;
-    font-weight: bold;
-}
+body { font-family: Arial; margin:0; background:#f0f2f5; }
+.container { max-width: 1200px; margin:auto; background:white; padding:20px; }
+.top { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
+button { padding:10px; cursor:pointer; }
+.questao { border-bottom:1px solid #ddd; padding:15px 0; }
+#timer { font-size:18px; font-weight:bold; color:#c62828; }
+.ranking { margin-top:20px; background:#f8f9fa; padding:10px; }
 </style>
 </head>
 
 <body>
 
 <div class="container">
-    <h1>Simulado</h1>
 
-    <div id="questoes">Carregando questões...</div>
+<h2>Simulador de Prova</h2>
 
-    <button onclick="finalizarProva()">Finalizar Prova</button>
+<div class="top">
+<input id="nome" placeholder="Nome do aluno">
+<select id="disciplina"></select>
+<button onclick="iniciarProva()">Iniciar Prova</button>
+<div id="timer">00:00</div>
+</div>
 
-    <div id="resultado"></div>
+<div id="questoes"></div>
+
+<button onclick="finalizarProva()">Finalizar</button>
+
+<div id="resultado"></div>
+
+<div class="ranking">
+<h3>🏆 Ranking</h3>
+<div id="ranking"></div>
+</div>
+
 </div>
 
 <script>
 // ================= CONFIG =================
-const SHEET_ID = "1oind2qzoQLR1T20J9yqOyYXKY64LDq9prhL9_ZEoawM";
+const QUESTOES_URL = "https://docs.google.com/spreadsheets/d/1oind2qzoQLR1T20J9yqOyYXKY64LDq9prhL9_ZEoawM/gviz/tq?tqx=out:json&sheet=Questoes";
+
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec";
 
-const QUESTOES_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Questoes`;
+let banco = [];
+let prova = [];
+let tempo = 0;
+let intervalo;
 
-let bancoQuestoes = [];
+// ================= INIT =================
+window.onload = async () => {
+    await carregarQuestoes();
+    carregarRanking();
+};
 
-// ================= CARREGAR =================
-window.onload = carregarQuestoes;
-
+// ================= QUESTOES =================
 async function carregarQuestoes() {
-    try {
-        const res = await fetch(QUESTOES_URL);
-        const txt = await res.text();
-        const json = JSON.parse(txt.substring(47).slice(0, -2));
+    const res = await fetch(QUESTOES_URL);
+    const txt = await res.text();
+    const json = JSON.parse(txt.substring(47).slice(0,-2));
 
-        bancoQuestoes = json.table.rows.slice(1).map(r => ({
-            id: r.c[0]?.v,
-            disciplina: r.c[1]?.v,
-            enunciado: r.c[2]?.v,
-            A: r.c[3]?.v,
-            B: r.c[4]?.v,
-            C: r.c[5]?.v,
-            D: r.c[6]?.v,
-            correta: r.c[7]?.v
-        }));
+    banco = json.table.rows.slice(1).map(r => ({
+        id: r.c[0]?.v,
+        disc: r.c[1]?.v,
+        en: r.c[2]?.v,
+        A: r.c[3]?.v,
+        B: r.c[4]?.v,
+        C: r.c[5]?.v,
+        D: r.c[6]?.v,
+        g: r.c[7]?.v
+    }));
 
-        renderizarQuestoes();
+    let disciplinas = [...new Set(banco.map(q => q.disc))];
 
-    } catch (e) {
-        document.getElementById("questoes").innerHTML = "Erro ao carregar.";
-    }
+    let sel = document.getElementById("disciplina");
+    sel.innerHTML = "";
+    disciplinas.forEach(d => sel.innerHTML += `<option>${d}</option>`);
+}
+
+// ================= INICIAR =================
+function iniciarProva() {
+    let disc = document.getElementById("disciplina").value;
+
+    prova = banco.filter(q => q.disc === disc)
+                 .sort(() => 0.5 - Math.random())
+                 .slice(0, 10);
+
+    render();
+
+    tempo = 0;
+    clearInterval(intervalo);
+    intervalo = setInterval(() => {
+        tempo++;
+        let m = String(Math.floor(tempo/60)).padStart(2,'0');
+        let s = String(tempo%60).padStart(2,'0');
+        document.getElementById("timer").innerText = `${m}:${s}`;
+    },1000);
 }
 
 // ================= RENDER =================
-function renderizarQuestoes() {
-    const container = document.getElementById("questoes");
-    container.innerHTML = "";
+function render() {
+    let div = document.getElementById("questoes");
+    div.innerHTML = "";
 
-    bancoQuestoes.forEach((q, i) => {
-        container.innerHTML += `
+    prova.forEach((q,i) => {
+        div.innerHTML += `
         <div class="questao">
-            <div><b>${i + 1}. ${q.enunciado}</b></div>
-
-            <div class="alternativas">
-                ${["A","B","C","D"].map(letra => `
-                    <label>
-                        <input type="radio" name="q${q.id}" value="${letra}">
-                        ${letra}) ${q[letra]}
-                    </label>
-                `).join("")}
-            </div>
-
-            <div id="res${q.id}"></div>
+        <b>${i+1}. ${q.en}</b>
+        ${["A","B","C","D"].map(l=>`
+        <label><input type="radio" name="q${q.id}" value="${l}"> ${l}) ${q[l]}</label>
+        `).join("")}
+        <div id="r${q.id}"></div>
         </div>
         `;
     });
@@ -125,58 +123,52 @@ function renderizarQuestoes() {
 
 // ================= FINALIZAR =================
 async function finalizarProva() {
+    clearInterval(intervalo);
+
     let acertos = 0;
 
-    bancoQuestoes.forEach(q => {
-        let marcada = document.querySelector(`input[name="q${q.id}"]:checked`);
-        let res = document.getElementById(`res${q.id}`);
+    prova.forEach(q => {
+        let m = document.querySelector(`input[name="q${q.id}"]:checked`);
+        let r = document.getElementById(`r${q.id}`);
 
-        if (!marcada) {
-            res.innerHTML = "⚠️ Não respondida";
-            res.style.color = "orange";
-            return;
-        }
-
-        if (marcada.value === q.correta) {
+        if (!m) {
+            r.innerHTML = "⚠️";
+        } else if (m.value === q.g) {
             acertos++;
-            res.innerHTML = "✅ Correto";
-            res.style.color = "green";
+            r.innerHTML = "✅";
         } else {
-            res.innerHTML = `❌ Errado (Correta: ${q.correta})`;
-            res.style.color = "red";
+            r.innerHTML = `❌ (${q.g})`;
         }
     });
 
-    let total = bancoQuestoes.length;
+    let nome = document.getElementById("nome").value || "Aluno";
 
     document.getElementById("resultado").innerHTML =
-        `Resultado final: ${acertos} / ${total}`;
+        `Resultado: ${acertos}/${prova.length}`;
 
-    let nome = prompt("Digite seu nome:");
+    await fetch(SCRIPT_URL, {
+        method:"POST",
+        body:JSON.stringify({
+            tipo:"SALVAR_RESULTADO",
+            nome,
+            disciplina: document.getElementById("disciplina").value,
+            acertos,
+            total: prova.length
+        })
+    });
 
-    if (nome) {
-        await salvarResultado(nome, acertos, total);
-    }
+    carregarRanking();
 }
 
-// ================= SALVAR =================
-async function salvarResultado(nome, acertos, total) {
-    try {
-        await fetch(SCRIPT_URL, {
-            method: "POST",
-            body: JSON.stringify({
-                tipo: "SALVAR_RESULTADO",
-                nome: nome,
-                acertos: acertos,
-                total: total
-            })
-        });
+// ================= RANKING =================
+async function carregarRanking() {
+    let res = await fetch(SCRIPT_URL);
+    let data = await res.json();
 
-        alert("Resultado salvo!");
-
-    } catch (e) {
-        alert("Erro ao salvar");
-    }
+    let div = document.getElementById("ranking");
+    div.innerHTML = data.map(r => `
+        <div>${r.nome} - ${r.percentual.toFixed(1)}%</div>
+    `).join("");
 }
 </script>
 

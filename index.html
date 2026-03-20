@@ -64,7 +64,9 @@ button {
 
 <script>
 // ================= CONFIG =================
-const SHEET_ID = "COLE_SEU_ID_AQUI";
+const SHEET_ID = "1oind2qzoQLR1T20J9yqOyYXKY64LDq9prhL9_ZEoawM";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec";
+
 const QUESTOES_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Questoes`;
 
 let bancoQuestoes = [];
@@ -121,8 +123,8 @@ function renderizarQuestoes() {
     });
 }
 
-// ================= RESULTADO =================
-function finalizarProva() {
+// ================= FINALIZAR =================
+async function finalizarProva() {
     let acertos = 0;
 
     bancoQuestoes.forEach(q => {
@@ -145,8 +147,36 @@ function finalizarProva() {
         }
     });
 
+    let total = bancoQuestoes.length;
+
     document.getElementById("resultado").innerHTML =
-        `Resultado final: ${acertos} / ${bancoQuestoes.length}`;
+        `Resultado final: ${acertos} / ${total}`;
+
+    let nome = prompt("Digite seu nome:");
+
+    if (nome) {
+        await salvarResultado(nome, acertos, total);
+    }
+}
+
+// ================= SALVAR =================
+async function salvarResultado(nome, acertos, total) {
+    try {
+        await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({
+                tipo: "SALVAR_RESULTADO",
+                nome: nome,
+                acertos: acertos,
+                total: total
+            })
+        });
+
+        alert("Resultado salvo!");
+
+    } catch (e) {
+        alert("Erro ao salvar");
+    }
 }
 </script>
 

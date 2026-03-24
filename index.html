@@ -1,175 +1,134 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulador SAEP - CETEM</title>
+<title>SIMULADOR SAEP - CETEM</title>
 
 <style>
-body { font-family: Arial; margin:0; background:#f0f2f5; }
-.container { max-width: 1200px; margin:auto; background:white; padding:20px; }
-.top { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
-button { padding:10px; cursor:pointer; }
-.questao { border-bottom:1px solid #ddd; padding:15px 0; }
-#timer { font-size:18px; font-weight:bold; color:#c62828; }
-.ranking { margin-top:20px; background:#f8f9fa; padding:10px; }
+body { margin:0; font-family:Arial; display:flex; background:#f5f5f5; }
+#indice { width:220px; background:#004aad; color:white; padding:10px; height:100vh; overflow:auto; }
+#indice button { width:100%; margin:3px 0; padding:6px; border:none; cursor:pointer; }
+#conteudo { flex:1; padding:20px; background:white; }
+.questao { margin-bottom:25px; border-bottom:1px solid #ddd; padding-bottom:10px; }
+.green { background:#4CAF50 !important; }
 </style>
+
 </head>
 
 <body>
 
-<div class="container">
+<div id="indice"></div>
 
-<h2>Simulador de Prova</h2>
-
-<div class="top">
-<input id="nome" placeholder="Nome do aluno">
-<select id="disciplina"></select>
-<button onclick="iniciarProva()">Iniciar Prova</button>
-<div id="timer">00:00</div>
-</div>
+<div id="conteudo">
+<input id="nome" placeholder="Seu nome"><br><br>
 
 <div id="questoes"></div>
 
-<button onclick="finalizarProva()">Finalizar</button>
+<button onclick="finalizar()">FINALIZAR</button>
 
 <div id="resultado"></div>
 
-<div class="ranking">
-<h3>🏆 Ranking</h3>
+<hr>
+
+<h3>Ranking</h3>
 <div id="ranking"></div>
+
+<div style="margin-top:40px;text-align:center;">
+<a href="painel.html" target="_blank">
+<button style="padding:10px;background:#4CAF50;color:white;border:none;">
+INSERIR QUESTÕES
+</button>
+</a>
 </div>
 
 </div>
 
 <script>
-// ================= CONFIG =================
-const QUESTOES_URL = "https://docs.google.com/spreadsheets/d/1oind2qzoQLR1T20J9yqOyYXKY64LDq9prhL9_ZEoawM/gviz/tq?tqx=out:json&sheet=Questoes";
+const API = "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec";
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec";
+let questoes = [];
 
-let banco = [];
-let prova = [];
-let tempo = 0;
-let intervalo;
+async function carregar() {
+  const res = await fetch(API + "?tipo=LISTAR_QUESTOES");
+  questoes = await res.json();
 
-// ================= INIT =================
-window.onload = async () => {
-    await carregarQuestoes();
-    carregarRanking();
-};
+  questoes = questoes.sort(()=>0.5-Math.random()).slice(0,40);
 
-// ================= QUESTOES =================
-async function carregarQuestoes() {
-    const res = await fetch(QUESTOES_URL);
-    const txt = await res.text();
-    const json = JSON.parse(txt.substring(47).slice(0,-2));
-
-    banco = json.table.rows.slice(1).map(r => ({
-        id: r.c[0]?.v,
-        disc: r.c[1]?.v,
-        en: r.c[2]?.v,
-        A: r.c[3]?.v,
-        B: r.c[4]?.v,
-        C: r.c[5]?.v,
-        D: r.c[6]?.v,
-        g: r.c[7]?.v
-    }));
-
-    let disciplinas = [...new Set(banco.map(q => q.disc))];
-
-    let sel = document.getElementById("disciplina");
-    sel.innerHTML = "";
-    disciplinas.forEach(d => sel.innerHTML += `<option>${d}</option>`);
+  render();
+  ranking();
 }
 
-// ================= INICIAR =================
-function iniciarProva() {
-    let disc = document.getElementById("disciplina").value;
-
-    prova = banco.filter(q => q.disc === disc)
-                 .sort(() => 0.5 - Math.random())
-                 .slice(0, 10);
-
-    render();
-
-    tempo = 0;
-    clearInterval(intervalo);
-    intervalo = setInterval(() => {
-        tempo++;
-        let m = String(Math.floor(tempo/60)).padStart(2,'0');
-        let s = String(tempo%60).padStart(2,'0');
-        document.getElementById("timer").innerText = `${m}:${s}`;
-    },1000);
-}
-
-// ================= RENDER =================
 function render() {
-    let div = document.getElementById("questoes");
-    div.innerHTML = "";
+  let qDiv = document.getElementById("questoes");
+  let iDiv = document.getElementById("indice");
 
-    prova.forEach((q,i) => {
-        div.innerHTML += `
-        <div class="questao">
-        <b>${i+1}. ${q.en}</b>
-        ${["A","B","C","D"].map(l=>`
-        <label><input type="radio" name="q${q.id}" value="${l}"> ${l}) ${q[l]}</label>
-        `).join("")}
-        <div id="r${q.id}"></div>
-        </div>
-        `;
-    });
+  qDiv.innerHTML = "";
+  iDiv.innerHTML = "<h3>ÍNDICE</h3>";
+
+  questoes.forEach((q,i)=>{
+    iDiv.innerHTML += `<button onclick="scrollQ(${i})">${i+1}</button>`;
+
+    qDiv.innerHTML += `
+    <div class="questao" id="q${i}">
+    <b>${i+1}. ${q.enunciado}</b>
+    ${["A","B","C","D"].map(l=>`
+      <label><input type="radio" name="q${i}" value="${l}" onchange="marcar(${i})"> ${l}) ${q[l]}</label>
+    `).join("")}
+    <div id="r${i}"></div>
+    </div>`;
+  });
 }
 
-// ================= FINALIZAR =================
-async function finalizarProva() {
-    clearInterval(intervalo);
-
-    let acertos = 0;
-
-    prova.forEach(q => {
-        let m = document.querySelector(`input[name="q${q.id}"]:checked`);
-        let r = document.getElementById(`r${q.id}`);
-
-        if (!m) {
-            r.innerHTML = "⚠️";
-        } else if (m.value === q.g) {
-            acertos++;
-            r.innerHTML = "✅";
-        } else {
-            r.innerHTML = `❌ (${q.g})`;
-        }
-    });
-
-    let nome = document.getElementById("nome").value || "Aluno";
-
-    document.getElementById("resultado").innerHTML =
-        `Resultado: ${acertos}/${prova.length}`;
-
-    await fetch(SCRIPT_URL, {
-        method:"POST",
-        body:JSON.stringify({
-            tipo:"SALVAR_RESULTADO",
-            nome,
-            disciplina: document.getElementById("disciplina").value,
-            acertos,
-            total: prova.length
-        })
-    });
-
-    carregarRanking();
+function scrollQ(i){
+  document.getElementById("q"+i).scrollIntoView();
 }
 
-// ================= RANKING =================
-async function carregarRanking() {
-    let res = await fetch(SCRIPT_URL);
-    let data = await res.json();
-
-    let div = document.getElementById("ranking");
-    div.innerHTML = data.map(r => `
-        <div>${r.nome} - ${r.percentual.toFixed(1)}%</div>
-    `).join("");
+function marcar(i){
+  document.querySelectorAll("#indice button")[i].classList.add("green");
 }
+
+async function finalizar(){
+  let acertos = 0;
+
+  questoes.forEach((q,i)=>{
+    let m = document.querySelector(`input[name="q${i}"]:checked`);
+    let r = document.getElementById("r"+i);
+
+    if(!m){
+      r.innerHTML="⚠️";
+    } else if(m.value===q.gabarito){
+      acertos++;
+      r.innerHTML="✅";
+    } else {
+      r.innerHTML=`❌ (${q.gabarito})`;
+    }
+  });
+
+  document.getElementById("resultado").innerHTML =
+    `Resultado: ${acertos}/${questoes.length}`;
+
+  await fetch(API,{
+    method:"POST",
+    body:JSON.stringify({
+      tipo:"SALVAR_RESULTADO",
+      nome:document.getElementById("nome").value || "Aluno",
+      acertos,
+      total:questoes.length
+    })
+  });
+
+  ranking();
+}
+
+async function ranking(){
+  let res = await fetch(API+"?tipo=RANKING");
+  let data = await res.json();
+
+  document.getElementById("ranking").innerHTML =
+    data.map(r=>`<div>${r.nome} - ${r.percentual.toFixed(1)}%</div>`).join("");
+}
+
+carregar();
 </script>
 
 </body>

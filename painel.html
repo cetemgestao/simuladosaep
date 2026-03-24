@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Painel Completo</title>
+<title>Painel</title>
 
 <style>
 body {
@@ -41,6 +41,11 @@ button {
   padding:15px;
   border:1px dashed #999;
   background:#fafafa;
+}
+
+img {
+  max-width:300px;
+  margin:10px 0;
 }
 </style>
 
@@ -81,30 +86,28 @@ button {
 
 <br><br>
 
+<!-- BOTÕES -->
 <button onclick="gerarPreview()">VISUALIZAR</button>
 <button onclick="enviar()">SALVAR</button>
 
+<!-- PREVIEW -->
 <div id="preview" class="preview"></div>
 
 </div>
 
 <script>
+
 const API = "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec";
 
-// converter imagem
-function toBase64(file){
-  return new Promise((resolve,reject)=>{
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-  });
-}
-
 // PREVIEW
-async function gerarPreview(){
+function gerarPreview(){
 
-  let html = document.getElementById("enunciado").innerHTML;
+  let enunciado = document.getElementById("enunciado").innerHTML;
+
+  let altA = document.getElementById("A").innerHTML;
+  let altB = document.getElementById("B").innerHTML;
+  let altC = document.getElementById("C").innerHTML;
+  let altD = document.getElementById("D").innerHTML;
 
   let file = document.getElementById("imagem").files[0];
   let imgPreview = "";
@@ -114,18 +117,28 @@ async function gerarPreview(){
   }
 
   document.getElementById("preview").innerHTML = `
-    <b>Preview da questão:</b><br><br>
+    <h3>Preview da questão</h3>
 
-    <div>${html}</div>
+    <div>${enunciado}</div>
     ${imgPreview}
 
     <br>
 
-    <b>A)</b> ${A.innerHTML}<br>
-    <b>B)</b> ${B.innerHTML}<br>
-    <b>C)</b> ${C.innerHTML}<br>
-    <b>D)</b> ${D.innerHTML}
+    <div><b>A)</b> ${altA}</div>
+    <div><b>B)</b> ${altB}</div>
+    <div><b>C)</b> ${altC}</div>
+    <div><b>D)</b> ${altD}</div>
   `;
+}
+
+// BASE64
+function toBase64(file){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+  });
 }
 
 // ENVIAR
@@ -158,6 +171,7 @@ async function enviar(){
   document.getElementById("preview").innerHTML =
     r.status==="ok" ? "✅ Salvo com sucesso" : "❌ Erro";
 }
+
 </script>
 
 </body>

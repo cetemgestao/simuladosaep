@@ -1,100 +1,56 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html>
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Painel do Aplicador - Inserir Questões</title>
-<style>
-  /* Mantendo o padrão visual SAEP */
-  * { box-sizing: border-box; }
-  body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; display: flex; min-height: 100vh; }
-  #indice { width: 300px; background-color: #004aad; color: white; padding: 20px; position: fixed; height: 100vh; }
-  #conteudo { margin-left: 300px; padding: 40px; flex: 1; background: white; width: calc(100% - 300px); }
-  h2 { color: #004aad; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
-  .form-group { margin-bottom: 15px; }
-  .form-group label { display: block; font-weight: bold; margin-bottom: 5px; }
-  .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
-  button.salvar { background-color: #4CAF50; color: white; border: none; padding: 12px 20px; font-size: 1em; cursor: pointer; border-radius: 6px; width: 100%; font-weight: bold; }
-  button.salvar:hover { background-color: #45a049; }
-</style>
+<meta charset="UTF-8">
+<title>Painel</title>
 </head>
-<body>
 
-<div id="indice">
-  <h2 style="color:white; text-align:center; border:none;">PAINEL DO APLICADOR</h2>
-  <p style="text-align:center;">Módulo de inserção de questões</p>
-  <a href="index.html" style="color: white; display: block; text-align: center; margin-top: 30px; text-decoration: underline;">Voltar para o Simulado</a>
-</div>
+<body style="font-family:Arial;padding:20px;">
 
-<div id="conteudo">
-  <h2>Cadastrar Nova Questão</h2>
-  
-  <div class="form-group">
-    <label>Disciplina:</label>
-    <input type="text" id="disciplina" placeholder="Ex: predial, automação...">
-  </div>
+<h2>Inserir Questão</h2>
 
-  <div class="form-group">
-    <label>Enunciado da Questão:</label>
-    <textarea id="enunciado" rows="4" placeholder="Digite a pergunta aqui..."></textarea>
-  </div>
+<input id="disciplina" placeholder="Disciplina"><br><br>
+<textarea id="enunciado" placeholder="Enunciado"></textarea><br><br>
 
-  <div class="form-group"><label>Alternativa A:</label><input type="text" id="altA"></div>
-  <div class="form-group"><label>Alternativa B:</label><input type="text" id="altB"></div>
-  <div class="form-group"><label>Alternativa C:</label><input type="text" id="altC"></div>
-  <div class="form-group"><label>Alternativa D:</label><input type="text" id="altD"></div>
+<input id="A" placeholder="A"><br>
+<input id="B" placeholder="B"><br>
+<input id="C" placeholder="C"><br>
+<input id="D" placeholder="D"><br><br>
 
-  <div class="form-group">
-    <label>Gabarito Correto:</label>
-    <select id="gabarito">
-      <option value="A">Alternativa A</option>
-      <option value="B">Alternativa B</option>
-      <option value="C">Alternativa C</option>
-      <option value="D">Alternativa D</option>
-    </select>
-  </div>
+<select id="gabarito">
+<option>A</option>
+<option>B</option>
+<option>C</option>
+<option>D</option>
+</select><br><br>
 
-  <button class="salvar" onclick="salvarQuestao()">SALVAR QUESTÃO NA PLANILHA</button>
-  <div id="status" style="margin-top: 15px; font-weight: bold; color: green; display: none;">Questão salva com sucesso!</div>
-</div>
+<button onclick="enviar()">SALVAR</button>
+
+<div id="msg"></div>
 
 <script>
-  // COLOQUE A SUA URL DO APP SCRIPT AQUI
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec";
+const API = "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec";
 
-  async function salvarQuestao() {
-    const btn = document.querySelector('.salvar');
-    btn.innerText = "Salvando...";
-    btn.disabled = true;
+async function enviar(){
+  let res = await fetch(API,{
+    method:"POST",
+    body:JSON.stringify({
+      tipo:"INSERIR_QUESTAO",
+      disciplina:document.getElementById("disciplina").value,
+      enunciado:document.getElementById("enunciado").value,
+      A:document.getElementById("A").value,
+      B:document.getElementById("B").value,
+      C:document.getElementById("C").value,
+      D:document.getElementById("D").value,
+      gabarito:document.getElementById("gabarito").value
+    })
+  });
 
-    const data = {
-      tipo: "INSERIR_QUESTAO",
-      disciplina: document.getElementById('disciplina').value,
-      enunciado: document.getElementById('enunciado').value,
-      A: document.getElementById('altA').value,
-      B: document.getElementById('altB').value,
-      C: document.getElementById('altC').value,
-      D: document.getElementById('altD').value,
-      gabarito: document.getElementById('gabarito').value
-    };
-
-    try {
-      await fetch(SCRIPT_URL, {
-        method: "POST",
-        body: JSON.stringify(data)
-      });
-      document.getElementById('status').style.display = "block";
-      setTimeout(() => { document.getElementById('status').style.display = "none"; }, 4000);
-      
-      // Limpa os campos
-      document.querySelectorAll('input[type="text"], textarea').forEach(el => el.value = '');
-    } catch (e) {
-      alert("Erro ao salvar: " + e);
-    }
-
-    btn.innerText = "SALVAR QUESTÃO NA PLANILHA";
-    btn.disabled = false;
-  }
+  let r = await res.json();
+  document.getElementById("msg").innerHTML =
+    r.status==="ok" ? "✅ Salvo" : "❌ Erro";
+}
 </script>
+
 </body>
 </html>

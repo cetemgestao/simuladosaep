@@ -8,9 +8,10 @@
 body { margin:0; font-family:Arial; display:flex; background:#f5f5f5; }
 #indice { width:220px; background:#004aad; color:white; padding:10px; height:100vh; overflow:auto; }
 #indice button { width:100%; margin:3px 0; padding:6px; border:none; cursor:pointer; }
+#indice button.green { background:#4CAF50; }
 #conteudo { flex:1; padding:20px; background:white; }
 .questao { margin-bottom:25px; border-bottom:1px solid #ddd; padding-bottom:10px; }
-.green { background:#4CAF50 !important; }
+img { max-width:100%; margin:10px 0; }
 </style>
 
 </head>
@@ -20,6 +21,7 @@ body { margin:0; font-family:Arial; display:flex; background:#f5f5f5; }
 <div id="indice"></div>
 
 <div id="conteudo">
+
 <input id="nome" placeholder="Seu nome"><br><br>
 
 <div id="questoes"></div>
@@ -70,10 +72,18 @@ function render() {
 
     qDiv.innerHTML += `
     <div class="questao" id="q${i}">
+
     <b>${i+1}. ${q.enunciado}</b>
+
+    ${q.imagem ? `<img src="${q.imagem}">` : ""}
+
     ${["A","B","C","D"].map(l=>`
-      <label><input type="radio" name="q${i}" value="${l}" onchange="marcar(${i})"> ${l}) ${q[l]}</label>
+      <label>
+      <input type="radio" name="q${i}" value="${l}" onchange="marcar(${i})">
+      ${l}) ${q[l]}
+      </label>
     `).join("")}
+
     <div id="r${i}"></div>
     </div>`;
   });

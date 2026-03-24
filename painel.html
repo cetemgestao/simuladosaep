@@ -1,39 +1,118 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Painel</title>
+<title>Painel Profissional</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #f4f6f9;
+  padding: 20px;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h2 {
+  margin-bottom: 10px;
+}
+
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin: 5px 0;
+}
+
+#editor {
+  border: 1px solid #ccc;
+  min-height: 200px;
+  padding: 10px;
+  background: white;
+}
+
+.toolbar button {
+  margin-right: 5px;
+}
+
+button {
+  padding: 10px;
+  border: none;
+  background: #004aad;
+  color: white;
+  cursor: pointer;
+}
+
+.preview {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px dashed #aaa;
+}
+</style>
+
 </head>
 
-<body style="font-family:Arial;padding:20px;">
+<body>
 
-<h2>Inserir Questão</h2>
+<div class="container">
 
-<input id="disciplina" placeholder="Disciplina"><br><br>
+<h2>Inserir Questão (Profissional)</h2>
 
-<textarea id="enunciado" placeholder="Enunciado"></textarea><br><br>
+<input id="disciplina" placeholder="Disciplina">
 
-<input type="file" id="imagem"><br><br>
+<div class="toolbar">
+  <button onclick="format('bold')">B</button>
+  <button onclick="format('italic')">I</button>
+  <button onclick="format('underline')">U</button>
+</div>
 
-<input id="A" placeholder="A"><br>
-<input id="B" placeholder="B"><br>
-<input id="C" placeholder="C"><br>
-<input id="D" placeholder="D"><br><br>
+<div id="editor" contenteditable="true">
+Cole aqui a questão (pode colar direto do Word)
+</div>
+
+<br>
+
+<label>Imagem (opcional)</label>
+<input type="file" id="imagem">
+
+<h3>Alternativas</h3>
+
+<input id="A" placeholder="Alternativa A">
+<input id="B" placeholder="Alternativa B">
+<input id="C" placeholder="Alternativa C">
+<input id="D" placeholder="Alternativa D">
 
 <select id="gabarito">
 <option>A</option>
 <option>B</option>
 <option>C</option>
 <option>D</option>
-</select><br><br>
+</select>
 
+<br><br>
+
+<button onclick="preview()">VISUALIZAR</button>
 <button onclick="enviar()">SALVAR</button>
 
-<div id="msg"></div>
+<div class="preview" id="preview"></div>
+
+</div>
 
 <script>
 const API = "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec";
 
+// FORMATAÇÃO
+function format(cmd){
+  document.execCommand(cmd, false, null);
+}
+
+// BASE64
 function toBase64(file){
   return new Promise((resolve,reject)=>{
     const reader = new FileReader();
@@ -43,6 +122,22 @@ function toBase64(file){
   });
 }
 
+// PREVIEW
+function preview(){
+  let html = document.getElementById("editor").innerHTML;
+
+  document.getElementById("preview").innerHTML = `
+  <b>Preview:</b><br><br>
+  ${html}
+  <br><br>
+  A) ${A.value}<br>
+  B) ${B.value}<br>
+  C) ${C.value}<br>
+  D) ${D.value}
+  `;
+}
+
+// ENVIAR
 async function enviar(){
   let file = document.getElementById("imagem").files[0];
   let base64 = "";
@@ -51,24 +146,27 @@ async function enviar(){
     base64 = await toBase64(file);
   }
 
+  let html = document.getElementById("editor").innerHTML;
+
   let res = await fetch(API,{
     method:"POST",
     body:JSON.stringify({
       tipo:"INSERIR_QUESTAO",
       disciplina:document.getElementById("disciplina").value,
-      enunciado:document.getElementById("enunciado").value,
+      enunciado: html,
       imagem: base64,
-      A:document.getElementById("A").value,
-      B:document.getElementById("B").value,
-      C:document.getElementById("C").value,
-      D:document.getElementById("D").value,
-      gabarito:document.getElementById("gabarito").value
+      A:A.value,
+      B:B.value,
+      C:C.value,
+      D:D.value,
+      gabarito:gabarito.value
     })
   });
 
   let r = await res.json();
-  document.getElementById("msg").innerHTML =
-    r.status==="ok" ? "✅ Salvo" : "❌ Erro";
+
+  document.getElementById("preview").innerHTML =
+    r.status==="ok" ? "✅ Questão salva com sucesso" : "❌ Erro";
 }
 </script>
 

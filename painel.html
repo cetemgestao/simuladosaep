@@ -36,7 +36,14 @@ button {
   margin-right:5px;
 }
 
+.preview {
+  margin-top:20px;
+  padding:15px;
+  border:1px dashed #999;
+  background:#fafafa;
+}
 </style>
+
 </head>
 
 <body>
@@ -74,9 +81,10 @@ button {
 
 <br><br>
 
+<button onclick="gerarPreview()">VISUALIZAR</button>
 <button onclick="enviar()">SALVAR</button>
 
-<div id="msg"></div>
+<div id="preview" class="preview"></div>
 
 </div>
 
@@ -93,6 +101,34 @@ function toBase64(file){
   });
 }
 
+// PREVIEW
+async function gerarPreview(){
+
+  let html = document.getElementById("enunciado").innerHTML;
+
+  let file = document.getElementById("imagem").files[0];
+  let imgPreview = "";
+
+  if(file){
+    imgPreview = `<img src="${URL.createObjectURL(file)}">`;
+  }
+
+  document.getElementById("preview").innerHTML = `
+    <b>Preview da questão:</b><br><br>
+
+    <div>${html}</div>
+    ${imgPreview}
+
+    <br>
+
+    <b>A)</b> ${A.innerHTML}<br>
+    <b>B)</b> ${B.innerHTML}<br>
+    <b>C)</b> ${C.innerHTML}<br>
+    <b>D)</b> ${D.innerHTML}
+  `;
+}
+
+// ENVIAR
 async function enviar(){
 
   let file = document.getElementById("imagem").files[0];
@@ -119,7 +155,7 @@ async function enviar(){
 
   let r = await res.json();
 
-  document.getElementById("msg").innerHTML =
+  document.getElementById("preview").innerHTML =
     r.status==="ok" ? "✅ Salvo com sucesso" : "❌ Erro";
 }
 </script>

@@ -72,7 +72,7 @@ function render() {
 
     qDiv.innerHTML += `
     <div class="questao" id="q${i}">
-    <b>${i+1}. ${q.enunciado}</b>
+    <div><b>${i+1}.</b> ${q.enunciado}</div>
 
     ${q.imagem ? `<img src="${q.imagem}">` : ""}
 

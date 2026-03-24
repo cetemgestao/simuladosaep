@@ -1,64 +1,134 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>SIMULADO - SAEP - CIBER SISTEMAS</title>
+<meta charset="UTF-8">
+<title>SIMULADOR SAEP-CETEM</title>
+
 <style>
-  /* COLE AQUI O CSS DO SEU ARQUIVO "SIMULADO SAEP - CIBER SISTEMAS.html" PARA MANTER A APARÊNCIA IDÊNTICA */
+body { margin:0; font-family:Arial; display:flex; background:#f5f5f5; }
+#indice { width:220px; background:#004aad; color:white; padding:10px; height:100vh; overflow:auto; }
+#indice button { width:100%; margin:3px 0; padding:6px; border:none; cursor:pointer; }
+#conteudo { flex:1; padding:20px; background:white; }
+.questao { margin-bottom:25px; border-bottom:1px solid #ddd; padding-bottom:10px; }
+.green { background:#4CAF50 !important; }
 </style>
+
 </head>
+
 <body>
 
-<div id="indice">
-  <img src="https://via.placeholder.com/150x50.png?text=LOGO" alt="Logo" class="logo-indice">
-  <h2>MENU</h2>
-  
-  <div style="padding: 10px;">
-    <input type="text" id="nome" placeholder="Seu nome completo" style="width:100%; padding:8px; margin-bottom:10px; border-radius:4px;">
-    <select id="disciplina" style="width:100%; padding:8px; margin-bottom:10px; border-radius:4px;">
-      <option value="predial">Predial</option>
-      </select>
-  </div>
-
-  <button class="green" onclick="iniciarProva()">INICIAR PROVA</button>
-  <button onclick="finalizarProva()" style="background-color: #d9534f; border-color: #d9534f;">FINALIZAR</button>
-  
-  <div id="timer" style="text-align:center; font-size:1.5em; margin-top:20px;">00:00</div>
-</div>
+<div id="indice"></div>
 
 <div id="conteudo">
-  <div style="text-align:center; margin-bottom: 30px;">
-    <h1>SIMULADO SAEP</h1>
-    <p>Preencha seus dados ao lado e clique em Iniciar Prova.</p>
-  </div>
+<input id="nome" placeholder="Seu nome"><br><br>
 
-  <div id="questoes"></div>
-  
-  <div id="resultado" style="display:none;"></div>
+<div id="questoes"></div>
 
-  <div style="margin-top: 60px; text-align: right; border-top: 1px solid #ddd; padding-top: 20px;">
-    <a href="painel.html" target="_blank" style="color: #666; text-decoration: none; font-size: 0.9em; display: inline-flex; align-items: center; gap: 5px;">
-      ⚙️ INSERIR QUESTÕES (Aplicador)
-    </a>
-  </div>
+<button onclick="finalizar()">FINALIZAR</button>
+
+<div id="resultado"></div>
+
+<hr>
+
+<h3>Ranking</h3>
+<div id="ranking"></div>
+
+<div style="margin-top:40px;text-align:center;">
+<a href="painel.html" target="_blank">
+<button style="padding:10px;background:#4CAF50;color:white;border:none;">
+INSERIR QUESTÕES
+</button>
+</a>
+</div>
 
 </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec"; // Cole sua URL aqui
-  let prova = [];
+const API = "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec";
 
-  // Cole aqui suas funções JavaScript de renderizar as questões que estavam no seu index antigo.
-  // Como elas irão preencher o <div id="questoes">, vão se encaixar perfeitamente no novo layout.
-  
-  async function iniciarProva() {
-    // Sua lógica de buscar as questões e carregar na tela
-  }
+let questoes = [];
 
-  async function finalizarProva() {
-    // Sua lógica de enviar o resultado
-  }
+async function carregar() {
+  const res = await fetch(API + "?tipo=LISTAR_QUESTOES");
+  questoes = await res.json();
+
+  questoes = questoes.sort(()=>0.5-Math.random()).slice(0,40);
+
+  render();
+  ranking();
+}
+
+function render() {
+  let qDiv = document.getElementById("questoes");
+  let iDiv = document.getElementById("indice");
+
+  qDiv.innerHTML = "";
+  iDiv.innerHTML = "<h3>ÍNDICE</h3>";
+
+  questoes.forEach((q,i)=>{
+    iDiv.innerHTML += `<button onclick="scrollQ(${i})">${i+1}</button>`;
+
+    qDiv.innerHTML += `
+    <div class="questao" id="q${i}">
+    <b>${i+1}. ${q.enunciado}</b>
+    ${["A","B","C","D"].map(l=>`
+      <label><input type="radio" name="q${i}" value="${l}" onchange="marcar(${i})"> ${l}) ${q[l]}</label>
+    `).join("")}
+    <div id="r${i}"></div>
+    </div>`;
+  });
+}
+
+function scrollQ(i){
+  document.getElementById("q"+i).scrollIntoView();
+}
+
+function marcar(i){
+  document.querySelectorAll("#indice button")[i].classList.add("green");
+}
+
+async function finalizar(){
+  let acertos = 0;
+
+  questoes.forEach((q,i)=>{
+    let m = document.querySelector(`input[name="q${i}"]:checked`);
+    let r = document.getElementById("r"+i);
+
+    if(!m){
+      r.innerHTML="⚠️";
+    } else if(m.value===q.gabarito){
+      acertos++;
+      r.innerHTML="✅";
+    } else {
+      r.innerHTML=`❌ (${q.gabarito})`;
+    }
+  });
+
+  document.getElementById("resultado").innerHTML =
+    `Resultado: ${acertos}/${questoes.length}`;
+
+  await fetch(API,{
+    method:"POST",
+    body:JSON.stringify({
+      tipo:"SALVAR_RESULTADO",
+      nome:document.getElementById("nome").value || "Aluno",
+      acertos,
+      total:questoes.length
+    })
+  });
+
+  ranking();
+}
+
+async function ranking(){
+  let res = await fetch(API+"?tipo=RANKING");
+  let data = await res.json();
+
+  document.getElementById("ranking").innerHTML =
+    data.map(r=>`<div>${r.nome} - ${r.percentual.toFixed(1)}%</div>`).join("");
+}
+
+carregar();
 </script>
 
 </body>

@@ -2,91 +2,68 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Painel Profissional</title>
+<title>Painel Completo</title>
 
 <style>
 body {
   font-family: Arial;
-  background: #f4f6f9;
-  padding: 20px;
+  background:#f4f6f9;
+  padding:20px;
 }
 
 .container {
-  max-width: 900px;
-  margin: auto;
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  max-width:900px;
+  margin:auto;
+  background:white;
+  padding:20px;
+  border-radius:10px;
 }
 
-h2 {
-  margin-bottom: 10px;
-}
-
-input, select {
-  width: 100%;
-  padding: 10px;
-  margin: 5px 0;
-}
-
-#editor {
-  border: 1px solid #ccc;
-  min-height: 200px;
-  padding: 10px;
-  background: white;
-}
-
-.toolbar button {
-  margin-right: 5px;
+.editor {
+  border:1px solid #ccc;
+  min-height:80px;
+  padding:10px;
+  margin-bottom:10px;
+  background:white;
 }
 
 button {
-  padding: 10px;
-  border: none;
-  background: #004aad;
-  color: white;
-  cursor: pointer;
+  padding:10px;
+  background:#004aad;
+  color:white;
+  border:none;
+  cursor:pointer;
+  margin-right:5px;
 }
 
-.preview {
-  margin-top: 20px;
-  padding: 15px;
-  border: 1px dashed #aaa;
-}
 </style>
-
 </head>
 
 <body>
 
 <div class="container">
 
-<h2>Inserir Questão (Profissional)</h2>
+<h2>Inserir Questão</h2>
 
-<input id="disciplina" placeholder="Disciplina">
+<input id="disciplina" placeholder="Disciplina"><br><br>
 
-<div class="toolbar">
-  <button onclick="format('bold')">B</button>
-  <button onclick="format('italic')">I</button>
-  <button onclick="format('underline')">U</button>
-</div>
-
-<div id="editor" contenteditable="true">
-Cole aqui a questão (pode colar direto do Word)
-</div>
-
-<br>
+<h3>Enunciado</h3>
+<div id="enunciado" class="editor" contenteditable="true"></div>
 
 <label>Imagem (opcional)</label>
-<input type="file" id="imagem">
+<input type="file" id="imagem"><br><br>
 
-<h3>Alternativas</h3>
+<h3>Alternativa A</h3>
+<div id="A" class="editor" contenteditable="true"></div>
 
-<input id="A" placeholder="Alternativa A">
-<input id="B" placeholder="Alternativa B">
-<input id="C" placeholder="Alternativa C">
-<input id="D" placeholder="Alternativa D">
+<h3>Alternativa B</h3>
+<div id="B" class="editor" contenteditable="true"></div>
+
+<h3>Alternativa C</h3>
+<div id="C" class="editor" contenteditable="true"></div>
+
+<h3>Alternativa D</h3>
+<div id="D" class="editor" contenteditable="true"></div>
 
 <select id="gabarito">
 <option>A</option>
@@ -97,48 +74,27 @@ Cole aqui a questão (pode colar direto do Word)
 
 <br><br>
 
-<button onclick="preview()">VISUALIZAR</button>
 <button onclick="enviar()">SALVAR</button>
 
-<div class="preview" id="preview"></div>
+<div id="msg"></div>
 
 </div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec";
+const API = "COLE_AQUI_SEU_LINK";
 
-// FORMATAÇÃO
-function format(cmd){
-  document.execCommand(cmd, false, null);
-}
-
-// BASE64
+// converter imagem
 function toBase64(file){
   return new Promise((resolve,reject)=>{
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
+    reader.onerror = reject;
   });
 }
 
-// PREVIEW
-function preview(){
-  let html = document.getElementById("editor").innerHTML;
-
-  document.getElementById("preview").innerHTML = `
-  <b>Preview:</b><br><br>
-  ${html}
-  <br><br>
-  A) ${A.value}<br>
-  B) ${B.value}<br>
-  C) ${C.value}<br>
-  D) ${D.value}
-  `;
-}
-
-// ENVIAR
 async function enviar(){
+
   let file = document.getElementById("imagem").files[0];
   let base64 = "";
 
@@ -146,27 +102,25 @@ async function enviar(){
     base64 = await toBase64(file);
   }
 
-  let html = document.getElementById("editor").innerHTML;
-
   let res = await fetch(API,{
     method:"POST",
     body:JSON.stringify({
       tipo:"INSERIR_QUESTAO",
       disciplina:document.getElementById("disciplina").value,
-      enunciado: html,
+      enunciado: document.getElementById("enunciado").innerHTML,
       imagem: base64,
-      A:A.value,
-      B:B.value,
-      C:C.value,
-      D:D.value,
-      gabarito:gabarito.value
+      A: document.getElementById("A").innerHTML,
+      B: document.getElementById("B").innerHTML,
+      C: document.getElementById("C").innerHTML,
+      D: document.getElementById("D").innerHTML,
+      gabarito: document.getElementById("gabarito").value
     })
   });
 
   let r = await res.json();
 
-  document.getElementById("preview").innerHTML =
-    r.status==="ok" ? "✅ Questão salva com sucesso" : "❌ Erro";
+  document.getElementById("msg").innerHTML =
+    r.status==="ok" ? "✅ Salvo com sucesso" : "❌ Erro";
 }
 </script>
 

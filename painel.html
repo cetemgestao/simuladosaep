@@ -1,1 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Painel</title>
+</head>
 
+<body style="font-family:Arial;padding:20px;">
+
+<h2>Inserir Questão</h2>
+
+<input id="disciplina" placeholder="Disciplina"><br><br>
+<textarea id="enunciado" placeholder="Enunciado"></textarea><br><br>
+
+<input id="A" placeholder="A"><br>
+<input id="B" placeholder="B"><br>
+<input id="C" placeholder="C"><br>
+<input id="D" placeholder="D"><br><br>
+
+<select id="gabarito">
+<option>A</option>
+<option>B</option>
+<option>C</option>
+<option>D</option>
+</select><br><br>
+
+<button onclick="enviar()">SALVAR</button>
+
+<div id="msg"></div>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec";
+
+async function enviar(){
+  let res = await fetch(API,{
+    method:"POST",
+    body:JSON.stringify({
+      tipo:"INSERIR_QUESTAO",
+      disciplina:document.getElementById("disciplina").value,
+      enunciado:document.getElementById("enunciado").value,
+      A:document.getElementById("A").value,
+      B:document.getElementById("B").value,
+      C:document.getElementById("C").value,
+      D:document.getElementById("D").value,
+      gabarito:document.getElementById("gabarito").value
+    })
+  });
+
+  let r = await res.json();
+  document.getElementById("msg").innerHTML =
+    r.status==="ok" ? "✅ Salvo" : "❌ Erro";
+}
+</script>
+
+</body>
+</html>

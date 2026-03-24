@@ -10,7 +10,10 @@
 <h2>Inserir Questão</h2>
 
 <input id="disciplina" placeholder="Disciplina"><br><br>
+
 <textarea id="enunciado" placeholder="Enunciado"></textarea><br><br>
+
+<input id="imagem" placeholder="URL da imagem (opcional)"><br><br>
 
 <input id="A" placeholder="A"><br>
 <input id="B" placeholder="B"><br>
@@ -38,6 +41,7 @@ async function enviar(){
       tipo:"INSERIR_QUESTAO",
       disciplina:document.getElementById("disciplina").value,
       enunciado:document.getElementById("enunciado").value,
+      imagem:document.getElementById("imagem").value,
       A:document.getElementById("A").value,
       B:document.getElementById("B").value,
       C:document.getElementById("C").value,

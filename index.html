@@ -1,177 +1,1079 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>SIMULADOR SAEP-CETEM</title>
-
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SIMULADO - SAEP</title>
 <style>
-body { margin:0; font-family:Arial; display:flex; background:#f5f5f5; }
+  /* ===== BASE ===== */
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    min-height: 100vh;
+    background: #f5f5f5;
+  }
 
-#indice {
-  width:220px;
-  background:#004aad;
-  color:white;
-  padding:10px;
-  height:100vh;
-  overflow:auto;
-}
+  /* ===== SIDEBAR / ÍNDICE ===== */
+  #indice {
+    width: 240px;
+    background-color: #004aad;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 10px 8px;
+    z-index: 100;
+  }
+  #indice .logo-indice {
+    display: block;
+    max-width: 90%;
+    height: auto;
+    margin: 0 auto 10px auto;
+  }
+  #indice h2 {
+    text-align: center;
+    margin: 0 0 10px;
+    font-size: 1rem;
+    font-weight: normal;
+    letter-spacing: 2px;
+    width: 100%;
+  }
+  #indice .grade-botoes {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    width: 100%;
+  }
+  #indice button {
+    background-color: transparent;
+    border: 2px solid white;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 6px 0;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    transition: all 0.25s ease;
+    width: 100%;
+  }
+  #indice button.green {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+  }
+  #indice button:hover:not(.green) {
+    background-color: rgba(255,255,255,0.15);
+  }
+  #indice .info-simulado {
+    margin-top: 12px;
+    font-size: 0.75rem;
+    text-align: center;
+    opacity: 0.85;
+    width: 100%;
+    border-top: 1px solid rgba(255,255,255,0.3);
+    padding-top: 10px;
+  }
 
-#indice button {
-  width:100%;
-  margin:3px 0;
-  padding:6px;
-  border:none;
-  cursor:pointer;
-}
+  /* ===== CONTEÚDO PRINCIPAL ===== */
+  #conteudo {
+    margin-left: 240px;
+    padding: 20px 30px 80px 30px;
+    flex: 1;
+    background: white;
+    min-height: 100vh;
+  }
 
-#indice button.green {
-  background:#4CAF50;
-}
+  /* Cabeçalho do simulado */
+  #header-simulado {
+    text-align: center;
+    border-bottom: 3px solid #004aad;
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  #header-simulado h1 {
+    color: #004aad;
+    font-size: 1.4rem;
+    margin: 0 0 4px 0;
+    letter-spacing: 1px;
+  }
+  #header-simulado p {
+    margin: 0;
+    color: #555;
+    font-size: 0.9rem;
+  }
 
-#conteudo {
-  flex:1;
-  padding:20px;
-  background:white;
-}
+  /* Campo de nome */
+  #campo-nome {
+    background: #f0f5ff;
+    border: 1px solid #c0d4f5;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  #campo-nome label {
+    font-weight: bold;
+    color: #004aad;
+    white-space: nowrap;
+  }
+  #campo-nome input {
+    flex: 1;
+    min-width: 200px;
+    padding: 8px 12px;
+    border: 1px solid #aac;
+    border-radius: 5px;
+    font-size: 1rem;
+    outline: none;
+  }
+  #campo-nome input:focus {
+    border-color: #004aad;
+    box-shadow: 0 0 0 2px rgba(0,74,173,0.15);
+  }
 
-.questao {
-  margin-bottom:25px;
-  border-bottom:1px solid #ddd;
-  padding-bottom:10px;
-}
+  /* Questões */
+  .questao {
+    margin-bottom: 30px;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 20px;
+  }
+  .questao-numero-disc {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .num-questao {
+    background: #004aad;
+    color: white;
+    font-weight: bold;
+    font-size: 0.8rem;
+    padding: 2px 9px;
+    border-radius: 12px;
+  }
+  .disc-tag {
+    font-size: 0.75rem;
+    background: #e8f0fe;
+    color: #004aad;
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid #c0d4f5;
+  }
+  .enunciado {
+    text-align: justify;
+    font-weight: normal;
+    margin-bottom: 12px;
+    line-height: 1.5;
+    color: #222;
+  }
+  .questao img {
+    max-width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin: 8px 0 12px 0;
+  }
+  .alternativas label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 7px;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 5px;
+    transition: background 0.15s;
+    line-height: 1.4;
+  }
+  .alternativas label:hover {
+    background: #f0f5ff;
+  }
+  .alternativas input[type="radio"] {
+    margin-top: 2px;
+    flex-shrink: 0;
+    cursor: pointer;
+    accent-color: #004aad;
+    width: 16px;
+    height: 16px;
+  }
+  .btn-gabarito {
+    margin-top: 8px;
+    padding: 7px 16px;
+    cursor: pointer;
+    background-color: #004aad;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+  }
+  .btn-gabarito:hover:not(:disabled) {
+    background-color: #003580;
+  }
+  .btn-gabarito:disabled {
+    background-color: #aaa;
+    cursor: not-allowed;
+  }
+  .gabarito {
+    margin-top: 10px;
+    background-color: #e8f5e8;
+    border-left: 4px solid #4CAF50;
+    padding: 10px 14px;
+    display: none;
+    font-weight: bold;
+    border-radius: 0 5px 5px 0;
+    color: #2a6e2a;
+  }
 
-img {
-  max-width:100%;
-  margin:10px 0;
-}
+  /* Área de loading */
+  #loading-area {
+    text-align: center;
+    padding: 60px 20px;
+    color: #555;
+  }
+  #loading-area .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e0e0e0;
+    border-top-color: #004aad;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Área de erro */
+  #erro-area {
+    text-align: center;
+    padding: 40px;
+    color: #b00020;
+    background: #fff0f3;
+    border-radius: 8px;
+    border: 1px solid #f5c0cc;
+    display: none;
+  }
+
+  /* Botões finais */
+  #botoes-finais {
+    margin-top: 30px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  #botoes-finais button {
+    padding: 12px 22px;
+    font-size: 1rem;
+    cursor: pointer;
+    background-color: #004aad;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    flex: 1;
+    min-width: 160px;
+    transition: background 0.2s;
+  }
+  #botoes-finais button:hover:not(:disabled) {
+    background-color: #003580;
+  }
+  #botoes-finais button:disabled {
+    background-color: #aaa;
+    cursor: not-allowed;
+  }
+  #btn-reiniciar {
+    background-color: #888 !important;
+  }
+  #btn-reiniciar:hover:not(:disabled) {
+    background-color: #666 !important;
+  }
+
+  /* Resultado */
+  #resultado {
+    margin-top: 30px;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, #004aad, #0060d6);
+    border-radius: 10px;
+    color: white;
+    font-size: 1rem;
+    line-height: 1.8;
+    display: none;
+    box-shadow: 0 4px 14px rgba(0,74,173,0.3);
+  }
+  #resultado h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.2rem;
+    letter-spacing: 1px;
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+    padding-bottom: 8px;
+  }
+  .resultado-stat {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .resultado-stat:last-child { border-bottom: none; }
+  .resultado-pct {
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 14px;
+    letter-spacing: 2px;
+  }
+
+  /* Ranking */
+  #area-ranking {
+    margin-top: 30px;
+    display: none;
+  }
+  #area-ranking h3 {
+    color: #004aad;
+    border-bottom: 2px solid #004aad;
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+  }
+  .ranking-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    background: #f5f8ff;
+    border-radius: 6px;
+    border-left: 3px solid #004aad;
+    font-size: 0.92rem;
+  }
+  .ranking-pos {
+    font-weight: bold;
+    color: #004aad;
+    width: 24px;
+    text-align: center;
+  }
+  .ranking-nome { flex: 1; }
+  .ranking-pct { font-weight: bold; color: #004aad; }
+
+  /* Link inserir questões */
+  #link-painel {
+    margin-top: 40px;
+    text-align: center;
+    padding: 20px;
+    border-top: 1px solid #e0e0e0;
+  }
+  #link-painel a button {
+    padding: 10px 24px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  #link-painel a button:hover {
+    background: #388E3C;
+  }
+  #link-painel p {
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: #888;
+  }
+
+  /* ===== MODAL INÍCIO ===== */
+  #start-modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.55);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 10000;
+  }
+  #start-modal {
+    background: #fff;
+    width: 90%; max-width: 480px;
+    border-radius: 12px;
+    box-shadow: 0 16px 40px rgba(0,0,0,.35);
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+  }
+  #start-modal header {
+    background: #004aad;
+    color: #fff;
+    padding: 16px 20px;
+    font-weight: bold;
+    font-size: 1.1rem;
+  }
+  #start-modal .body {
+    padding: 20px;
+    color: #333;
+    line-height: 1.5;
+  }
+  #start-modal .body ul {
+    margin: 8px 0;
+    padding-left: 20px;
+  }
+  #start-modal .actions {
+    display: flex; gap: 12px;
+    padding: 0 20px 20px;
+  }
+  #start-modal .actions button {
+    flex: 1; padding: 12px;
+    border: 0; border-radius: 6px;
+    cursor: pointer; font-size: 1rem;
+    transition: opacity 0.2s;
+  }
+  #start-modal .actions button:hover { opacity: 0.88; }
+  #btn-modal-iniciar { background: #004aad; color: #fff; }
+  #btn-modal-continuar { background: #4CAF50; color: #fff; display: none; }
+  #btn-modal-cancelar { background: #eee; color: #333; }
+
+  /* ===== TIMER BADGE ===== */
+  #timer-badge {
+    position: fixed; top: 10px; right: 10px; z-index: 9998;
+    background: #004aad; color: #fff;
+    padding: 8px 14px; border-radius: 6px;
+    font-family: Arial, sans-serif; font-weight: bold;
+    box-shadow: 0 4px 12px rgba(0,0,0,.25);
+    user-select: none;
+  }
+
+  /* ===== RESPONSIVO ===== */
+  @media (max-width: 768px) {
+    #indice {
+      width: 160px;
+      padding: 8px 6px;
+    }
+    #indice .grade-botoes {
+      grid-template-columns: repeat(4, 1fr);
+    }
+    #indice h2 { font-size: 0.82rem; }
+    #indice button { font-size: 0.72rem; padding: 5px 0; }
+    #conteudo {
+      margin-left: 168px;
+      padding: 14px 16px 60px;
+    }
+    #botoes-finais { flex-direction: column; }
+  }
+  @media (max-width: 480px) {
+    #indice { width: 120px; }
+    #conteudo { margin-left: 128px; padding: 12px 12px 60px; }
+    #indice .grade-botoes { grid-template-columns: repeat(3, 1fr); }
+  }
 </style>
-
 </head>
-
 <body>
 
-<div id="indice"></div>
+<!-- ===== SIDEBAR ===== -->
+<div id="indice">
+  <!-- A logo será inserida via JS se existir; caso contrário, exibe título -->
+  <h2>ÍNDICE</h2>
+  <div class="grade-botoes" id="grade-botoes">
+    <!-- gerado via JS -->
+  </div>
+  <div class="info-simulado" id="info-simulado"></div>
+</div>
 
+<!-- ===== CONTEÚDO ===== -->
 <div id="conteudo">
 
-<input id="nome" placeholder="Seu nome"><br><br>
+  <div id="header-simulado">
+    <h1 id="titulo-prova">SIMULADO SAEP</h1>
+    <p id="subtitulo-prova">Carregando questões...</p>
+  </div>
 
-<div id="questoes"></div>
+  <div id="campo-nome">
+    <label for="nome">👤 Seu nome:</label>
+    <input type="text" id="nome" placeholder="Digite seu nome completo" autocomplete="name" />
+  </div>
 
-<button onclick="finalizar()">FINALIZAR</button>
+  <!-- Loading -->
+  <div id="loading-area">
+    <div class="spinner"></div>
+    <p>Carregando questões da planilha...</p>
+  </div>
 
-<div id="resultado"></div>
+  <!-- Erro -->
+  <div id="erro-area">
+    <h3>⚠️ Erro ao carregar questões</h3>
+    <p id="erro-msg"></p>
+    <button onclick="iniciarCarregamento()" style="margin-top:12px;padding:8px 20px;background:#004aad;color:white;border:none;border-radius:5px;cursor:pointer;">
+      Tentar novamente
+    </button>
+  </div>
 
-<hr>
+  <!-- Questões (populadas via JS) -->
+  <div id="questoes"></div>
 
-<h3>Ranking</h3>
-<div id="ranking"></div>
+  <!-- Botões finais -->
+  <div id="botoes-finais" style="display:none;">
+    <button id="btn-checar">✅ Verificar Resultado</button>
+    <button id="btn-reiniciar">🔄 Reiniciar Questionário</button>
+  </div>
 
-<div style="margin-top:40px;text-align:center;">
-<a href="painel.html" target="_blank">
-<button style="padding:10px;background:#4CAF50;color:white;border:none;">
-INSERIR QUESTÕES
-</button>
-</a>
+  <!-- Resultado -->
+  <div id="resultado"></div>
+
+  <!-- Ranking -->
+  <div id="area-ranking">
+    <h3>🏆 Ranking de Participantes</h3>
+    <div id="lista-ranking"></div>
+  </div>
+
+  <!-- Link para o painel -->
+  <div id="link-painel">
+    <a href="painel.html" target="_blank">
+      <button>➕ INSERIR QUESTÕES</button>
+    </a>
+    <p>Acesso exclusivo para o aplicador do simulado.</p>
+  </div>
+
 </div>
 
+<!-- ===== MODAL DE INÍCIO ===== -->
+<div id="start-modal-overlay" style="display:none;">
+  <div id="start-modal">
+    <header>🎓 Simulado SAEP</header>
+    <div class="body">
+      <p>Bem-vindo ao <strong>Simulado SAEP</strong>!</p>
+      <ul>
+        <li>Total de <strong>40 questões</strong> carregadas da planilha</li>
+        <li>Tempo limite: <strong>2 horas</strong></li>
+        <li>Sua resposta é salva automaticamente</li>
+        <li>Você pode verificar o gabarito de cada questão individualmente</li>
+      </ul>
+      <p id="modal-progresso-hint" style="display:none;color:#4CAF50;font-weight:bold;">
+        ✅ Encontramos um progresso salvo. Você pode continuar de onde parou!
+      </p>
+    </div>
+    <div class="actions">
+      <button id="btn-modal-iniciar">▶ Iniciar Agora</button>
+      <button id="btn-modal-continuar">↩ Continuar</button>
+      <button id="btn-modal-cancelar">✕ Cancelar</button>
+    </div>
+  </div>
 </div>
+
+<!-- ===== TIMER BADGE ===== -->
+<div id="timer-badge" style="display:none;"></div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec";
+// ================================================================
+//  CONFIGURAÇÃO — altere apenas esta seção
+// ================================================================
+const CONFIG = {
+  // Cole aqui a URL do seu Google Apps Script publicado como Web App
+  API_URL: "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec",
+  TOTAL_QUESTOES: 40,      // quantas questões exibir (sorteia aleatório do banco)
+  TEMPO_MINUTOS: 120,      // tempo em minutos (2 horas)
+  TITULO: "SIMULADO SAEP",
+  SUBTITULO: "Ciber Sistemas | Técnico em Automação"
+};
 
-let questoes = [];
+// ================================================================
+//  CHAVES DE PERSISTÊNCIA
+// ================================================================
+const KEY_STATE = 'saepState_v2';
+const KEY_TIMER = 'saepTimer_v2';
 
-async function carregar() {
-  const res = await fetch(API + "?tipo=LISTAR_QUESTOES");
-  questoes = await res.json();
+let questoesCarregadas = [];
+let timerHandle = null;
 
-  questoes = questoes.sort(()=>0.5-Math.random()).slice(0,40);
+// ================================================================
+//  UTILITÁRIOS DE ESTADO
+// ================================================================
+function getState() {
+  try { return JSON.parse(localStorage.getItem(KEY_STATE)) || { answers:{}, shown:{}, allRevealed:false, resultadoHTML:'', nome:'' }; }
+  catch(e) { return { answers:{}, shown:{}, allRevealed:false, resultadoHTML:'', nome:'' }; }
+}
+function saveState(s) { localStorage.setItem(KEY_STATE, JSON.stringify(s)); }
 
-  render();
-  ranking();
+function getTimer() {
+  try { return JSON.parse(localStorage.getItem(KEY_TIMER)) || {}; }
+  catch(e) { return {}; }
+}
+function saveTimer(t) { localStorage.setItem(KEY_TIMER, JSON.stringify(t)); }
+function clearTimer() { localStorage.removeItem(KEY_TIMER); }
+
+function hasProgress() {
+  const s = getState();
+  return !!(s && (Object.keys(s.answers||{}).length > 0 || s.allRevealed));
 }
 
-function render() {
-  let qDiv = document.getElementById("questoes");
-  let iDiv = document.getElementById("indice");
+// ================================================================
+//  INICIALIZAÇÃO — seta título e abre modal
+// ================================================================
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('titulo-prova').textContent = CONFIG.TITULO;
+  document.getElementById('subtitulo-prova').textContent = CONFIG.SUBTITULO;
+  document.title = CONFIG.TITULO;
 
-  qDiv.innerHTML = "";
-  iDiv.innerHTML = "<h3>ÍNDICE</h3>";
+  // Restaura nome salvo
+  const st = getState();
+  if (st.nome) document.getElementById('nome').value = st.nome;
 
-  questoes.forEach((q,i)=>{
-    iDiv.innerHTML += `<button onclick="scrollQ(${i})">${i+1}</button>`;
+  mostrarModal();
+});
 
-    qDiv.innerHTML += `
-    <div class="questao" id="q${i}">
+document.getElementById('nome').addEventListener('input', (e) => {
+  const st = getState(); st.nome = e.target.value; saveState(st);
+});
 
-    <div><b>${i+1}.</b> ${q.enunciado}</div>
+// ================================================================
+//  MODAL DE INÍCIO
+// ================================================================
+function mostrarModal() {
+  const overlay = document.getElementById('start-modal-overlay');
+  overlay.style.display = 'flex';
+  document.documentElement.style.overflow = 'hidden';
 
-    ${q.imagem ? `<img src="${q.imagem}">` : ""}
+  if (hasProgress()) {
+    document.getElementById('btn-modal-continuar').style.display = 'inline-block';
+    document.getElementById('modal-progresso-hint').style.display = 'block';
+  }
 
-    ${["A","B","C","D"].map(l=>`
-      <label style="display:block;margin:5px 0;">
-        <input type="radio" name="q${i}" value="${l}" onchange="marcar(${i})">
-        ${l}) <span>${q[l]}</span>
-      </label>
-    `).join("")}
-
-    <div id="r${i}"></div>
-
-    </div>`;
+  document.getElementById('btn-modal-iniciar').addEventListener('click', () => {
+    fecharModal();
+    iniciarSimulado(false);
+  });
+  document.getElementById('btn-modal-continuar').addEventListener('click', () => {
+    fecharModal();
+    iniciarSimulado(true); // continua sem apagar progresso
+  });
+  document.getElementById('btn-modal-cancelar').addEventListener('click', () => {
+    document.documentElement.style.overflow = '';
+    document.body.innerHTML = "<h2 style='text-align:center;margin:80px 20px;font-family:Arial;color:#555;'>Simulado não iniciado.</h2>";
   });
 }
-
-function scrollQ(i){
-  document.getElementById("q"+i).scrollIntoView();
+function fecharModal() {
+  document.getElementById('start-modal-overlay').style.display = 'none';
+  document.documentElement.style.overflow = '';
 }
 
-function marcar(i){
-  document.querySelectorAll("#indice button")[i].classList.add("green");
+// ================================================================
+//  INICIAR SIMULADO
+// ================================================================
+function iniciarSimulado(continuar) {
+  if (!continuar) {
+    localStorage.removeItem(KEY_STATE);
+    localStorage.removeItem(KEY_TIMER);
+  }
+  iniciarCarregamento();
 }
 
-async function finalizar(){
-  let acertos = 0;
+// ================================================================
+//  CARREGAMENTO DAS QUESTÕES
+// ================================================================
+async function iniciarCarregamento() {
+  document.getElementById('loading-area').style.display = 'block';
+  document.getElementById('erro-area').style.display = 'none';
+  document.getElementById('questoes').innerHTML = '';
+  document.getElementById('botoes-finais').style.display = 'none';
 
-  questoes.forEach((q,i)=>{
-    let m = document.querySelector(`input[name="q${i}"]:checked`);
-    let r = document.getElementById("r"+i);
+  try {
+    const res = await fetch(CONFIG.API_URL + "?tipo=LISTAR_QUESTOES");
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    let todas = await res.json();
 
-    if(!m){
-      r.innerHTML="⚠️";
-    } else if(m.value===q.gabarito){
-      acertos++;
-      r.innerHTML="✅";
-    } else {
-      r.innerHTML=`❌ (${q.gabarito})`;
+    if (!Array.isArray(todas) || todas.length === 0) {
+      throw new Error("Nenhuma questão encontrada na planilha.");
+    }
+
+    // Embaralha e pega N questões
+    todas = todas.sort(() => 0.5 - Math.random());
+    questoesCarregadas = todas.slice(0, Math.min(CONFIG.TOTAL_QUESTOES, todas.length));
+
+    document.getElementById('loading-area').style.display = 'none';
+    renderizarQuestoes();
+    iniciarTimer();
+    carregarRanking();
+  } catch(err) {
+    document.getElementById('loading-area').style.display = 'none';
+    document.getElementById('erro-area').style.display = 'block';
+    document.getElementById('erro-msg').textContent = err.message;
+    console.error(err);
+  }
+}
+
+// ================================================================
+//  RENDERIZAÇÃO DAS QUESTÕES
+// ================================================================
+function renderizarQuestoes() {
+  const qDiv = document.getElementById('questoes');
+  const gradeDiv = document.getElementById('grade-botoes');
+  const infoDiv = document.getElementById('info-simulado');
+
+  qDiv.innerHTML = '';
+  gradeDiv.innerHTML = '';
+  infoDiv.textContent = `${questoesCarregadas.length} questões`;
+
+  questoesCarregadas.forEach((q, i) => {
+    const num = i + 1;
+
+    // Botão do índice
+    const btn = document.createElement('button');
+    btn.textContent = num;
+    btn.setAttribute('data-q', num);
+    btn.onclick = () => document.getElementById('q' + num).scrollIntoView({ behavior: 'smooth' });
+    gradeDiv.appendChild(btn);
+
+    // Alternativas
+    const alts = ['A','B','C','D'].map(l => `
+      <label>
+        <input type="radio" name="q${num}" value="${l}" />
+        <span>${l}) ${escapeHtml(q[l] || '')}</span>
+      </label>
+    `).join('');
+
+    // Imagem opcional
+    const imgHtml = q.imagem ? `<img src="${q.imagem}" alt="Imagem da questão ${num}" />` : '';
+
+    // Tag de disciplina
+    const discHtml = q.disciplina ? `<span class="disc-tag">${escapeHtml(q.disciplina)}</span>` : '';
+
+    qDiv.innerHTML += `
+      <div class="questao" id="q${num}">
+        <div class="questao-numero-disc">
+          <span class="num-questao">${num}</span>
+          ${discHtml}
+        </div>
+        <div class="enunciado">${escapeHtml(q.enunciado || '')}</div>
+        ${imgHtml}
+        <div class="alternativas">${alts}</div>
+        <button class="btn-gabarito" data-q="${num}" disabled>Mostrar Gabarito</button>
+        <div class="gabarito" id="gab${num}">Gabarito: ${q.gabarito || ''}</div>
+      </div>
+    `;
+  });
+
+  // Botões finais
+  document.getElementById('botoes-finais').style.display = 'flex';
+
+  // Registra eventos
+  registrarEventos();
+
+  // Restaura estado
+  restaurarEstado();
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+// ================================================================
+//  EVENTOS DAS QUESTÕES
+// ================================================================
+function registrarEventos() {
+  // Radio change → habilita botão gabarito + índice verde
+  document.querySelectorAll('.questao input[type="radio"]').forEach(r => {
+    r.addEventListener('change', (e) => {
+      const qDiv = e.target.closest('.questao');
+      const num = qDiv.id.replace('q','');
+      const btnGab = qDiv.querySelector('.btn-gabarito');
+      const indiceBtn = document.querySelector(`#grade-botoes button[data-q="${num}"]`);
+
+      if (!btnGab.dataset.mostrado || btnGab.dataset.mostrado !== 'true') {
+        btnGab.disabled = false;
+      }
+      if (indiceBtn) indiceBtn.classList.add('green');
+
+      // Salvar resposta
+      const st = getState();
+      st.answers[num] = e.target.value;
+      saveState(st);
+    });
+  });
+
+  // Botão gabarito individual
+  document.querySelectorAll('.btn-gabarito').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const num = btn.getAttribute('data-q');
+      const qDiv = document.getElementById('q' + num);
+      const radios = qDiv.querySelectorAll('input[type="radio"]');
+      const marcado = [...radios].some(r => r.checked);
+
+      if (!marcado) { alert('Selecione uma alternativa antes de mostrar o gabarito!'); return; }
+
+      document.getElementById('gab' + num).style.display = 'block';
+      btn.disabled = true;
+      btn.dataset.mostrado = 'true';
+      radios.forEach(r => r.disabled = true);
+
+      const st = getState();
+      st.shown[num] = true;
+      saveState(st);
+    });
+  });
+
+  // Verificar Resultado
+  document.getElementById('btn-checar').addEventListener('click', verificarResultado);
+
+  // Reiniciar
+  document.getElementById('btn-reiniciar').addEventListener('click', reiniciar);
+}
+
+// ================================================================
+//  RESTAURAR ESTADO APÓS CARREGAR
+// ================================================================
+function restaurarEstado() {
+  const st = getState();
+
+  document.querySelectorAll('.questao').forEach(qDiv => {
+    const num = qDiv.id.replace('q','');
+    const radios = qDiv.querySelectorAll('input[type="radio"]');
+    const btnGab = qDiv.querySelector('.btn-gabarito');
+    const gabDiv = document.getElementById('gab' + num);
+    const indiceBtn = document.querySelector(`#grade-botoes button[data-q="${num}"]`);
+
+    if (st.answers[num]) {
+      const r = qDiv.querySelector(`input[value="${st.answers[num]}"]`);
+      if (r) { r.checked = true; btnGab.disabled = false; }
+      if (indiceBtn) indiceBtn.classList.add('green');
+    }
+
+    if (st.shown[num]) {
+      gabDiv.style.display = 'block';
+      btnGab.disabled = true;
+      btnGab.dataset.mostrado = 'true';
+      radios.forEach(r => r.disabled = true);
     }
   });
 
-  document.getElementById("resultado").innerHTML =
-    `Resultado: ${acertos}/${questoes.length}`;
+  if (st.allRevealed && st.resultadoHTML) {
+    const rd = document.getElementById('resultado');
+    rd.style.display = 'block';
+    rd.innerHTML = st.resultadoHTML;
+  }
+}
 
-  await fetch(API,{
-    method:"POST",
-    body:JSON.stringify({
-      tipo:"SALVAR_RESULTADO",
-      nome:document.getElementById("nome").value || "Aluno",
-      acertos,
-      total:questoes.length
-    })
+// ================================================================
+//  VERIFICAR RESULTADO
+// ================================================================
+async function verificarResultado() {
+  const questoes = document.querySelectorAll('.questao');
+  let naoRespondidas = 0;
+  questoes.forEach(q => {
+    const radios = q.querySelectorAll('input[type="radio"]');
+    if (![...radios].some(r => r.checked)) naoRespondidas++;
   });
 
-  ranking();
+  if (naoRespondidas > 0) {
+    alert(`Por favor, responda todas as questões antes de verificar o resultado.\nFaltam ${naoRespondidas} questão(ões).`);
+    return;
+  }
+
+  let acertos = 0;
+  const total = questoes.length;
+
+  questoes.forEach((q, i) => {
+    const num = q.id.replace('q','');
+    const radios = q.querySelectorAll('input[type="radio"]');
+    const gabDiv = document.getElementById('gab' + num);
+    const btnGab = q.querySelector('.btn-gabarito');
+    const indiceBtn = document.querySelector(`#grade-botoes button[data-q="${num}"]`);
+
+    gabDiv.style.display = 'block';
+    btnGab.disabled = true;
+    btnGab.dataset.mostrado = 'true';
+    radios.forEach(r => r.disabled = true);
+    if (indiceBtn) indiceBtn.classList.add('green');
+
+    const gabLetra = (gabDiv.textContent.split(':')[1] || '').trim();
+    const marcado = [...radios].find(r => r.checked);
+    if (marcado && marcado.value === gabLetra) acertos++;
+  });
+
+  const erros = total - acertos;
+  const pctAcerto = ((acertos/total)*100).toFixed(1);
+  const pctErro = ((erros/total)*100).toFixed(1);
+  const nome = document.getElementById('nome').value || 'Aluno';
+
+  const htmlResultado = `
+    <h3>📊 SEU RESULTADO</h3>
+    <div class="resultado-stat"><span>Total de questões</span><strong>${total}</strong></div>
+    <div class="resultado-stat"><span>Acertos</span><strong>${acertos}</strong></div>
+    <div class="resultado-stat"><span>Erros</span><strong>${erros}</strong></div>
+    <div class="resultado-stat"><span>% de Acertos</span><strong>${pctAcerto}%</strong></div>
+    <div class="resultado-stat"><span>% de Erros</span><strong>${pctErro}%</strong></div>
+    <div class="resultado-pct">${pctAcerto}% ✓</div>
+  `;
+
+  const rd = document.getElementById('resultado');
+  rd.style.display = 'block';
+  rd.innerHTML = htmlResultado;
+  rd.scrollIntoView({ behavior: 'smooth' });
+
+  const st = getState();
+  st.allRevealed = true;
+  st.resultadoHTML = htmlResultado;
+  document.querySelectorAll('.questao').forEach(q => { st.shown[q.id.replace('q','')] = true; });
+  saveState(st);
+
+  // Salvar resultado na planilha
+  try {
+    await fetch(CONFIG.API_URL, {
+      method: 'POST',
+      body: JSON.stringify({ tipo:'SALVAR_RESULTADO', nome, acertos, total })
+    });
+    carregarRanking();
+  } catch(e) { console.warn('Não foi possível salvar resultado:', e); }
 }
 
-async function ranking(){
-  let res = await fetch(API+"?tipo=RANKING");
-  let data = await res.json();
+// ================================================================
+//  REINICIAR
+// ================================================================
+function reiniciar() {
+  if (!confirm('Tem certeza que deseja reiniciar? Todo o progresso será perdido.')) return;
+  localStorage.removeItem(KEY_STATE);
+  localStorage.removeItem(KEY_TIMER);
+  const badge = document.getElementById('timer-badge');
+  if (badge) badge.style.display = 'none';
+  clearInterval(timerHandle);
 
-  document.getElementById("ranking").innerHTML =
-    data.map(r=>`<div>${r.nome} - ${r.percentual.toFixed(1)}%</div>`).join("");
+  document.querySelectorAll('.questao input[type="radio"]').forEach(r => { r.checked = false; r.disabled = false; });
+  document.querySelectorAll('.btn-gabarito').forEach(b => { b.disabled = true; delete b.dataset.mostrado; });
+  document.querySelectorAll('.gabarito').forEach(g => g.style.display = 'none');
+  document.querySelectorAll('#grade-botoes button').forEach(b => b.classList.remove('green'));
+  document.getElementById('resultado').style.display = 'none';
+  document.getElementById('resultado').innerHTML = '';
+
+  // Rola ao topo
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  iniciarTimer();
 }
 
-carregar();
+// ================================================================
+//  TIMER
+// ================================================================
+function iniciarTimer() {
+  const badge = document.getElementById('timer-badge');
+  let t = getTimer();
+
+  if (t.locked) {
+    badge.textContent = 'Tempo esgotado';
+    badge.style.background = '#b00020';
+    badge.style.display = 'block';
+    travar();
+    return;
+  }
+
+  if (!t.startAt) {
+    t = { startAt: Date.now(), locked: false };
+    saveTimer(t);
+  }
+
+  badge.style.display = 'block';
+  const duracaoMs = CONFIG.TEMPO_MINUTOS * 60 * 1000;
+
+  function tick() {
+    const rest = (t.startAt + duracaoMs) - Date.now();
+    if (rest <= 0) {
+      clearInterval(timerHandle);
+      encerrarPorTempo();
+      return;
+    }
+    const hh = String(Math.floor(rest/3600000)).padStart(2,'0');
+    const mm = String(Math.floor((rest%3600000)/60000)).padStart(2,'0');
+    const ss = String(Math.floor((rest%60000)/1000)).padStart(2,'0');
+    badge.textContent = `⏱ ${hh}:${mm}:${ss}`;
+    badge.style.background = rest < 300000 ? '#c0392b' : '#004aad';
+  }
+
+  tick();
+  timerHandle = setInterval(tick, 1000);
+}
+
+function encerrarPorTempo() {
+  const badge = document.getElementById('timer-badge');
+  badge.textContent = 'Tempo esgotado';
+  badge.style.background = '#b00020';
+
+  const t = getTimer(); t.locked = true; saveTimer(t);
+  travar();
+
+  const questoes = document.querySelectorAll('.questao');
+  let acertos = 0, naoRespondidas = 0, total = questoes.length;
+
+  questoes.forEach(q => {
+    const num = q.id.replace('q','');
+    const radios = q.querySelectorAll('input[type="radio"]');
+    const gabDiv = document.getElementById('gab' + num);
+    const btnGab = q.querySelector('.btn-gabarito');
+    const gabLetra = (gabDiv.textContent.split(':')[1]||'').trim();
+    const marcado = [...radios].find(r => r.checked);
+    if (!marcado) naoRespondidas++;
+    else if (marcado.value === gabLetra) acertos++;
+    gabDiv.style.display = 'block';
+    if (btnGab) { btnGab.disabled = true; btnGab.dataset.mostrado = 'true'; }
+    radios.forEach(r => r.disabled = true);
+  });
+
+  const erros = total - acertos;
+  const pctAcerto = ((acertos/total)*100).toFixed(1);
+  const htmlResultado = `
+    <h3>⏰ TEMPO ESGOTADO — Prova finalizada automaticamente</h3>
+    <div class="resultado-stat"><span>Total de questões</span><strong>${total}</strong></div>
+    <div class="resultado-stat"><span>Respondidas</span><strong>${total-naoRespondidas}</strong></div>
+    <div class="resultado-stat"><span>Não respondidas</span><strong>${naoRespondidas}</strong></div>
+    <div class="resultado-stat"><span>Acertos</span><strong>${acertos}</strong></div>
+    <div class="resultado-stat"><span>Erros</span><strong>${erros}</strong></div>
+    <div class="resultado-stat"><span>% de Acertos</span><strong>${pctAcerto}%</strong></div>
+    <div class="resultado-pct">${pctAcerto}% ✓</div>
+  `;
+  const rd = document.getElementById('resultado');
+  rd.style.display = 'block';
+  rd.innerHTML = htmlResultado;
+
+  const st = getState();
+  st.allRevealed = true;
+  st.resultadoHTML = htmlResultado;
+  saveState(st);
+}
+
+function travar() {
+  document.querySelectorAll('.questao input[type="radio"]').forEach(r => r.disabled = true);
+  document.querySelectorAll('.btn-gabarito').forEach(b => b.disabled = true);
+  const btnChecar = document.getElementById('btn-checar');
+  if (btnChecar) btnChecar.disabled = true;
+}
+
+// ================================================================
+//  RANKING
+// ================================================================
+async function carregarRanking() {
+  try {
+    const res = await fetch(CONFIG.API_URL + "?tipo=RANKING");
+    const data = await res.json();
+    if (!Array.isArray(data) || data.length === 0) return;
+
+    const area = document.getElementById('area-ranking');
+    const lista = document.getElementById('lista-ranking');
+    area.style.display = 'block';
+
+    lista.innerHTML = data.slice(0, 10).map((r, i) => `
+      <div class="ranking-item">
+        <span class="ranking-pos">${i+1}.</span>
+        <span class="ranking-nome">${escapeHtml(r.nome)}</span>
+        <span class="ranking-pct">${Number(r.percentual||0).toFixed(1)}%</span>
+      </div>
+    `).join('');
+  } catch(e) {
+    console.warn('Ranking indisponível:', e);
+  }
+}
+
+// ================================================================
+//  BLOQUEIO DEFENSIVO: não aceita marcação se timer travado
+// ================================================================
+document.addEventListener('change', (e) => {
+  const t = getTimer();
+  if (t.locked && e.target.matches('.questao input[type="radio"]')) {
+    e.preventDefault(); e.target.checked = false;
+  }
+});
 </script>
 
 </body>

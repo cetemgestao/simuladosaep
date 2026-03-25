@@ -1,177 +1,925 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Painel</title>
-
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Painel do Aplicador — SAEP</title>
 <style>
-body {
-  font-family: Arial;
-  background:#f4f6f9;
-  padding:20px;
-}
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f0f4fb;
+    min-height: 100vh;
+  }
 
-.container {
-  max-width:900px;
-  margin:auto;
-  background:white;
-  padding:20px;
-  border-radius:10px;
-}
+  /* ===== HEADER ===== */
+  header {
+    background: #004aad;
+    color: white;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  header .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 24px;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+  header .sub {
+    font-size: 0.78rem;
+    opacity: 0.8;
+    margin-top: 2px;
+  }
+  header nav {
+    display: flex;
+    gap: 0;
+    height: 100%;
+  }
+  header nav a {
+    color: white;
+    text-decoration: none;
+    padding: 0 20px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    border-left: 1px solid rgba(255,255,255,0.15);
+    transition: background 0.2s;
+    height: 100%;
+    min-height: 58px;
+  }
+  header nav a:hover { background: rgba(255,255,255,0.1); }
+  header nav a.active { background: rgba(255,255,255,0.15); font-weight: bold; }
 
-.editor {
-  border:1px solid #ccc;
-  min-height:80px;
-  padding:10px;
-  margin-bottom:10px;
-  background:white;
-}
+  /* ===== ABAS PRINCIPAIS ===== */
+  .tabs-bar {
+    background: white;
+    border-bottom: 2px solid #e0e7f5;
+    display: flex;
+    padding: 0 24px;
+    gap: 4px;
+  }
+  .tab-btn {
+    padding: 12px 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.92rem;
+    color: #555;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { color: #004aad; }
+  .tab-btn.active { color: #004aad; border-bottom-color: #004aad; font-weight: bold; }
 
-button {
-  padding:10px;
-  background:#004aad;
-  color:white;
-  border:none;
-  cursor:pointer;
-  margin-right:5px;
-}
+  /* ===== CONTEÚDO ===== */
+  .main-content { padding: 24px; max-width: 1000px; margin: 0 auto; }
 
-.preview {
-  margin-top:20px;
-  padding:15px;
-  border:1px dashed #999;
-  background:#fafafa;
-}
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
 
-img {
-  max-width:300px;
-  margin:10px 0;
-}
+  /* ===== CARDS ===== */
+  .card {
+    background: white;
+    border-radius: 10px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    margin-bottom: 20px;
+  }
+  .card h2 {
+    margin: 0 0 18px 0;
+    color: #004aad;
+    font-size: 1.1rem;
+    border-bottom: 2px solid #e8f0fe;
+    padding-bottom: 10px;
+  }
+
+  /* ===== FORM ELEMENTS ===== */
+  .form-group {
+    margin-bottom: 16px;
+  }
+  .form-group label {
+    display: block;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+  }
+  .form-group input[type="text"],
+  .form-group select {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+  .form-group input:focus,
+  .form-group select:focus {
+    border-color: #004aad;
+    box-shadow: 0 0 0 3px rgba(0,74,173,0.12);
+  }
+
+  /* Editor de texto rico */
+  .editor-label {
+    font-weight: bold;
+    color: #333;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    display: block;
+  }
+  .toolbar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+  }
+  .toolbar button {
+    padding: 4px 9px;
+    font-size: 0.82rem;
+    background: #f0f4fb;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s;
+    color: #333;
+  }
+  .toolbar button:hover { background: #d8e4ff; }
+  .editor {
+    border: 1px solid #ccc;
+    min-height: 70px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    background: white;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .editor:focus { border-color: #004aad; box-shadow: 0 0 0 3px rgba(0,74,173,0.12); }
+
+  /* Imagem */
+  .img-area {
+    border: 2px dashed #c0d4f5;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+    background: #f8faff;
+    transition: border-color 0.2s;
+    cursor: pointer;
+  }
+  .img-area:hover { border-color: #004aad; }
+  .img-area input { display: none; }
+  .img-preview { max-width: 280px; margin-top: 10px; border-radius: 6px; border: 1px solid #ddd; }
+
+  /* Alternativas */
+  .alts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .alt-item { }
+  .alt-label { font-weight: bold; color: #004aad; margin-bottom: 4px; font-size: 0.88rem; }
+
+  /* Gabarito */
+  .gabarito-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+  }
+  .gabarito-row label { font-weight: bold; }
+  .gabarito-row select {
+    width: auto;
+    padding: 8px 16px;
+    border: 2px solid #004aad;
+    border-radius: 6px;
+    color: #004aad;
+    font-weight: bold;
+  }
+
+  /* Botões de ação */
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 11px 22px;
+    font-size: 0.95rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: bold;
+    flex: 1;
+    min-width: 130px;
+  }
+  .btn-primary { background: #004aad; color: white; }
+  .btn-primary:hover { background: #003580; }
+  .btn-secondary { background: #4CAF50; color: white; }
+  .btn-secondary:hover { background: #388E3C; }
+  .btn-danger { background: #e53935; color: white; }
+  .btn-danger:hover { background: #b71c1c; }
+  .btn-outline { background: white; color: #004aad; border: 2px solid #004aad; }
+  .btn-outline:hover { background: #f0f5ff; }
+
+  /* Preview */
+  .preview-box {
+    border: 2px dashed #aac;
+    border-radius: 8px;
+    padding: 20px;
+    background: #fafbff;
+    display: none;
+  }
+  .preview-box .enunciado-preview {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 12px;
+    color: #222;
+  }
+  .preview-box .alt-preview {
+    padding: 5px 0;
+    font-size: 0.92rem;
+  }
+
+  /* Toast */
+  #toast {
+    position: fixed; bottom: 24px; right: 24px;
+    padding: 13px 20px; border-radius: 8px;
+    color: white; font-weight: bold;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    opacity: 0; transform: translateY(20px);
+    transition: all 0.3s; z-index: 9999;
+    pointer-events: none;
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+  #toast.sucesso { background: #4CAF50; }
+  #toast.erro { background: #e53935; }
+  #toast.aviso { background: #f57c00; }
+
+  /* ===== LISTA DE QUESTÕES ===== */
+  #lista-questoes { }
+  .quest-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid #e0e7f5;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    background: white;
+    transition: box-shadow 0.2s;
+  }
+  .quest-item:hover { box-shadow: 0 2px 10px rgba(0,74,173,0.12); }
+  .quest-num {
+    background: #004aad; color: white;
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; font-size: 0.8rem; flex-shrink: 0;
+  }
+  .quest-body { flex: 1; }
+  .quest-enunciado {
+    font-size: 0.9rem; color: #333;
+    line-height: 1.4; margin-bottom: 4px;
+    max-height: 50px; overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  }
+  .quest-meta { font-size: 0.78rem; color: #888; }
+  .quest-meta strong { color: #004aad; }
+  .quest-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .quest-actions button {
+    padding: 5px 10px; font-size: 0.78rem;
+    border: none; border-radius: 4px; cursor: pointer;
+  }
+  .btn-del { background: #ffebee; color: #c62828; }
+  .btn-del:hover { background: #ffcdd2; }
+
+  /* Stats */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    background: #f0f5ff;
+    border: 1px solid #c0d4f5;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-num { font-size: 2rem; font-weight: bold; color: #004aad; }
+  .stat-lbl { font-size: 0.8rem; color: #555; }
+
+  /* Spinner */
+  .mini-spinner {
+    width: 22px; height: 22px;
+    border: 3px solid #e0e0e0; border-top-color: #004aad;
+    border-radius: 50%; animation: spin 0.7s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ===== RESPONSIVO ===== */
+  @media (max-width: 640px) {
+    .alts-grid { grid-template-columns: 1fr; }
+    header nav { display: none; }
+    .main-content { padding: 14px; }
+  }
 </style>
-
 </head>
-
 <body>
 
-<div class="container">
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="logo-area">
+    <div>
+      <h1>⚙ PAINEL DO APLICADOR</h1>
+      <div class="sub">SIMULADO SAEP — Gestão de Questões</div>
+    </div>
+  </div>
+  <nav>
+    <a href="index.html" target="_blank">🎓 Ver Simulado</a>
+  </nav>
+</header>
 
-<h2>Inserir Questão</h2>
+<!-- ===== ABAS ===== -->
+<div class="tabs-bar">
+  <button class="tab-btn active" onclick="mudarAba('inserir')">➕ Inserir Questão</button>
+  <button class="tab-btn" onclick="mudarAba('listar')">📋 Questões Cadastradas</button>
+  <button class="tab-btn" onclick="mudarAba('resultados')">📊 Resultados</button>
+  <button class="tab-btn" onclick="mudarAba('config')">🔧 Configuração</button>
+</div>
 
-<input id="disciplina" placeholder="Disciplina"><br><br>
+<!-- ===== CONTEÚDO PRINCIPAL ===== -->
+<div class="main-content">
 
-<h3>Enunciado</h3>
-<div id="enunciado" class="editor" contenteditable="true"></div>
+  <!-- ABA: INSERIR QUESTÃO -->
+  <div class="tab-panel active" id="tab-inserir">
+    <div class="card">
+      <h2>➕ Inserir Nova Questão</h2>
 
-<label>Imagem (opcional)</label>
-<input type="file" id="imagem"><br><br>
+      <div class="form-group">
+        <label for="disciplina">Disciplina / Área</label>
+        <input type="text" id="disciplina" placeholder="Ex: Ciber Sistemas, Automação Industrial, Eletrônica..." />
+      </div>
 
-<h3>Alternativa A</h3>
-<div id="A" class="editor" contenteditable="true"></div>
+      <div class="form-group">
+        <label class="editor-label">Enunciado da Questão *</label>
+        <div class="toolbar" id="toolbar-enunciado">
+          <button onclick="fmt('bold')"><b>N</b></button>
+          <button onclick="fmt('italic')"><i>I</i></button>
+          <button onclick="fmt('underline')"><u>S</u></button>
+          <button onclick="fmt('superscript')">x²</button>
+          <button onclick="fmt('subscript')">x₂</button>
+        </div>
+        <div class="editor" id="enunciado" contenteditable="true" data-placeholder="Digite o enunciado da questão aqui..."></div>
+      </div>
 
-<h3>Alternativa B</h3>
-<div id="B" class="editor" contenteditable="true"></div>
+      <div class="form-group">
+        <label>Imagem (opcional)</label>
+        <div class="img-area" id="img-drop-area" onclick="document.getElementById('imagem').click()">
+          <p>🖼 Clique para selecionar uma imagem <em>(PNG, JPG, GIF)</em></p>
+          <input type="file" id="imagem" accept="image/*" onchange="previewImagem(this)" />
+          <img id="img-preview" class="img-preview" style="display:none;" />
+          <button id="btn-remove-img" style="display:none;margin-top:8px;padding:5px 14px;background:#e53935;color:white;border:none;border-radius:4px;cursor:pointer;" onclick="removerImagem(event)">✕ Remover imagem</button>
+        </div>
+      </div>
 
-<h3>Alternativa C</h3>
-<div id="C" class="editor" contenteditable="true"></div>
+      <div class="alts-grid">
+        <div class="alt-item">
+          <div class="alt-label">A)</div>
+          <div class="editor" id="altA" contenteditable="true"></div>
+        </div>
+        <div class="alt-item">
+          <div class="alt-label">B)</div>
+          <div class="editor" id="altB" contenteditable="true"></div>
+        </div>
+        <div class="alt-item">
+          <div class="alt-label">C)</div>
+          <div class="editor" id="altC" contenteditable="true"></div>
+        </div>
+        <div class="alt-item">
+          <div class="alt-label">D)</div>
+          <div class="editor" id="altD" contenteditable="true"></div>
+        </div>
+      </div>
 
-<h3>Alternativa D</h3>
-<div id="D" class="editor" contenteditable="true"></div>
+      <div class="gabarito-row">
+        <label>Gabarito correto:</label>
+        <select id="gabarito">
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+          <option value="D">D</option>
+        </select>
+      </div>
 
-<select id="gabarito">
-<option>A</option>
-<option>B</option>
-<option>C</option>
-<option>D</option>
-</select>
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="gerarPreview()">👁 Visualizar Preview</button>
+        <button class="btn btn-secondary" onclick="salvarQuestao()" id="btn-salvar">💾 Salvar Questão</button>
+        <button class="btn btn-danger" onclick="limparFormulario()">🗑 Limpar</button>
+      </div>
+    </div>
 
-<br><br>
+    <!-- Preview -->
+    <div class="card">
+      <h2>👁 Preview da Questão</h2>
+      <div class="preview-box" id="preview-box">
+        <p><em>Clique em "Visualizar Preview" para ver como a questão ficará no simulado.</em></p>
+      </div>
+      <div id="preview-box-real" style="display:none;">
+        <!-- preenchido via JS -->
+      </div>
+    </div>
+  </div>
 
-<!-- BOTÕES -->
-<button onclick="gerarPreview()">VISUALIZAR</button>
-<button onclick="enviar()">SALVAR</button>
+  <!-- ABA: LISTAR QUESTÕES -->
+  <div class="tab-panel" id="tab-listar">
+    <div class="card">
+      <h2>📋 Questões Cadastradas</h2>
 
-<!-- PREVIEW -->
-<div id="preview" class="preview"></div>
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card">
+          <div class="stat-num" id="stat-total">—</div>
+          <div class="stat-lbl">Total de questões</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-disc">—</div>
+          <div class="stat-lbl">Disciplinas</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+        <input type="text" id="filtro-busca" placeholder="🔍 Buscar questão..." onkeyup="filtrarQuestoes()"
+          style="flex:1;min-width:180px;padding:8px 12px;border:1px solid #ccc;border-radius:6px;outline:none;" />
+        <select id="filtro-disc" onchange="filtrarQuestoes()"
+          style="padding:8px 12px;border:1px solid #ccc;border-radius:6px;outline:none;">
+          <option value="">Todas as disciplinas</option>
+        </select>
+        <button class="btn btn-primary" onclick="carregarQuestoes()" style="flex:none;padding:8px 16px;">🔄 Atualizar</button>
+      </div>
+
+      <div id="lista-questoes">
+        <p style="text-align:center;color:#888;">Clique em "Atualizar" para carregar as questões.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABA: RESULTADOS -->
+  <div class="tab-panel" id="tab-resultados">
+    <div class="card">
+      <h2>📊 Resultados dos Participantes</h2>
+      <div style="margin-bottom:12px;">
+        <button class="btn btn-primary" onclick="carregarResultados()" style="width:auto;padding:9px 20px;">🔄 Carregar Resultados</button>
+      </div>
+      <div id="tabela-resultados">
+        <p style="color:#888;">Clique em "Carregar Resultados" para ver os dados.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABA: CONFIGURAÇÃO -->
+  <div class="tab-panel" id="tab-config">
+    <div class="card">
+      <h2>🔧 Configuração do Sistema</h2>
+      <p style="color:#555;line-height:1.6;">
+        Para o simulado funcionar corretamente, você precisa configurar o <strong>Google Apps Script</strong>
+        e publicar como Web App. Siga os passos abaixo:
+      </p>
+      <ol style="line-height:2;color:#333;">
+        <li>Abra sua <strong>Planilha Google</strong> com as abas <em>Questoes</em> e <em>Resultados</em></li>
+        <li>Vá em <strong>Extensões → Apps Script</strong></li>
+        <li>Cole o código do arquivo <code>PLANILHA.gs</code> fornecido</li>
+        <li>Clique em <strong>Implantar → Nova implantação → Web App</strong></li>
+        <li>Configure: Executar como <em>Eu</em>, Acesso <em>Qualquer pessoa</em></li>
+        <li>Copie a URL gerada</li>
+        <li>Cole a URL no campo abaixo e no arquivo <code>index.html</code></li>
+      </ol>
+
+      <div class="form-group" style="margin-top:16px;">
+        <label>URL do Google Apps Script (Web App)</label>
+        <input type="text" id="config-url" placeholder="https://script.google.com/macros/s/..." />
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="salvarConfig()">💾 Salvar URL</button>
+        <button class="btn btn-outline" onclick="testarConexao()">🔗 Testar Conexão</button>
+      </div>
+      <div id="config-status" style="margin-top:14px;"></div>
+    </div>
+
+    <div class="card">
+      <h2>📄 Estrutura da Planilha</h2>
+      <p style="color:#555;">Sua planilha precisa ter <strong>duas abas</strong>:</p>
+      <h3 style="color:#004aad;margin-bottom:6px;">Aba "Questoes"</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:0.85rem;margin-bottom:16px;">
+        <thead>
+          <tr style="background:#004aad;color:white;">
+            <th style="padding:7px 10px;text-align:left;">Coluna A</th>
+            <th style="padding:7px 10px;text-align:left;">Coluna B</th>
+            <th style="padding:7px 10px;text-align:left;">Coluna C</th>
+            <th style="padding:7px 10px;text-align:left;">Coluna D</th>
+            <th style="padding:7px 10px;text-align:left;">Coluna E</th>
+            <th style="padding:7px 10px;text-align:left;">Coluna F</th>
+            <th style="padding:7px 10px;text-align:left;">Coluna G</th>
+            <th style="padding:7px 10px;text-align:left;">Coluna H</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:#f0f5ff;">
+            <td style="padding:7px 10px;">disciplina</td>
+            <td style="padding:7px 10px;">enunciado</td>
+            <td style="padding:7px 10px;">imagem</td>
+            <td style="padding:7px 10px;">A</td>
+            <td style="padding:7px 10px;">B</td>
+            <td style="padding:7px 10px;">C</td>
+            <td style="padding:7px 10px;">D</td>
+            <td style="padding:7px 10px;">gabarito</td>
+          </tr>
+        </tbody>
+      </table>
+      <h3 style="color:#004aad;margin-bottom:6px;">Aba "Resultados"</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+        <thead>
+          <tr style="background:#004aad;color:white;">
+            <th style="padding:7px 10px;text-align:left;">Coluna A</th>
+            <th style="padding:7px 10px;text-align:left;">Coluna B</th>
+            <th style="padding:7px 10px;text-align:left;">Coluna C</th>
+            <th style="padding:7px 10px;text-align:left;">Coluna D</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:#f0f5ff;">
+            <td style="padding:7px 10px;">data</td>
+            <td style="padding:7px 10px;">nome</td>
+            <td style="padding:7px 10px;">acertos</td>
+            <td style="padding:7px 10px;">total</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
 </div>
 
+<!-- ===== TOAST ===== -->
+<div id="toast"></div>
+
 <script>
+// ================================================================
+//  CONFIGURAÇÃO
+// ================================================================
+const CONFIG_KEY = 'saepPainelConfig';
 
-const API = "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec";
+function getConfig() {
+  try { return JSON.parse(localStorage.getItem(CONFIG_KEY)) || {}; }
+  catch(e) { return {}; }
+}
+function salvarConfig() {
+  const url = document.getElementById('config-url').value.trim();
+  if (!url) { toast('Informe a URL do Apps Script.', 'aviso'); return; }
+  localStorage.setItem(CONFIG_KEY, JSON.stringify({ apiUrl: url }));
+  toast('URL salva com sucesso!', 'sucesso');
+}
+function getApiUrl() {
+  const cfg = getConfig();
+  // URL padrão (mesma do index.html) — sobrescrita se o aplicador configurar outra
+  return cfg.apiUrl || "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec";
+}
 
-// PREVIEW
-function gerarPreview(){
+// Carrega URL salva no input
+window.addEventListener('DOMContentLoaded', () => {
+  const cfg = getConfig();
+  if (cfg.apiUrl) document.getElementById('config-url').value = cfg.apiUrl;
+});
 
-  let enunciado = document.getElementById("enunciado").innerHTML;
-
-  let altA = document.getElementById("A").innerHTML;
-  let altB = document.getElementById("B").innerHTML;
-  let altC = document.getElementById("C").innerHTML;
-  let altD = document.getElementById("D").innerHTML;
-
-  let file = document.getElementById("imagem").files[0];
-  let imgPreview = "";
-
-  if(file){
-    imgPreview = `<img src="${URL.createObjectURL(file)}">`;
+async function testarConexao() {
+  const status = document.getElementById('config-status');
+  status.innerHTML = '<span class="mini-spinner"></span> Testando...';
+  try {
+    const res = await fetch(getApiUrl() + '?tipo=LISTAR_QUESTOES');
+    const data = await res.json();
+    status.innerHTML = `<span style="color:#4CAF50;font-weight:bold;">✅ Conexão OK! ${Array.isArray(data) ? data.length : '?'} questões encontradas.</span>`;
+  } catch(e) {
+    status.innerHTML = `<span style="color:#e53935;font-weight:bold;">❌ Falha na conexão: ${e.message}</span>`;
   }
+}
 
-  document.getElementById("preview").innerHTML = `
-    <h3>Preview da questão</h3>
+// ================================================================
+//  ABAS
+// ================================================================
+function mudarAba(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  const btns = document.querySelectorAll('.tab-btn');
+  const map = { inserir:0, listar:1, resultados:2, config:3 };
+  btns[map[id]].classList.add('active');
 
-    <div>${enunciado}</div>
-    ${imgPreview}
+  if (id === 'listar') carregarQuestoes();
+  if (id === 'resultados') carregarResultados();
+}
 
-    <br>
+// ================================================================
+//  FORMATAÇÃO DO EDITOR
+// ================================================================
+function fmt(cmd) {
+  document.execCommand(cmd, false, null);
+}
 
-    <div><b>A)</b> ${altA}</div>
-    <div><b>B)</b> ${altB}</div>
-    <div><b>C)</b> ${altC}</div>
-    <div><b>D)</b> ${altD}</div>
+// ================================================================
+//  IMAGEM PREVIEW
+// ================================================================
+function previewImagem(input) {
+  const img = document.getElementById('img-preview');
+  const btn = document.getElementById('btn-remove-img');
+  if (input.files && input.files[0]) {
+    img.src = URL.createObjectURL(input.files[0]);
+    img.style.display = 'block';
+    btn.style.display = 'inline-block';
+  }
+}
+function removerImagem(e) {
+  e.stopPropagation();
+  document.getElementById('imagem').value = '';
+  document.getElementById('img-preview').style.display = 'none';
+  document.getElementById('btn-remove-img').style.display = 'none';
+}
+
+// ================================================================
+//  PREVIEW DA QUESTÃO
+// ================================================================
+function gerarPreview() {
+  const box = document.getElementById('preview-box-real');
+  const enunc = document.getElementById('enunciado').innerHTML;
+  const altA = document.getElementById('altA').innerHTML;
+  const altB = document.getElementById('altB').innerHTML;
+  const altC = document.getElementById('altC').innerHTML;
+  const altD = document.getElementById('altD').innerHTML;
+  const gab = document.getElementById('gabarito').value;
+  const disc = document.getElementById('disciplina').value;
+  const file = document.getElementById('imagem').files[0];
+  const imgHtml = file ? `<img src="${URL.createObjectURL(file)}" style="max-width:300px;margin:8px 0;border-radius:6px;border:1px solid #ddd;">` : '';
+
+  document.getElementById('preview-box').style.display = 'none';
+
+  box.innerHTML = `
+    <div style="border:2px solid #004aad;border-radius:8px;padding:18px;background:#f8faff;">
+      ${disc ? `<span style="background:#e8f0fe;color:#004aad;padding:2px 10px;border-radius:10px;font-size:0.78rem;border:1px solid #c0d4f5;">${disc}</span><br><br>` : ''}
+      <div style="font-size:0.95rem;line-height:1.6;color:#222;margin-bottom:12px;">${enunc || '<em style="color:#aaa;">Enunciado vazio</em>'}</div>
+      ${imgHtml}
+      <div style="margin-top:10px;">
+        ${['A','B','C','D'].map((l,i) => {
+          const txt = [altA,altB,altC,altD][i];
+          const destaque = l === gab ? 'background:#e8f5e8;border-left:3px solid #4CAF50;padding-left:8px;border-radius:3px;' : '';
+          return `<div style="padding:5px 0;font-size:0.92rem;${destaque}"><strong>${l})</strong> ${txt || '<em style="color:#aaa;">Alternativa vazia</em>'}</div>`;
+        }).join('')}
+      </div>
+      <div style="margin-top:12px;font-size:0.85rem;background:#e8f5e8;border-left:4px solid #4CAF50;padding:8px 12px;border-radius:0 5px 5px 0;color:#2a6e2a;font-weight:bold;">
+        ✅ Gabarito: ${gab}
+      </div>
+    </div>
   `;
+  box.style.display = 'block';
 }
 
-// BASE64
-function toBase64(file){
-  return new Promise((resolve,reject)=>{
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-  });
-}
+// ================================================================
+//  SALVAR QUESTÃO
+// ================================================================
+async function salvarQuestao() {
+  const enunciado = document.getElementById('enunciado').innerHTML.trim();
+  const altA = document.getElementById('altA').innerHTML.trim();
+  const altB = document.getElementById('altB').innerHTML.trim();
+  const altC = document.getElementById('altC').innerHTML.trim();
+  const altD = document.getElementById('altD').innerHTML.trim();
 
-// ENVIAR
-async function enviar(){
+  if (!enunciado) { toast('Preencha o enunciado da questão.', 'aviso'); return; }
+  if (!altA || !altB || !altC || !altD) { toast('Preencha todas as alternativas (A, B, C e D).', 'aviso'); return; }
 
-  let file = document.getElementById("imagem").files[0];
-  let base64 = "";
+  const btn = document.getElementById('btn-salvar');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="mini-spinner"></span> Salvando...';
 
-  if(file){
-    base64 = await toBase64(file);
+  // Converte imagem para base64 se houver
+  let base64 = '';
+  const file = document.getElementById('imagem').files[0];
+  if (file) {
+    base64 = await new Promise((res, rej) => {
+      const r = new FileReader();
+      r.readAsDataURL(file);
+      r.onload = () => res(r.result);
+      r.onerror = rej;
+    });
   }
 
-  let res = await fetch(API,{
-    method:"POST",
-    body:JSON.stringify({
-      tipo:"INSERIR_QUESTAO",
-      disciplina:document.getElementById("disciplina").value,
-      enunciado: document.getElementById("enunciado").innerHTML,
-      imagem: base64,
-      A: document.getElementById("A").innerHTML,
-      B: document.getElementById("B").innerHTML,
-      C: document.getElementById("C").innerHTML,
-      D: document.getElementById("D").innerHTML,
-      gabarito: document.getElementById("gabarito").value
-    })
-  });
-
-  let r = await res.json();
-
-  document.getElementById("preview").innerHTML =
-    r.status==="ok" ? "✅ Salvo com sucesso" : "❌ Erro";
+  try {
+    const res = await fetch(getApiUrl(), {
+      method: 'POST',
+      body: JSON.stringify({
+        tipo: 'INSERIR_QUESTAO',
+        disciplina: document.getElementById('disciplina').value,
+        enunciado,
+        imagem: base64,
+        A: altA, B: altB, C: altC, D: altD,
+        gabarito: document.getElementById('gabarito').value
+      })
+    });
+    const r = await res.json();
+    if (r.status === 'ok') {
+      toast('✅ Questão salva com sucesso!', 'sucesso');
+      limparFormulario();
+    } else {
+      toast('❌ Erro ao salvar: ' + (r.erro || JSON.stringify(r)), 'erro');
+    }
+  } catch(e) {
+    toast('❌ Erro de conexão: ' + e.message, 'erro');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '💾 Salvar Questão';
+  }
 }
 
+// ================================================================
+//  LIMPAR FORMULÁRIO
+// ================================================================
+function limparFormulario() {
+  document.getElementById('disciplina').value = '';
+  document.getElementById('enunciado').innerHTML = '';
+  document.getElementById('altA').innerHTML = '';
+  document.getElementById('altB').innerHTML = '';
+  document.getElementById('altC').innerHTML = '';
+  document.getElementById('altD').innerHTML = '';
+  document.getElementById('gabarito').value = 'A';
+  removerImagem({ stopPropagation:()=>{} });
+  document.getElementById('preview-box-real').style.display = 'none';
+  document.getElementById('preview-box').style.display = 'block';
+  document.getElementById('preview-box').innerHTML = '<p><em>Clique em "Visualizar Preview" para ver como a questão ficará no simulado.</em></p>';
+}
+
+// ================================================================
+//  CARREGAR QUESTÕES
+// ================================================================
+let todasQuestoes = [];
+
+async function carregarQuestoes() {
+  const lista = document.getElementById('lista-questoes');
+  lista.innerHTML = '<p style="text-align:center;"><span class="mini-spinner"></span> Carregando...</p>';
+
+  try {
+    const res = await fetch(getApiUrl() + '?tipo=LISTAR_QUESTOES');
+    todasQuestoes = await res.json();
+
+    if (!Array.isArray(todasQuestoes) || todasQuestoes.length === 0) {
+      lista.innerHTML = '<p style="color:#888;text-align:center;">Nenhuma questão cadastrada ainda.</p>';
+      document.getElementById('stat-total').textContent = '0';
+      document.getElementById('stat-disc').textContent = '0';
+      return;
+    }
+
+    // Stats
+    const disciplinas = [...new Set(todasQuestoes.map(q => q.disciplina).filter(Boolean))];
+    document.getElementById('stat-total').textContent = todasQuestoes.length;
+    document.getElementById('stat-disc').textContent = disciplinas.length;
+
+    // Filtro de disciplinas
+    const sel = document.getElementById('filtro-disc');
+    sel.innerHTML = '<option value="">Todas as disciplinas</option>' +
+      disciplinas.map(d => `<option value="${d}">${d}</option>`).join('');
+
+    renderizarLista(todasQuestoes);
+  } catch(e) {
+    lista.innerHTML = `<p style="color:#e53935;">Erro ao carregar: ${e.message}</p>`;
+  }
+}
+
+function renderizarLista(questoes) {
+  const lista = document.getElementById('lista-questoes');
+  if (questoes.length === 0) {
+    lista.innerHTML = '<p style="color:#888;text-align:center;">Nenhuma questão encontrada.</p>';
+    return;
+  }
+  lista.innerHTML = questoes.map((q, i) => `
+    <div class="quest-item">
+      <div class="quest-num">${i+1}</div>
+      <div class="quest-body">
+        <div class="quest-enunciado">${q.enunciado || '(sem enunciado)'}</div>
+        <div class="quest-meta">
+          ${q.disciplina ? `<strong>${q.disciplina}</strong> · ` : ''}
+          Gabarito: <strong>${q.gabarito || '?'}</strong>
+          ${q.imagem ? ' · 🖼 Com imagem' : ''}
+        </div>
+      </div>
+      <div class="quest-actions">
+        <button class="btn-del" onclick="excluirQuestao(${i})">🗑 Excluir</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filtrarQuestoes() {
+  const busca = document.getElementById('filtro-busca').value.toLowerCase();
+  const disc = document.getElementById('filtro-disc').value;
+  const filtradas = todasQuestoes.filter(q => {
+    const matchBusca = !busca || (q.enunciado||'').toLowerCase().includes(busca);
+    const matchDisc = !disc || q.disciplina === disc;
+    return matchBusca && matchDisc;
+  });
+  renderizarLista(filtradas);
+}
+
+async function excluirQuestao(idx) {
+  if (!confirm('Tem certeza que deseja excluir esta questão?')) return;
+  try {
+    const res = await fetch(getApiUrl(), {
+      method: 'POST',
+      body: JSON.stringify({ tipo: 'EXCLUIR_QUESTAO', indice: idx })
+    });
+    const r = await res.json();
+    if (r.status === 'ok') {
+      toast('Questão excluída.', 'sucesso');
+      carregarQuestoes();
+    } else {
+      toast('Erro ao excluir: ' + (r.erro || ''), 'erro');
+    }
+  } catch(e) {
+    toast('Erro de conexão: ' + e.message, 'erro');
+  }
+}
+
+// ================================================================
+//  RESULTADOS
+// ================================================================
+async function carregarResultados() {
+  const div = document.getElementById('tabela-resultados');
+  div.innerHTML = '<p><span class="mini-spinner"></span> Carregando...</p>';
+  try {
+    const res = await fetch(getApiUrl() + '?tipo=RANKING');
+    const data = await res.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      div.innerHTML = '<p style="color:#888;">Nenhum resultado registrado ainda.</p>';
+      return;
+    }
+
+    div.innerHTML = `
+      <table style="width:100%;border-collapse:collapse;font-size:0.88rem;">
+        <thead>
+          <tr style="background:#004aad;color:white;">
+            <th style="padding:9px 12px;text-align:left;">#</th>
+            <th style="padding:9px 12px;text-align:left;">Nome</th>
+            <th style="padding:9px 12px;text-align:center;">Acertos</th>
+            <th style="padding:9px 12px;text-align:center;">Total</th>
+            <th style="padding:9px 12px;text-align:center;">%</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data.map((r, i) => `
+            <tr style="${i%2===0?'background:#f8faff;':''}">
+              <td style="padding:8px 12px;font-weight:bold;color:#004aad;">${i+1}</td>
+              <td style="padding:8px 12px;">${r.nome || '—'}</td>
+              <td style="padding:8px 12px;text-align:center;">${r.acertos || '—'}</td>
+              <td style="padding:8px 12px;text-align:center;">${r.total || '—'}</td>
+              <td style="padding:8px 12px;text-align:center;font-weight:bold;color:${(r.percentual||0)>=60?'#2a6e2a':'#c62828'};">
+                ${Number(r.percentual||0).toFixed(1)}%
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  } catch(e) {
+    div.innerHTML = `<p style="color:#e53935;">Erro: ${e.message}</p>`;
+  }
+}
+
+// ================================================================
+//  TOAST
+// ================================================================
+let toastTimer = null;
+function toast(msg, tipo = 'sucesso') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `show ${tipo}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = tipo; }, 3200);
+}
 </script>
 
 </body>

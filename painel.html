@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Painel do Aplicador — SAEP-CETEM</title>
+<title>Painel do Aplicador — SAEP</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -362,13 +362,15 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
 <div id="login-screen">
   <div class="login-box">
     <div class="login-icon">🔐</div>
-    <h1>PAINEL SAEP-CETEM</h1>
+    <h1>PAINEL SAEP</h1>
     <p>Acesso exclusivo para aplicadores</p>
     <div id="login-erro" class="login-erro">Senha incorreta. Tente novamente.</div>
     <input type="password" class="login-campo" id="login-senha"
       placeholder="••••••••" maxlength="30"
       onkeydown="if(event.key==='Enter') tentarLogin()"/>
     <button class="btn-login" onclick="tentarLogin()">Entrar</button>
+    <!-- FIX 2: botão voltar na tela de login -->
+    <a href="index.html" style="display:block;margin-top:14px;font-size:0.8rem;color:#aab;text-decoration:none;text-align:center;">← Voltar para os simulados</a>
     <p class="login-hint">Solicite a senha ao coordenador do curso.</p>
   </div>
 </div>
@@ -414,8 +416,11 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
         </div>
 
         <div class="form-row">
-          <label>Disciplina / Área (dentro do curso)</label>
-          <input type="text" id="disciplina" placeholder="Ex: Automação, Eletricidade, Redes..."/>
+          <label>Disciplina / Área *</label>
+          <!-- FIX 5: select de disciplinas filtrado por curso -->
+          <select id="disciplina" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.95rem;font-family:'Barlow',sans-serif;outline:none;background:white;">
+            <option value="">— selecione o curso primeiro —</option>
+          </select>
         </div>
 
         <div class="form-row">
@@ -441,6 +446,12 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
             <img id="img-preview" class="img-preview" style="display:none"/>
             <button id="btn-rm-img" style="display:none;margin-top:8px;padding:5px 12px;background:#fee;color:#c62828;border:1px solid #fecaca;border-radius:6px;cursor:pointer;font-size:0.8rem;" onclick="rmImagem(event)">✕ Remover</button>
           </div>
+        </div>
+
+        <!-- FIX 7: texto após imagem -->
+        <div class="form-row">
+          <label>Texto complementar após a imagem <span style="font-weight:400;color:var(--muted)">(opcional — aparece abaixo da imagem)</span></label>
+          <div class="editor" id="texto-pos-imagem" contenteditable="true" style="min-height:44px;"></div>
         </div>
 
         <div class="alts-grid">
@@ -485,6 +496,45 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
           <button class="btn btn-primary" style="flex:none;padding:8px 18px;min-width:auto" onclick="carregarQuestoes()">🔄</button>
         </div>
         <div id="lista-questoes"><p style="color:var(--muted);text-align:center;">Clique em 🔄 para carregar.</p></div>
+      </div>
+    </div>
+
+    <!-- FIX 4: Modal de edição -->
+    <div id="modal-editar-overlay" style="display:none;position:fixed;inset:0;z-index:5000;background:rgba(13,26,48,0.75);backdrop-filter:blur(3px);overflow-y:auto;padding:30px 16px;">
+      <div style="background:white;border-radius:16px;max-width:760px;margin:0 auto;box-shadow:0 20px 60px rgba(0,0,0,0.35);">
+        <div style="background:var(--azul);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;border-radius:16px 16px 0 0;">
+          <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.1rem;color:white;letter-spacing:1px;">✏️ Editar Questão</span>
+          <button onclick="fecharEditar()" style="background:rgba(255,255,255,0.15);border:none;color:white;width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:1rem;">✕</button>
+        </div>
+        <div style="padding:24px;">
+          <input type="hidden" id="edit-indice"/>
+          <div class="form-row">
+            <label>Curso</label>
+            <select id="edit-curso" onchange="atualizarDiscEdicao()" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.95rem;font-family:'Barlow',sans-serif;outline:none;">
+              <option value="">Selecione...</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Disciplina</label>
+            <select id="edit-disciplina" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.95rem;font-family:'Barlow',sans-serif;outline:none;"></select>
+          </div>
+          <div class="form-row"><label>Enunciado</label><div class="editor" id="edit-enunciado" contenteditable="true"></div></div>
+          <div class="form-row"><label>Texto após imagem <span style="font-weight:400;color:var(--muted)">(opcional)</span></label><div class="editor" id="edit-texto-pos" contenteditable="true" style="min-height:44px;"></div></div>
+          <div class="alts-grid" style="margin-bottom:16px;">
+            <div><div class="alt-lbl-txt">A)</div><div class="editor" id="edit-altA" contenteditable="true"></div></div>
+            <div><div class="alt-lbl-txt">B)</div><div class="editor" id="edit-altB" contenteditable="true"></div></div>
+            <div><div class="alt-lbl-txt">C)</div><div class="editor" id="edit-altC" contenteditable="true"></div></div>
+            <div><div class="alt-lbl-txt">D)</div><div class="editor" id="edit-altD" contenteditable="true"></div></div>
+          </div>
+          <div class="gab-row" style="margin-bottom:20px;">
+            <label>Gabarito:</label>
+            <select id="edit-gabarito"><option>A</option><option>B</option><option>C</option><option>D</option></select>
+          </div>
+          <div style="display:flex;gap:12px;">
+            <button class="btn btn-sucesso" id="btn-salvar-edit" onclick="salvarEdicao()">💾 Salvar Alterações</button>
+            <button class="btn btn-perigo" onclick="fecharEditar()">Cancelar</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -578,18 +628,19 @@ function getSenha() { return getCfg().senha || SENHA_PADRAO; }
 //  LISTA DE CURSOS (deve espelhar o index.html)
 // ================================================================
 const CURSOS = [
-  { id:"eletrotecnica",         nome:"Técnico em Eletrotécnica" },
-  { id:"ciber-sistemas", nome:"Técnico em Ciber Sistemas" },
-  { id:"eletromecanica",        nome:"Técnico em Eletromecânica" },
-  { id:"mecatronia",            nome:"Técnico em Mecatrônica" },
-  { id:"mecanica",              nome:"Técnico em Mecânica" }
+  { id:"ciber-sistemas",        nome:"Ciber Sistemas" },
+  { id:"instalacoes-eletricas", nome:"Instalações Elétricas" },
+  { id:"automacao-industrial",  nome:"Automação Industrial" },
+  { id:"eletronica",            nome:"Eletrônica" },
+  { id:"redes-computadores",    nome:"Redes de Computadores" }
 ];
 
 // ================================================================
 //  LOGIN
 // ================================================================
 window.addEventListener('DOMContentLoaded', () => {
-  if (localStorage.getItem(AUTH_KEY) === 'ok') mostrarApp();
+  // FIX 1: usa sessionStorage → sessão expira ao fechar a aba/navegador
+  if (sessionStorage.getItem(AUTH_KEY) === 'ok') mostrarApp();
   const cfg = getCfg();
   if (cfg.apiUrl) document.getElementById('cfg-url').value = cfg.apiUrl;
   preencherSelects();
@@ -598,7 +649,8 @@ window.addEventListener('DOMContentLoaded', () => {
 function tentarLogin() {
   const senha = document.getElementById('login-senha').value;
   if (senha === getSenha()) {
-    localStorage.setItem(AUTH_KEY, 'ok');
+    // FIX 1: sessionStorage em vez de localStorage
+    sessionStorage.setItem(AUTH_KEY, 'ok');
     mostrarApp();
   } else {
     document.getElementById('login-erro').style.display = 'block';
@@ -613,7 +665,8 @@ function mostrarApp() {
   renderCursosConfig();
 }
 function sair() {
-  localStorage.removeItem(AUTH_KEY);
+  // FIX 1: limpa sessionStorage
+  sessionStorage.removeItem(AUTH_KEY);
   location.reload();
 }
 
@@ -644,6 +697,34 @@ function trocarAba(id, btn) {
   btn.classList.add('ativa');
   if (id==='listar') carregarQuestoes();
   if (id==='resultados') carregarResultados();
+}
+
+// ================================================================
+//  FIX 5: DISCIPLINAS POR CURSO
+// ================================================================
+const DISCIPLINAS_POR_CURSO = {
+  "ciber-sistemas":        ["Ciber Sistemas","IoT","Redes Industriais","Automação","Segurança Digital","Programação"],
+  "instalacoes-eletricas": ["Instalações Prediais","Projetos Elétricos","Normas NBR","Dimensionamento","Segurança","Aterramento"],
+  "automacao-industrial":  ["CLP","Sensores e Atuadores","SCADA","Pneumática","Hidráulica","Instrumentação"],
+  "eletronica":            ["Eletrônica Analógica","Eletrônica Digital","Microcontroladores","Componentes","Circuitos"],
+  "redes-computadores":    ["TCP/IP","Infraestrutura","Segurança","Cabeamento","Protocolos","Wi-Fi"]
+};
+
+function atualizarDiscs(cursoId, selectId, valorAtual) {
+  const sel = document.getElementById(selectId);
+  const discs = DISCIPLINAS_POR_CURSO[cursoId] || [];
+  sel.innerHTML = discs.length
+    ? discs.map(d => `<option value="${d}" ${d===valorAtual?'selected':''}>${d}</option>`).join('')
+    : '<option value="">— nenhuma disciplina cadastrada —</option>';
+}
+
+// Atualiza select de disciplina quando muda o curso (formulário principal)
+document.getElementById('sel-curso').addEventListener('change', function() {
+  atualizarDiscs(this.value, 'disciplina', '');
+});
+
+function atualizarDiscEdicao() {
+  atualizarDiscs(document.getElementById('edit-curso').value, 'edit-disciplina', '');
 }
 
 // ================================================================
@@ -696,18 +777,19 @@ function rmImagem(e) {
 // ================================================================
 function gerarPreview() {
   const enunc = document.getElementById('enunciado').innerHTML;
+  const textoPos = document.getElementById('texto-pos-imagem').innerHTML;
   const gab = document.getElementById('gabarito').value;
   const file = document.getElementById('img-input').files[0];
-  const imgH = file ? `<img src="${URL.createObjectURL(file)}" style="max-width:280px;border-radius:8px;margin:8px 0;border:1px solid var(--border)">` : '';
+  const imgH = file ? `<img src="${URL.createObjectURL(file)}" style="max-width:100%;border-radius:8px;margin:8px 0;border:1px solid var(--border)">` : '';
+  const textoPosH = textoPos.trim() ? `<div style="margin-top:8px;font-size:0.9rem;line-height:1.6;">${textoPos}</div>` : '';
   const alts = ['A','B','C','D'].map(l => {
     const txt = document.getElementById('alt'+l).innerHTML;
     const dest = l===gab ? 'background:#e8f8f1;border-left:3px solid #00b86b;padding-left:8px;border-radius:3px;' : '';
     return `<div style="padding:6px 0;font-size:0.9rem;${dest}"><strong>${l})</strong> ${txt||'<em style="color:#aaa">vazio</em>'}</div>`;
   }).join('');
-
   document.getElementById('preview-conteudo').innerHTML = `
     <div style="font-size:0.95rem;line-height:1.6;margin-bottom:12px;">${enunc||'<em style="color:#aaa">Enunciado vazio</em>'}</div>
-    ${imgH}<div style="margin-top:10px;">${alts}</div>
+    ${imgH}${textoPosH}<div style="margin-top:10px;">${alts}</div>
     <div style="margin-top:12px;padding:8px 12px;background:#e8f8f1;border-left:4px solid #00b86b;border-radius:0 6px 6px 0;font-size:0.85rem;font-weight:600;color:#1a7a4a;">✅ Gabarito: ${gab}</div>
   `;
   document.getElementById('card-preview').style.display='block';
@@ -715,7 +797,7 @@ function gerarPreview() {
 }
 
 // ================================================================
-//  SALVAR QUESTÃO
+//  SALVAR QUESTÃO — FIX 7: inclui texto_pos_imagem
 // ================================================================
 async function salvar() {
   const curso = document.getElementById('sel-curso').value;
@@ -739,6 +821,7 @@ async function salvar() {
         tipo:'INSERIR_QUESTAO', curso,
         disciplina: document.getElementById('disciplina').value,
         enunciado, imagem: base64,
+        texto_pos_imagem: document.getElementById('texto-pos-imagem').innerHTML.trim(),
         A: alts[0], B: alts[1], C: alts[2], D: alts[3],
         gabarito: document.getElementById('gabarito').value
       })
@@ -751,9 +834,9 @@ async function salvar() {
 }
 
 function limparForm() {
-  ['enunciado','altA','altB','altC','altD'].forEach(id=>document.getElementById(id).innerHTML='');
-  document.getElementById('disciplina').value='';
+  ['enunciado','altA','altB','altC','altD','texto-pos-imagem'].forEach(id=>document.getElementById(id).innerHTML='');
   document.getElementById('gabarito').value='A';
+  document.getElementById('disciplina').innerHTML='<option value="">— selecione o curso primeiro —</option>';
   rmImagem({stopPropagation:()=>{}});
   document.getElementById('card-preview').style.display='none';
 }
@@ -771,9 +854,7 @@ async function carregarQuestoes() {
     todasQ = await res.json();
     if (!Array.isArray(todasQ)||todasQ.length===0) {
       lista.innerHTML='<p style="color:var(--muted);text-align:center;">Nenhuma questão cadastrada.</p>';
-      document.getElementById('stat-total').textContent='0';
-      document.getElementById('stat-disc').textContent='0';
-      document.getElementById('stat-cursos').textContent='0';
+      ['stat-total','stat-disc','stat-cursos'].forEach(id=>document.getElementById(id).textContent='0');
       return;
     }
     const discs = new Set(todasQ.map(q=>q.disciplina).filter(Boolean));
@@ -782,7 +863,6 @@ async function carregarQuestoes() {
     document.getElementById('stat-disc').textContent = discs.size;
     document.getElementById('stat-cursos').textContent = cursos.size;
 
-    // Popula filtro
     const sel = document.getElementById('filtro-curso-lista');
     sel.innerHTML = '<option value="">Todos os cursos</option>';
     CURSOS.forEach(c=>{const o=new Option(c.nome,c.id);sel.appendChild(o);});
@@ -806,6 +886,8 @@ function renderLista(questoes) {
           ${q.imagem?' · 🖼':''}
         </div>
       </div>
+      <!-- FIX 4: botão editar -->
+      <button class="quest-del" style="background:#eef4ff;color:var(--azul);border-color:#c7d7f5;margin-right:4px;" onclick="abrirEditar(${i})">✏️ Editar</button>
       <button class="quest-del" onclick="excluir(${i})">🗑 Excluir</button>
     </div>
   `).join('');
@@ -829,6 +911,70 @@ async function excluir(idx) {
     if (r.status==='ok') { toast('Questão excluída.','ok'); carregarQuestoes(); }
     else toast('Erro: '+(r.erro||''),'err');
   } catch(e) { toast('Erro: '+e.message,'err'); }
+}
+
+// ================================================================
+//  FIX 4: EDITAR QUESTÃO
+// ================================================================
+function abrirEditar(idx) {
+  const q = todasQ[idx];
+  if (!q) return;
+  document.getElementById('edit-indice').value = idx;
+
+  // Preenche selects de curso
+  const selCurso = document.getElementById('edit-curso');
+  selCurso.innerHTML = '<option value="">Selecione...</option>';
+  CURSOS.forEach(c=>{const o=new Option(c.nome,c.id);if(c.id===q.curso)o.selected=true;selCurso.appendChild(o);});
+
+  // Preenche disciplinas do curso
+  atualizarDiscs(q.curso, 'edit-disciplina', q.disciplina);
+
+  document.getElementById('edit-enunciado').innerHTML = q.enunciado||'';
+  document.getElementById('edit-texto-pos').innerHTML = q.texto_pos_imagem||'';
+  document.getElementById('edit-altA').innerHTML = q.A||'';
+  document.getElementById('edit-altB').innerHTML = q.B||'';
+  document.getElementById('edit-altC').innerHTML = q.C||'';
+  document.getElementById('edit-altD').innerHTML = q.D||'';
+  document.getElementById('edit-gabarito').value = q.gabarito||'A';
+
+  document.getElementById('modal-editar-overlay').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function fecharEditar() {
+  document.getElementById('modal-editar-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+async function salvarEdicao() {
+  const idx = parseInt(document.getElementById('edit-indice').value);
+  const curso = document.getElementById('edit-curso').value;
+  const enunciado = document.getElementById('edit-enunciado').innerHTML.trim();
+  if (!curso||!enunciado) { toast('Preencha curso e enunciado.','av'); return; }
+
+  const btn = document.getElementById('btn-salvar-edit');
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>Salvando...';
+
+  try {
+    const res = await fetch(getApiUrl(), {
+      method:'POST',
+      body: JSON.stringify({
+        tipo: 'EDITAR_QUESTAO', indice: idx, curso,
+        disciplina: document.getElementById('edit-disciplina').value,
+        enunciado,
+        texto_pos_imagem: document.getElementById('edit-texto-pos').innerHTML.trim(),
+        A: document.getElementById('edit-altA').innerHTML.trim(),
+        B: document.getElementById('edit-altB').innerHTML.trim(),
+        C: document.getElementById('edit-altC').innerHTML.trim(),
+        D: document.getElementById('edit-altD').innerHTML.trim(),
+        gabarito: document.getElementById('edit-gabarito').value
+      })
+    });
+    const r = await res.json();
+    if (r.status==='ok') { toast('✅ Questão atualizada!','ok'); fecharEditar(); carregarQuestoes(); }
+    else toast('Erro: '+(r.erro||''),'err');
+  } catch(e) { toast('Erro: '+e.message,'err'); }
+  finally { btn.disabled=false; btn.innerHTML='💾 Salvar Alterações'; }
 }
 
 // ================================================================

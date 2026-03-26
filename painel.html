@@ -628,11 +628,11 @@ function getSenha() { return getCfg().senha || SENHA_PADRAO; }
 //  LISTA DE CURSOS (deve espelhar o index.html)
 // ================================================================
 const CURSOS = [
-  { id:"ciber-sistemas",        nome:"Ciber Sistemas" },
-  { id:"instalacoes-eletricas", nome:"Instalações Elétricas" },
-  { id:"automacao-industrial",  nome:"Automação Industrial" },
-  { id:"eletronica",            nome:"Eletrônica" },
-  { id:"redes-computadores",    nome:"Redes de Computadores" }
+  { id:"ciber-sistemas",        nome:"Técnico em Cibersistemas" },
+  { id:"eletrotecnica",         nome:"Técnico em Eletrotécnica" },
+  { id:"eletromecanica",        nome:"Técnico em Eletromecânica" },
+  { id:"mecatonica",            nome:"Técnico em Mecatrônica" },
+  { id:"mecanica",              nome:"Técnico em Mecânica" }
 ];
 
 // ================================================================
@@ -704,10 +704,10 @@ function trocarAba(id, btn) {
 // ================================================================
 const DISCIPLINAS_POR_CURSO = {
   "ciber-sistemas":        ["Ciber Sistemas","IoT","Redes Industriais","Automação","Segurança Digital","Programação"],
-  "instalacoes-eletricas": ["Instalações Prediais","Projetos Elétricos","Normas NBR","Dimensionamento","Segurança","Aterramento"],
-  "automacao-industrial":  ["CLP","Sensores e Atuadores","SCADA","Pneumática","Hidráulica","Instrumentação"],
-  "eletronica":            ["Eletrônica Analógica","Eletrônica Digital","Microcontroladores","Componentes","Circuitos"],
-  "redes-computadores":    ["TCP/IP","Infraestrutura","Segurança","Cabeamento","Protocolos","Wi-Fi"]
+  "eletrotecnica": ["Instalações Prediais","Instalações Industriais","Projetos Elétricos Prediais","Projetos Elétricos Industriais","Normas NBR","Dimensionamento","Segurança","Aterramento"],
+  "mecatronica":  ["CLP","Sensores e Atuadores","SCADA","Pneumática","Hidráulica","Instrumentação"],
+  "eletromecanica":            ["Eletrônica Analógica","Eletrônica Digital","Microcontroladores","Componentes","Circuitos"],
+  "mecanica":    ["TCP/IP","Infraestrutura","Segurança","Cabeamento","Protocolos","Wi-Fi"]
 };
 
 function atualizarDiscs(cursoId, selectId, valorAtual) {

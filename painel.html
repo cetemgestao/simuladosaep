@@ -1,926 +1,915 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Painel do Aplicador — SAEP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f0f4fb;
-    min-height: 100vh;
-  }
+:root {
+  --azul: #004aad;
+  --azul-escuro: #00317a;
+  --verde: #00b86b;
+  --vermelho: #e53935;
+  --amarelo: #f59e0b;
+  --bg: #f0f4fb;
+  --surface: #ffffff;
+  --border: #e2e8f4;
+  --texto: #1a2340;
+  --muted: #5a6a8a;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--texto); min-height: 100vh; }
 
-  /* ===== HEADER ===== */
-  header {
-    background: #004aad;
-    color: white;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  header .logo-area {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 12px 24px;
-  }
-  header h1 {
-    margin: 0;
-    font-size: 1.1rem;
-    font-weight: bold;
-    letter-spacing: 1px;
-  }
-  header .sub {
-    font-size: 0.78rem;
-    opacity: 0.8;
-    margin-top: 2px;
-  }
-  header nav {
-    display: flex;
-    gap: 0;
-    height: 100%;
-  }
-  header nav a {
-    color: white;
-    text-decoration: none;
-    padding: 0 20px;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    border-left: 1px solid rgba(255,255,255,0.15);
-    transition: background 0.2s;
-    height: 100%;
-    min-height: 58px;
-  }
-  header nav a:hover { background: rgba(255,255,255,0.1); }
-  header nav a.active { background: rgba(255,255,255,0.15); font-weight: bold; }
+/* ─── TELA DE LOGIN ─── */
+#login-screen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: linear-gradient(135deg, #0d1a30, #00317a);
+  display: flex; align-items: center; justify-content: center;
+}
+.login-box {
+  background: white; border-radius: 20px;
+  width: 90%; max-width: 400px;
+  padding: 40px; text-align: center;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+  animation: popIn 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+@keyframes popIn {
+  from{opacity:0;transform:scale(0.9)translateY(20px)}
+  to{opacity:1;transform:scale(1)translateY(0)}
+}
+.login-icon {
+  width: 60px; height: 60px;
+  background: linear-gradient(135deg, var(--azul), #1a6dd4);
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem; margin: 0 auto 20px;
+}
+.login-box h1 {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.6rem; font-weight: 800;
+  color: var(--texto); letter-spacing: 1px; margin-bottom: 4px;
+}
+.login-box p { font-size: 0.85rem; color: var(--muted); margin-bottom: 24px; }
+.login-campo {
+  width: 100%; padding: 12px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px; font-size: 1rem;
+  font-family: 'Barlow', sans-serif;
+  text-align: center; letter-spacing: 4px;
+  outline: none; margin-bottom: 12px;
+  transition: border-color 0.2s;
+}
+.login-campo:focus { border-color: var(--azul); box-shadow: 0 0 0 3px rgba(0,74,173,0.1); }
+.login-erro {
+  background: #fff0f0; border: 1px solid #fecaca;
+  border-radius: 8px; padding: 8px; font-size: 0.82rem;
+  color: var(--vermelho); margin-bottom: 12px; display: none;
+}
+.btn-login {
+  width: 100%; padding: 13px;
+  background: var(--azul); color: white;
+  border: none; border-radius: 10px;
+  font-family: 'Barlow', sans-serif;
+  font-weight: 600; font-size: 1rem;
+  cursor: pointer; transition: background 0.2s;
+}
+.btn-login:hover { background: var(--azul-escuro); }
+.login-hint { font-size: 0.72rem; color: #aab; margin-top: 14px; }
 
-  /* ===== ABAS PRINCIPAIS ===== */
-  .tabs-bar {
-    background: white;
-    border-bottom: 2px solid #e0e7f5;
-    display: flex;
-    padding: 0 24px;
-    gap: 4px;
-  }
-  .tab-btn {
-    padding: 12px 20px;
-    border: none;
-    background: none;
-    cursor: pointer;
-    font-size: 0.92rem;
-    color: #555;
-    border-bottom: 3px solid transparent;
-    margin-bottom: -2px;
-    transition: all 0.2s;
-  }
-  .tab-btn:hover { color: #004aad; }
-  .tab-btn.active { color: #004aad; border-bottom-color: #004aad; font-weight: bold; }
+/* ─── LAYOUT PRINCIPAL ─── */
+#app { display: none; flex-direction: column; min-height: 100vh; }
 
-  /* ===== CONTEÚDO ===== */
-  .main-content { padding: 24px; max-width: 1000px; margin: 0 auto; }
+/* Header */
+.app-header {
+  background: var(--azul);
+  padding: 0 28px;
+  height: 58px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.15);
+  position: sticky; top: 0; z-index: 100;
+}
+.header-logo {
+  display: flex; align-items: center; gap: 12px;
+}
+.header-logo-badge {
+  width: 36px; height: 36px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800; font-size: 0.95rem; color: white;
+}
+.header-logo-txt {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700; font-size: 1.1rem;
+  letter-spacing: 2px; color: white; line-height: 1;
+}
+.header-logo-txt small { font-size: 0.6rem; opacity: 0.5; font-weight: 400; letter-spacing: 1px; }
+.header-acoes {
+  display: flex; align-items: center; gap: 10px;
+}
+.btn-header {
+  padding: 6px 14px; border-radius: 7px;
+  font-family: 'Barlow', sans-serif;
+  font-weight: 600; font-size: 0.8rem;
+  cursor: pointer; transition: all 0.2s; border: none;
+}
+.btn-sair { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
+.btn-sair:hover { background: rgba(255,255,255,0.2); color: white; }
+.btn-ver-sim { background: rgba(255,255,255,0.15); color: white; }
+.btn-ver-sim:hover { background: rgba(255,255,255,0.25); }
 
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
+/* Tabs */
+.app-tabs {
+  background: white;
+  border-bottom: 2px solid var(--border);
+  display: flex; padding: 0 28px; gap: 2px;
+}
+.tab-btn {
+  padding: 14px 20px;
+  border: none; background: none;
+  font-family: 'Barlow', sans-serif;
+  font-weight: 600; font-size: 0.88rem;
+  cursor: pointer; color: var(--muted);
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px; transition: all 0.2s;
+}
+.tab-btn:hover { color: var(--azul); }
+.tab-btn.ativa { color: var(--azul); border-bottom-color: var(--azul); }
 
-  /* ===== CARDS ===== */
-  .card {
-    background: white;
-    border-radius: 10px;
-    padding: 24px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-    margin-bottom: 20px;
-  }
-  .card h2 {
-    margin: 0 0 18px 0;
-    color: #004aad;
-    font-size: 1.1rem;
-    border-bottom: 2px solid #e8f0fe;
-    padding-bottom: 10px;
-  }
+/* Conteúdo */
+.app-body { padding: 28px; max-width: 1000px; flex: 1; }
+.tab-painel { display: none; }
+.tab-painel.ativa { display: block; }
 
-  /* ===== FORM ELEMENTS ===== */
-  .form-group {
-    margin-bottom: 16px;
-  }
-  .form-group label {
-    display: block;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 5px;
-    font-size: 0.9rem;
-  }
-  .form-group input[type="text"],
-  .form-group select {
-    width: 100%;
-    padding: 9px 12px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 0.95rem;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    outline: none;
-  }
-  .form-group input:focus,
-  .form-group select:focus {
-    border-color: #004aad;
-    box-shadow: 0 0 0 3px rgba(0,74,173,0.12);
-  }
+/* Cards */
+.card {
+  background: var(--surface);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.card-titulo {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.05rem; font-weight: 700;
+  color: var(--azul); letter-spacing: 0.5px;
+  margin-bottom: 18px; padding-bottom: 12px;
+  border-bottom: 2px solid var(--border);
+}
 
-  /* Editor de texto rico */
-  .editor-label {
-    font-weight: bold;
-    color: #333;
-    font-size: 0.9rem;
-    margin-bottom: 5px;
-    display: block;
-  }
-  .toolbar {
-    display: flex;
-    gap: 4px;
-    margin-bottom: 4px;
-    flex-wrap: wrap;
-  }
-  .toolbar button {
-    padding: 4px 9px;
-    font-size: 0.82rem;
-    background: #f0f4fb;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background 0.15s;
-    color: #333;
-  }
-  .toolbar button:hover { background: #d8e4ff; }
-  .editor {
-    border: 1px solid #ccc;
-    min-height: 70px;
-    padding: 10px 12px;
-    border-radius: 6px;
-    background: white;
-    font-size: 0.95rem;
-    line-height: 1.5;
-    transition: border-color 0.2s;
-    outline: none;
-  }
-  .editor:focus { border-color: #004aad; box-shadow: 0 0 0 3px rgba(0,74,173,0.12); }
+/* Seletor de curso */
+.curso-select-row {
+  display: flex; align-items: center; gap: 12px;
+  background: #f0f6ff; border: 1px solid #c7d7f5;
+  border-radius: 10px; padding: 12px 16px;
+  margin-bottom: 20px; flex-wrap: wrap;
+}
+.curso-select-row label { font-weight: 600; font-size: 0.88rem; color: var(--azul); white-space: nowrap; }
+#sel-curso {
+  flex: 1; min-width: 180px;
+  padding: 8px 12px; border: 1.5px solid #c7d7f5;
+  border-radius: 8px; font-size: 0.95rem;
+  font-family: 'Barlow', sans-serif;
+  color: var(--texto); outline: none;
+  background: white;
+}
+#sel-curso:focus { border-color: var(--azul); }
 
-  /* Imagem */
-  .img-area {
-    border: 2px dashed #c0d4f5;
-    border-radius: 8px;
-    padding: 16px;
-    text-align: center;
-    background: #f8faff;
-    transition: border-color 0.2s;
-    cursor: pointer;
-  }
-  .img-area:hover { border-color: #004aad; }
-  .img-area input { display: none; }
-  .img-preview { max-width: 280px; margin-top: 10px; border-radius: 6px; border: 1px solid #ddd; }
+/* Form */
+.form-row { margin-bottom: 16px; }
+.form-row label {
+  display: block; font-weight: 600;
+  font-size: 0.83rem; color: var(--texto);
+  margin-bottom: 5px;
+}
+.form-row input[type="text"] {
+  width: 100%; padding: 9px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px; font-size: 0.95rem;
+  font-family: 'Barlow', sans-serif;
+  outline: none; transition: border-color 0.2s;
+}
+.form-row input:focus { border-color: var(--azul); box-shadow: 0 0 0 3px rgba(0,74,173,0.1); }
 
-  /* Alternativas */
-  .alts-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-  .alt-item { }
-  .alt-label { font-weight: bold; color: #004aad; margin-bottom: 4px; font-size: 0.88rem; }
+/* Editor */
+.editor-toolbar {
+  display: flex; gap: 4px;
+  margin-bottom: 4px; flex-wrap: wrap; align-items: center;
+}
+.editor-toolbar button {
+  padding: 4px 9px; font-size: 0.8rem;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 5px; cursor: pointer;
+  transition: background 0.15s; color: var(--texto);
+}
+.editor-toolbar button:hover { background: #d8e4ff; }
+.btn-limpar-fmt { background: #fff3e0 !important; border-color: #ffb74d !important; color: #e65100 !important; }
+.btn-limpar-fmt:hover { background: #ffe0b2 !important; }
+.editor-sep { width: 1px; height: 20px; background: var(--border); }
+.editor {
+  border: 1.5px solid var(--border); min-height: 72px;
+  padding: 10px 12px; border-radius: 8px;
+  background: white; font-size: 0.95rem; line-height: 1.55;
+  outline: none; transition: border-color 0.2s;
+  font-family: 'Barlow', sans-serif;
+}
+.editor:focus { border-color: var(--azul); box-shadow: 0 0 0 3px rgba(0,74,173,0.1); }
+.paste-aviso {
+  font-size: 0.75rem; color: #e65100;
+  background: #fff3e0; border: 1px solid #ffb74d;
+  border-radius: 5px; padding: 4px 10px;
+  margin-bottom: 4px; display: none;
+}
 
-  /* Gabarito */
-  .gabarito-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-top: 12px;
-  }
-  .gabarito-row label { font-weight: bold; }
-  .gabarito-row select {
-    width: auto;
-    padding: 8px 16px;
-    border: 2px solid #004aad;
-    border-radius: 6px;
-    color: #004aad;
-    font-weight: bold;
-  }
+/* Imagem */
+.img-drop {
+  border: 2px dashed #c7d7f5; border-radius: 10px;
+  padding: 18px; text-align: center;
+  background: #f8faff; cursor: pointer;
+  transition: border-color 0.2s;
+}
+.img-drop:hover { border-color: var(--azul); }
+.img-preview { max-width: 260px; border-radius: 8px; margin-top: 10px; border: 1px solid var(--border); }
 
-  /* Botões de ação */
-  .btn-row {
-    display: flex;
-    gap: 12px;
-    margin-top: 20px;
-    flex-wrap: wrap;
-  }
-  .btn {
-    padding: 11px 22px;
-    font-size: 0.95rem;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-weight: bold;
-    flex: 1;
-    min-width: 130px;
-  }
-  .btn-primary { background: #004aad; color: white; }
-  .btn-primary:hover { background: #003580; }
-  .btn-secondary { background: #4CAF50; color: white; }
-  .btn-secondary:hover { background: #388E3C; }
-  .btn-danger { background: #e53935; color: white; }
-  .btn-danger:hover { background: #b71c1c; }
-  .btn-outline { background: white; color: #004aad; border: 2px solid #004aad; }
-  .btn-outline:hover { background: #f0f5ff; }
+/* Alternativas */
+.alts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.alt-lbl-txt { font-weight: 700; color: var(--azul); font-size: 0.85rem; margin-bottom: 4px; }
 
-  /* Preview */
-  .preview-box {
-    border: 2px dashed #aac;
-    border-radius: 8px;
-    padding: 20px;
-    background: #fafbff;
-    display: none;
-  }
-  .preview-box .enunciado-preview {
-    font-size: 0.95rem;
-    line-height: 1.6;
-    margin-bottom: 12px;
-    color: #222;
-  }
-  .preview-box .alt-preview {
-    padding: 5px 0;
-    font-size: 0.92rem;
-  }
+/* Gabarito row */
+.gab-row { display: flex; align-items: center; gap: 14px; margin-top: 14px; }
+.gab-row label { font-weight: 600; font-size: 0.88rem; }
+.gab-row select {
+  padding: 8px 16px; border: 2px solid var(--azul);
+  border-radius: 8px; color: var(--azul); font-weight: 700;
+  font-family: 'Barlow', sans-serif; font-size: 1rem;
+  outline: none; background: white;
+}
 
-  /* Toast */
-  #toast {
-    position: fixed; bottom: 24px; right: 24px;
-    padding: 13px 20px; border-radius: 8px;
-    color: white; font-weight: bold;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-    opacity: 0; transform: translateY(20px);
-    transition: all 0.3s; z-index: 9999;
-    pointer-events: none;
-  }
-  #toast.show { opacity: 1; transform: translateY(0); }
-  #toast.sucesso { background: #4CAF50; }
-  #toast.erro { background: #e53935; }
-  #toast.aviso { background: #f57c00; }
+/* Botões ação */
+.btn-row { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+.btn {
+  padding: 11px 22px; border: none; border-radius: 9px;
+  font-family: 'Barlow', sans-serif; font-weight: 600;
+  font-size: 0.9rem; cursor: pointer; transition: all 0.2s;
+  flex: 1; min-width: 130px; letter-spacing: 0.3px;
+}
+.btn-primary { background: var(--azul); color: white; box-shadow: 0 3px 12px rgba(0,74,173,0.25); }
+.btn-primary:hover { background: var(--azul-escuro); transform: translateY(-1px); }
+.btn-sucesso { background: var(--verde); color: white; box-shadow: 0 3px 12px rgba(0,184,107,0.25); }
+.btn-sucesso:hover { background: #009058; }
+.btn-perigo { background: #fff0f0; color: var(--vermelho); border: 1px solid #fecaca; }
+.btn-perigo:hover { background: #ffe0e0; }
+.btn-outline { background: white; color: var(--azul); border: 1.5px solid var(--azul); }
+.btn-outline:hover { background: #f0f5ff; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
 
-  /* ===== LISTA DE QUESTÕES ===== */
-  #lista-questoes { }
-  .quest-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 14px 16px;
-    border: 1px solid #e0e7f5;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    background: white;
-    transition: box-shadow 0.2s;
-  }
-  .quest-item:hover { box-shadow: 0 2px 10px rgba(0,74,173,0.12); }
-  .quest-num {
-    background: #004aad; color: white;
-    width: 30px; height: 30px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: bold; font-size: 0.8rem; flex-shrink: 0;
-  }
-  .quest-body { flex: 1; }
-  .quest-enunciado {
-    font-size: 0.9rem; color: #333;
-    line-height: 1.4; margin-bottom: 4px;
-    max-height: 50px; overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-  }
-  .quest-meta { font-size: 0.78rem; color: #888; }
-  .quest-meta strong { color: #004aad; }
-  .quest-actions { display: flex; gap: 6px; flex-shrink: 0; }
-  .quest-actions button {
-    padding: 5px 10px; font-size: 0.78rem;
-    border: none; border-radius: 4px; cursor: pointer;
-  }
-  .btn-del { background: #ffebee; color: #c62828; }
-  .btn-del:hover { background: #ffcdd2; }
+/* Preview */
+.preview-questao {
+  border: 2px solid var(--border); border-radius: 10px;
+  padding: 20px; background: var(--bg);
+}
 
-  /* Stats */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 16px;
-    margin-bottom: 20px;
-  }
-  .stat-card {
-    background: #f0f5ff;
-    border: 1px solid #c0d4f5;
-    border-radius: 8px;
-    padding: 16px;
-    text-align: center;
-  }
-  .stat-num { font-size: 2rem; font-weight: bold; color: #004aad; }
-  .stat-lbl { font-size: 0.8rem; color: #555; }
+/* Stats */
+.stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.stat-card { background: #f0f6ff; border: 1px solid #c7d7f5; border-radius: 10px; padding: 16px; text-align: center; }
+.stat-num { font-family: 'Barlow Condensed', sans-serif; font-size: 2rem; font-weight: 800; color: var(--azul); line-height: 1; }
+.stat-lbl { font-size: 0.75rem; color: var(--muted); margin-top: 3px; }
 
-  /* Spinner */
-  .mini-spinner {
-    width: 22px; height: 22px;
-    border: 3px solid #e0e0e0; border-top-color: #004aad;
-    border-radius: 50%; animation: spin 0.7s linear infinite;
-    display: inline-block;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* Lista questões */
+.quest-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px; border: 1px solid var(--border);
+  border-radius: 10px; margin-bottom: 10px; background: white;
+  transition: box-shadow 0.2s;
+}
+.quest-item:hover { box-shadow: 0 3px 12px rgba(0,74,173,0.1); }
+.quest-num {
+  background: var(--azul); color: white;
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700; font-size: 0.82rem; flex-shrink: 0;
+}
+.quest-body { flex: 1; }
+.quest-enunciado {
+  font-size: 0.88rem; color: var(--texto); line-height: 1.4; margin-bottom: 4px;
+  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.quest-meta { font-size: 0.76rem; color: var(--muted); }
+.quest-meta strong { color: var(--azul); }
+.quest-del {
+  padding: 5px 10px; font-size: 0.76rem;
+  background: #fff0f0; color: var(--vermelho);
+  border: 1px solid #fecaca; border-radius: 6px;
+  cursor: pointer; flex-shrink: 0; white-space: nowrap;
+  font-family: 'Barlow', sans-serif; font-weight: 600;
+  transition: background 0.2s;
+}
+.quest-del:hover { background: #ffe0e0; }
 
-  /* ===== RESPONSIVO ===== */
-  @media (max-width: 640px) {
-    .alts-grid { grid-template-columns: 1fr; }
-    header nav { display: none; }
-    .main-content { padding: 14px; }
-  }
+/* Tabela resultados */
+.tabela { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+.tabela th { background: var(--azul); color: white; padding: 10px 14px; text-align: left; font-weight: 600; }
+.tabela td { padding: 9px 14px; border-bottom: 1px solid var(--border); }
+.tabela tr:nth-child(even) td { background: #f8faff; }
+.pct-alto { color: var(--verde); font-weight: 700; }
+.pct-medio { color: var(--amarelo); font-weight: 700; }
+.pct-baixo { color: var(--vermelho); font-weight: 700; }
+
+/* Filtros */
+.filtros-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.filtros-row input, .filtros-row select {
+  flex: 1; min-width: 160px; padding: 8px 12px;
+  border: 1.5px solid var(--border); border-radius: 8px;
+  font-size: 0.88rem; font-family: 'Barlow', sans-serif;
+  outline: none;
+}
+.filtros-row input:focus, .filtros-row select:focus { border-color: var(--azul); }
+
+/* Toast */
+#toast {
+  position: fixed; bottom: 24px; right: 24px;
+  padding: 12px 20px; border-radius: 10px;
+  color: white; font-weight: 600; font-size: 0.9rem;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  opacity: 0; transform: translateY(16px);
+  transition: all 0.3s; z-index: 9999; pointer-events: none;
+}
+#toast.show { opacity: 1; transform: translateY(0); }
+#toast.ok   { background: var(--verde); }
+#toast.err  { background: var(--vermelho); }
+#toast.av   { background: var(--amarelo); color: #1a2340; }
+
+/* Spinner inline */
+.spin { display: inline-block; width: 20px; height: 20px; border: 2px solid #ddd; border-top-color: var(--azul); border-radius: 50%; animation: sp .6s linear infinite; vertical-align: middle; margin-right: 6px; }
+@keyframes sp { to { transform: rotate(360deg); } }
+
+/* Responsivo */
+@media(max-width:640px){
+  .alts-grid{ grid-template-columns:1fr; }
+  .app-header nav { display: none; }
+  .app-body { padding: 16px; }
+}
 </style>
 </head>
 <body>
 
-<!-- ===== HEADER ===== -->
-<header>
-  <div class="logo-area">
-    <div>
-      <h1>⚙ PAINEL DO APLICADOR</h1>
-      <div class="sub">SIMULADO SAEP — Gestão de Questões</div>
-    </div>
+<!-- ─── TELA DE LOGIN ─── -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-icon">🔐</div>
+    <h1>PAINEL SAEP</h1>
+    <p>Acesso exclusivo para aplicadores</p>
+    <div id="login-erro" class="login-erro">Senha incorreta. Tente novamente.</div>
+    <input type="password" class="login-campo" id="login-senha"
+      placeholder="••••••••" maxlength="30"
+      onkeydown="if(event.key==='Enter') tentarLogin()"/>
+    <button class="btn-login" onclick="tentarLogin()">Entrar</button>
+    <p class="login-hint">Solicite a senha ao coordenador do curso.</p>
   </div>
-  <nav>
-    <a href="index.html" target="_blank">🎓 Ver Simulado</a>
-  </nav>
-</header>
-
-<!-- ===== ABAS ===== -->
-<div class="tabs-bar">
-  <button class="tab-btn active" onclick="mudarAba('inserir')">➕ Inserir Questão</button>
-  <button class="tab-btn" onclick="mudarAba('listar')">📋 Questões Cadastradas</button>
-  <button class="tab-btn" onclick="mudarAba('resultados')">📊 Resultados</button>
-  <button class="tab-btn" onclick="mudarAba('config')">🔧 Configuração</button>
 </div>
 
-<!-- ===== CONTEÚDO PRINCIPAL ===== -->
-<div class="main-content">
+<!-- ─── APP PRINCIPAL ─── -->
+<div id="app">
 
-  <!-- ABA: INSERIR QUESTÃO -->
-  <div class="tab-panel active" id="tab-inserir">
-    <div class="card">
-      <h2>➕ Inserir Nova Questão</h2>
-
-      <div class="form-group">
-        <label for="disciplina">Disciplina / Área</label>
-        <input type="text" id="disciplina" placeholder="Ex: Ciber Sistemas, Automação Industrial, Eletrônica..." />
-      </div>
-
-      <div class="form-group">
-        <label class="editor-label">Enunciado da Questão *</label>
-        <div class="toolbar" id="toolbar-enunciado">
-          <button onclick="fmt('bold')"><b>N</b></button>
-          <button onclick="fmt('italic')"><i>I</i></button>
-          <button onclick="fmt('underline')"><u>S</u></button>
-          <button onclick="fmt('superscript')">x²</button>
-          <button onclick="fmt('subscript')">x₂</button>
-        </div>
-        <div class="editor" id="enunciado" contenteditable="true" data-placeholder="Digite o enunciado da questão aqui..."></div>
-      </div>
-
-      <div class="form-group">
-        <label>Imagem (opcional)</label>
-        <div class="img-area" id="img-drop-area" onclick="document.getElementById('imagem').click()">
-          <p>🖼 Clique para selecionar uma imagem <em>(PNG, JPG, GIF)</em></p>
-          <input type="file" id="imagem" accept="image/*" onchange="previewImagem(this)" />
-          <img id="img-preview" class="img-preview" style="display:none;" />
-          <button id="btn-remove-img" style="display:none;margin-top:8px;padding:5px 14px;background:#e53935;color:white;border:none;border-radius:4px;cursor:pointer;" onclick="removerImagem(event)">✕ Remover imagem</button>
-        </div>
-      </div>
-
-      <div class="alts-grid">
-        <div class="alt-item">
-          <div class="alt-label">A)</div>
-          <div class="editor" id="altA" contenteditable="true"></div>
-        </div>
-        <div class="alt-item">
-          <div class="alt-label">B)</div>
-          <div class="editor" id="altB" contenteditable="true"></div>
-        </div>
-        <div class="alt-item">
-          <div class="alt-label">C)</div>
-          <div class="editor" id="altC" contenteditable="true"></div>
-        </div>
-        <div class="alt-item">
-          <div class="alt-label">D)</div>
-          <div class="editor" id="altD" contenteditable="true"></div>
-        </div>
-      </div>
-
-      <div class="gabarito-row">
-        <label>Gabarito correto:</label>
-        <select id="gabarito">
-          <option value="A">A</option>
-          <option value="B">B</option>
-          <option value="C">C</option>
-          <option value="D">D</option>
-        </select>
-      </div>
-
-      <div class="btn-row">
-        <button class="btn btn-outline" onclick="gerarPreview()">👁 Visualizar Preview</button>
-        <button class="btn btn-secondary" onclick="salvarQuestao()" id="btn-salvar">💾 Salvar Questão</button>
-        <button class="btn btn-danger" onclick="limparFormulario()">🗑 Limpar</button>
-      </div>
+  <!-- Header -->
+  <div class="app-header">
+    <div class="header-logo">
+      <div class="header-logo-badge">SP</div>
+      <div class="header-logo-txt">PAINEL SAEP<br><small>Aplicador</small></div>
     </div>
-
-    <!-- Preview -->
-    <div class="card">
-      <h2>👁 Preview da Questão</h2>
-      <div class="preview-box" id="preview-box">
-        <p><em>Clique em "Visualizar Preview" para ver como a questão ficará no simulado.</em></p>
-      </div>
-      <div id="preview-box-real" style="display:none;">
-        <!-- preenchido via JS -->
-      </div>
+    <div class="header-acoes">
+      <button class="btn-header btn-ver-sim" onclick="window.open('index.html','_blank')">🎓 Ver Simulados</button>
+      <button class="btn-header btn-sair" onclick="sair()">Sair</button>
     </div>
   </div>
 
-  <!-- ABA: LISTAR QUESTÕES -->
-  <div class="tab-panel" id="tab-listar">
-    <div class="card">
-      <h2>📋 Questões Cadastradas</h2>
+  <!-- Tabs -->
+  <div class="app-tabs">
+    <button class="tab-btn ativa" onclick="trocarAba('inserir',this)">➕ Inserir Questão</button>
+    <button class="tab-btn" onclick="trocarAba('listar',this)">📋 Questões</button>
+    <button class="tab-btn" onclick="trocarAba('resultados',this)">📊 Resultados</button>
+    <button class="tab-btn" onclick="trocarAba('cursos',this)">🎓 Cursos</button>
+    <button class="tab-btn" onclick="trocarAba('config',this)">⚙️ Config</button>
+  </div>
 
-      <div class="stats-grid" id="stats-grid">
-        <div class="stat-card">
-          <div class="stat-num" id="stat-total">—</div>
-          <div class="stat-lbl">Total de questões</div>
+  <!-- Body -->
+  <div class="app-body">
+
+    <!-- ── ABA INSERIR ── -->
+    <div class="tab-painel ativa" id="tab-inserir">
+
+      <div class="card">
+        <div class="card-titulo">➕ Inserir Nova Questão</div>
+
+        <div class="curso-select-row">
+          <label>📚 Curso:</label>
+          <select id="sel-curso">
+            <option value="">Selecione o curso...</option>
+          </select>
         </div>
-        <div class="stat-card">
-          <div class="stat-num" id="stat-disc">—</div>
-          <div class="stat-lbl">Disciplinas</div>
+
+        <div class="form-row">
+          <label>Disciplina / Área (dentro do curso)</label>
+          <input type="text" id="disciplina" placeholder="Ex: Automação, Eletricidade, Redes..."/>
+        </div>
+
+        <div class="form-row">
+          <label>Enunciado *</label>
+          <div id="aviso-paste" class="paste-aviso">⚠️ Formatação do Word removida automaticamente.</div>
+          <div class="editor-toolbar">
+            <button onclick="fmt('bold')"><b>N</b></button>
+            <button onclick="fmt('italic')"><i>I</i></button>
+            <button onclick="fmt('underline')"><u>S</u></button>
+            <button onclick="fmt('superscript')">x²</button>
+            <button onclick="fmt('subscript')">x₂</button>
+            <div class="editor-sep"></div>
+            <button class="btn-limpar-fmt" onclick="limparEditor('enunciado')">🧹 Limpar</button>
+          </div>
+          <div class="editor" id="enunciado" contenteditable="true"></div>
+        </div>
+
+        <div class="form-row">
+          <label>Imagem do enunciado (opcional)</label>
+          <div class="img-drop" id="img-drop" onclick="document.getElementById('img-input').click()">
+            <p style="font-size:0.85rem;color:#5a6a8a;">🖼 Clique para selecionar (PNG, JPG, GIF)</p>
+            <input type="file" id="img-input" accept="image/*" style="display:none" onchange="prevImagem(this)"/>
+            <img id="img-preview" class="img-preview" style="display:none"/>
+            <button id="btn-rm-img" style="display:none;margin-top:8px;padding:5px 12px;background:#fee;color:#c62828;border:1px solid #fecaca;border-radius:6px;cursor:pointer;font-size:0.8rem;" onclick="rmImagem(event)">✕ Remover</button>
+          </div>
+        </div>
+
+        <div class="alts-grid">
+          <div><div class="alt-lbl-txt">A)</div><div class="editor" id="altA" contenteditable="true"></div></div>
+          <div><div class="alt-lbl-txt">B)</div><div class="editor" id="altB" contenteditable="true"></div></div>
+          <div><div class="alt-lbl-txt">C)</div><div class="editor" id="altC" contenteditable="true"></div></div>
+          <div><div class="alt-lbl-txt">D)</div><div class="editor" id="altD" contenteditable="true"></div></div>
+        </div>
+
+        <div class="gab-row">
+          <label>Gabarito correto:</label>
+          <select id="gabarito"><option>A</option><option>B</option><option>C</option><option>D</option></select>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-outline" onclick="gerarPreview()">👁 Preview</button>
+          <button class="btn btn-sucesso" id="btn-salvar" onclick="salvar()">💾 Salvar Questão</button>
+          <button class="btn btn-perigo" onclick="limparForm()">🗑 Limpar</button>
         </div>
       </div>
 
-      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
-        <input type="text" id="filtro-busca" placeholder="🔍 Buscar questão..." onkeyup="filtrarQuestoes()"
-          style="flex:1;min-width:180px;padding:8px 12px;border:1px solid #ccc;border-radius:6px;outline:none;" />
-        <select id="filtro-disc" onchange="filtrarQuestoes()"
-          style="padding:8px 12px;border:1px solid #ccc;border-radius:6px;outline:none;">
-          <option value="">Todas as disciplinas</option>
-        </select>
-        <button class="btn btn-primary" onclick="carregarQuestoes()" style="flex:none;padding:8px 16px;">🔄 Atualizar</button>
+      <!-- Preview -->
+      <div class="card" id="card-preview" style="display:none">
+        <div class="card-titulo">👁 Preview</div>
+        <div class="preview-questao" id="preview-conteudo"></div>
       </div>
 
-      <div id="lista-questoes">
-        <p style="text-align:center;color:#888;">Clique em "Atualizar" para carregar as questões.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- ABA: RESULTADOS -->
-  <div class="tab-panel" id="tab-resultados">
-    <div class="card">
-      <h2>📊 Resultados dos Participantes</h2>
-      <div style="margin-bottom:12px;">
-        <button class="btn btn-primary" onclick="carregarResultados()" style="width:auto;padding:9px 20px;">🔄 Carregar Resultados</button>
-      </div>
-      <div id="tabela-resultados">
-        <p style="color:#888;">Clique em "Carregar Resultados" para ver os dados.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- ABA: CONFIGURAÇÃO -->
-  <div class="tab-panel" id="tab-config">
-    <div class="card">
-      <h2>🔧 Configuração do Sistema</h2>
-      <p style="color:#555;line-height:1.6;">
-        Para o simulado funcionar corretamente, você precisa configurar o <strong>Google Apps Script</strong>
-        e publicar como Web App. Siga os passos abaixo:
-      </p>
-      <ol style="line-height:2;color:#333;">
-        <li>Abra sua <strong>Planilha Google</strong> com as abas <em>Questoes</em> e <em>Resultados</em></li>
-        <li>Vá em <strong>Extensões → Apps Script</strong></li>
-        <li>Cole o código do arquivo <code>PLANILHA.gs</code> fornecido</li>
-        <li>Clique em <strong>Implantar → Nova implantação → Web App</strong></li>
-        <li>Configure: Executar como <em>Eu</em>, Acesso <em>Qualquer pessoa</em></li>
-        <li>Copie a URL gerada</li>
-        <li>Cole a URL no campo abaixo e no arquivo <code>index.html</code></li>
-      </ol>
-
-      <div class="form-group" style="margin-top:16px;">
-        <label>URL do Google Apps Script (Web App)</label>
-        <input type="text" id="config-url" placeholder="https://script.google.com/macros/s/..." />
-      </div>
-      <div class="btn-row">
-        <button class="btn btn-primary" onclick="salvarConfig()">💾 Salvar URL</button>
-        <button class="btn btn-outline" onclick="testarConexao()">🔗 Testar Conexão</button>
-      </div>
-      <div id="config-status" style="margin-top:14px;"></div>
     </div>
 
-    <div class="card">
-      <h2>📄 Estrutura da Planilha</h2>
-      <p style="color:#555;">Sua planilha precisa ter <strong>duas abas</strong>:</p>
-      <h3 style="color:#004aad;margin-bottom:6px;">Aba "Questoes"</h3>
-      <table style="width:100%;border-collapse:collapse;font-size:0.85rem;margin-bottom:16px;">
-        <thead>
-          <tr style="background:#004aad;color:white;">
-            <th style="padding:7px 10px;text-align:left;">Coluna A</th>
-            <th style="padding:7px 10px;text-align:left;">Coluna B</th>
-            <th style="padding:7px 10px;text-align:left;">Coluna C</th>
-            <th style="padding:7px 10px;text-align:left;">Coluna D</th>
-            <th style="padding:7px 10px;text-align:left;">Coluna E</th>
-            <th style="padding:7px 10px;text-align:left;">Coluna F</th>
-            <th style="padding:7px 10px;text-align:left;">Coluna G</th>
-            <th style="padding:7px 10px;text-align:left;">Coluna H</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr style="background:#f0f5ff;">
-            <td style="padding:7px 10px;">disciplina</td>
-            <td style="padding:7px 10px;">enunciado</td>
-            <td style="padding:7px 10px;">imagem</td>
-            <td style="padding:7px 10px;">A</td>
-            <td style="padding:7px 10px;">B</td>
-            <td style="padding:7px 10px;">C</td>
-            <td style="padding:7px 10px;">D</td>
-            <td style="padding:7px 10px;">gabarito</td>
-          </tr>
-        </tbody>
-      </table>
-      <h3 style="color:#004aad;margin-bottom:6px;">Aba "Resultados"</h3>
-      <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
-        <thead>
-          <tr style="background:#004aad;color:white;">
-            <th style="padding:7px 10px;text-align:left;">Coluna A</th>
-            <th style="padding:7px 10px;text-align:left;">Coluna B</th>
-            <th style="padding:7px 10px;text-align:left;">Coluna C</th>
-            <th style="padding:7px 10px;text-align:left;">Coluna D</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr style="background:#f0f5ff;">
-            <td style="padding:7px 10px;">data</td>
-            <td style="padding:7px 10px;">nome</td>
-            <td style="padding:7px 10px;">acertos</td>
-            <td style="padding:7px 10px;">total</td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- ── ABA LISTAR ── -->
+    <div class="tab-painel" id="tab-listar">
+      <div class="card">
+        <div class="card-titulo">📋 Questões Cadastradas</div>
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-num" id="stat-total">—</div><div class="stat-lbl">total</div></div>
+          <div class="stat-card"><div class="stat-num" id="stat-disc">—</div><div class="stat-lbl">disciplinas</div></div>
+          <div class="stat-card"><div class="stat-num" id="stat-cursos">—</div><div class="stat-lbl">cursos</div></div>
+        </div>
+        <div class="filtros-row">
+          <input type="text" id="filtro-txt" placeholder="🔍 Buscar..." onkeyup="filtrar()"/>
+          <select id="filtro-curso-lista" onchange="filtrar()"><option value="">Todos os cursos</option></select>
+          <button class="btn btn-primary" style="flex:none;padding:8px 18px;min-width:auto" onclick="carregarQuestoes()">🔄</button>
+        </div>
+        <div id="lista-questoes"><p style="color:var(--muted);text-align:center;">Clique em 🔄 para carregar.</p></div>
+      </div>
     </div>
-  </div>
 
-</div>
+    <!-- ── ABA RESULTADOS ── -->
+    <div class="tab-painel" id="tab-resultados">
+      <div class="card">
+        <div class="card-titulo">📊 Resultados</div>
+        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+          <select id="filtro-curso-result" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Barlow',sans-serif;outline:none;">
+            <option value="">Todos os cursos</option>
+          </select>
+          <button class="btn btn-primary" style="min-width:auto;padding:8px 20px;" onclick="carregarResultados()">🔄 Carregar</button>
+        </div>
+        <div id="area-resultados"><p style="color:var(--muted);">Clique em Carregar para ver os dados.</p></div>
+      </div>
+    </div>
 
-<!-- ===== TOAST ===== -->
+    <!-- ── ABA CURSOS ── -->
+    <div class="tab-painel" id="tab-cursos">
+      <div class="card">
+        <div class="card-titulo">🎓 Gerenciar Cursos</div>
+        <p style="font-size:0.85rem;color:var(--muted);margin-bottom:16px;line-height:1.6;">
+          Os cursos listados aqui aparecem na tela inicial do simulado.
+          Edite a lista no arquivo <code>index.html</code> (array <code>CURSOS</code>) para adicionar, remover ou renomear cursos.
+        </p>
+        <div id="lista-cursos-config"></div>
+      </div>
+    </div>
+
+    <!-- ── ABA CONFIG ── -->
+    <div class="tab-painel" id="tab-config">
+      <div class="card">
+        <div class="card-titulo">⚙️ Configuração</div>
+
+        <div class="form-row">
+          <label>URL do Google Apps Script</label>
+          <input type="text" id="cfg-url" placeholder="https://script.google.com/macros/s/..."/>
+        </div>
+        <div class="form-row">
+          <label>Alterar senha do painel</label>
+          <input type="password" id="cfg-senha-nova" placeholder="Nova senha (mín. 4 caracteres)"/>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="salvarConfig()">💾 Salvar</button>
+          <button class="btn btn-outline" onclick="testarConexao()">🔗 Testar Conexão</button>
+        </div>
+        <div id="cfg-status" style="margin-top:14px;font-size:0.85rem;"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-titulo">📋 Estrutura da Planilha</div>
+        <p style="font-size:0.85rem;color:var(--muted);margin-bottom:14px;">
+          Sua planilha Google precisa de duas abas com esta estrutura:
+        </p>
+        <p style="font-size:0.85rem;font-weight:600;color:var(--azul);margin-bottom:8px;">Aba "Questoes"</p>
+        <table class="tabela" style="margin-bottom:16px;">
+          <tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th></tr>
+          <tr><td>curso</td><td>disciplina</td><td>enunciado</td><td>imagem</td><td>A</td><td>B</td><td>C</td><td>D</td><td>gabarito</td></tr>
+        </table>
+        <p style="font-size:0.85rem;font-weight:600;color:var(--azul);margin-bottom:8px;">Aba "Resultados"</p>
+        <table class="tabela">
+          <tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>
+          <tr><td>data</td><td>nome</td><td>acertos</td><td>total</td><td>curso</td></tr>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /app-body -->
+</div><!-- /app -->
+
 <div id="toast"></div>
 
 <script>
 // ================================================================
-//  CONFIGURAÇÃO
+//  CONFIG LOCAL
 // ================================================================
-const CONFIG_KEY = 'saepPainelConfig';
+const CFG_KEY = 'saepPainelCfg';
+const AUTH_KEY = 'saepPainelAuth';
+const SENHA_PADRAO = 'saep2025'; // altere aqui ou pelo painel
 
-function getConfig() {
-  try { return JSON.parse(localStorage.getItem(CONFIG_KEY)) || {}; }
+function getCfg() {
+  try { return JSON.parse(localStorage.getItem(CFG_KEY)) || {}; }
   catch(e) { return {}; }
 }
-function salvarConfig() {
-  const url = document.getElementById('config-url').value.trim();
-  if (!url) { toast('Informe a URL do Apps Script.', 'aviso'); return; }
-  localStorage.setItem(CONFIG_KEY, JSON.stringify({ apiUrl: url }));
-  toast('URL salva com sucesso!', 'sucesso');
-}
 function getApiUrl() {
-  const cfg = getConfig();
-  // URL padrão (mesma do index.html) — sobrescrita se o aplicador configurar outra
-  return cfg.apiUrl || "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec";
+  return getCfg().apiUrl || "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec";
 }
+function getSenha() { return getCfg().senha || SENHA_PADRAO; }
 
-// Carrega URL salva no input
+// ================================================================
+//  LISTA DE CURSOS (deve espelhar o index.html)
+// ================================================================
+const CURSOS = [
+  { id:"ciber-sistemas",        nome:"Ciber Sistemas" },
+  { id:"instalacoes-eletricas", nome:"Instalações Elétricas" },
+  { id:"automacao-industrial",  nome:"Automação Industrial" },
+  { id:"eletronica",            nome:"Eletrônica" },
+  { id:"redes-computadores",    nome:"Redes de Computadores" }
+];
+
+// ================================================================
+//  LOGIN
+// ================================================================
 window.addEventListener('DOMContentLoaded', () => {
-  const cfg = getConfig();
-  if (cfg.apiUrl) document.getElementById('config-url').value = cfg.apiUrl;
+  if (localStorage.getItem(AUTH_KEY) === 'ok') mostrarApp();
+  const cfg = getCfg();
+  if (cfg.apiUrl) document.getElementById('cfg-url').value = cfg.apiUrl;
+  preencherSelects();
 });
 
-async function testarConexao() {
-  const status = document.getElementById('config-status');
-  status.innerHTML = '<span class="mini-spinner"></span> Testando...';
-  try {
-    const res = await fetch(getApiUrl() + '?tipo=LISTAR_QUESTOES');
-    const data = await res.json();
-    status.innerHTML = `<span style="color:#4CAF50;font-weight:bold;">✅ Conexão OK! ${Array.isArray(data) ? data.length : '?'} questões encontradas.</span>`;
-  } catch(e) {
-    status.innerHTML = `<span style="color:#e53935;font-weight:bold;">❌ Falha na conexão: ${e.message}</span>`;
+function tentarLogin() {
+  const senha = document.getElementById('login-senha').value;
+  if (senha === getSenha()) {
+    localStorage.setItem(AUTH_KEY, 'ok');
+    mostrarApp();
+  } else {
+    document.getElementById('login-erro').style.display = 'block';
+    document.getElementById('login-senha').value = '';
+    document.getElementById('login-senha').focus();
   }
+}
+function mostrarApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('app').style.flexDirection = 'column';
+  renderCursosConfig();
+}
+function sair() {
+  localStorage.removeItem(AUTH_KEY);
+  location.reload();
+}
+
+// ================================================================
+//  PREENCHE SELECTS DE CURSO
+// ================================================================
+function preencherSelects() {
+  ['sel-curso','filtro-curso-lista','filtro-curso-result'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const primeiro = el.options[0];
+    el.innerHTML = '';
+    el.appendChild(primeiro);
+    CURSOS.forEach(c => {
+      const o = new Option(c.nome, c.id);
+      el.appendChild(o);
+    });
+  });
 }
 
 // ================================================================
 //  ABAS
 // ================================================================
-function mudarAba(id) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + id).classList.add('active');
-  const btns = document.querySelectorAll('.tab-btn');
-  const map = { inserir:0, listar:1, resultados:2, config:3 };
-  btns[map[id]].classList.add('active');
-
-  if (id === 'listar') carregarQuestoes();
-  if (id === 'resultados') carregarResultados();
+function trocarAba(id, btn) {
+  document.querySelectorAll('.tab-painel').forEach(p => p.classList.remove('ativa'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('ativa'));
+  document.getElementById('tab-'+id).classList.add('ativa');
+  btn.classList.add('ativa');
+  if (id==='listar') carregarQuestoes();
+  if (id==='resultados') carregarResultados();
 }
 
 // ================================================================
-//  FORMATAÇÃO DO EDITOR
+//  LIMPEZA WORD
 // ================================================================
-function fmt(cmd) {
-  document.execCommand(cmd, false, null);
+function limparWord(html) {
+  let s = String(html||'');
+  s = s.replace(/<\/?o:[^>]*>/gi,'').replace(/<\/?w:[^>]*>/gi,'').replace(/<\/?m:[^>]*>/gi,'');
+  s = s.replace(/\s*class="Mso[^"]*"/gi,'').replace(/\s*style="[^"]*mso-[^"]*"/gi,'');
+  s = s.replace(/<\/p>/gi,' ').replace(/<p[^>]*>/gi,'');
+  s = s.replace(/<span[^>]*>/gi,'').replace(/<\/span>/gi,'');
+  s = s.replace(/<!--[\s\S]*?-->/g,'').replace(/\s{2,}/g,' ').trim();
+  return s;
 }
+function ehWord(html) { return /mso-|MsoNormal|font-family:Aptos/i.test(html); }
+function limparEditor(id) { document.getElementById(id).innerHTML = limparWord(document.getElementById(id).innerHTML); toast('Formatação limpa!','ok'); }
+function fmt(c) { document.execCommand(c,false,null); }
 
-// ================================================================
-//  IMAGEM PREVIEW
-// ================================================================
-function previewImagem(input) {
-  const img = document.getElementById('img-preview');
-  const btn = document.getElementById('btn-remove-img');
-  if (input.files && input.files[0]) {
-    img.src = URL.createObjectURL(input.files[0]);
-    img.style.display = 'block';
-    btn.style.display = 'inline-block';
+document.addEventListener('paste', e => {
+  const alvo = e.target.closest('.editor');
+  if (!alvo) return;
+  const html = (e.clipboardData||window.clipboardData).getData('text/html');
+  if (html && ehWord(html)) {
+    e.preventDefault();
+    document.execCommand('insertHTML',false,limparWord(html));
+    const av = document.getElementById('aviso-paste');
+    if (av) { av.style.display='block'; setTimeout(()=>av.style.display='none',4000); }
   }
+});
+
+// ================================================================
+//  IMAGEM
+// ================================================================
+function prevImagem(input) {
+  if (!input.files[0]) return;
+  const img = document.getElementById('img-preview');
+  img.src = URL.createObjectURL(input.files[0]);
+  img.style.display = 'block';
+  document.getElementById('btn-rm-img').style.display = 'inline-block';
 }
-function removerImagem(e) {
+function rmImagem(e) {
   e.stopPropagation();
-  document.getElementById('imagem').value = '';
-  document.getElementById('img-preview').style.display = 'none';
-  document.getElementById('btn-remove-img').style.display = 'none';
+  document.getElementById('img-input').value='';
+  document.getElementById('img-preview').style.display='none';
+  document.getElementById('btn-rm-img').style.display='none';
 }
 
 // ================================================================
-//  PREVIEW DA QUESTÃO
+//  PREVIEW
 // ================================================================
 function gerarPreview() {
-  const box = document.getElementById('preview-box-real');
   const enunc = document.getElementById('enunciado').innerHTML;
-  const altA = document.getElementById('altA').innerHTML;
-  const altB = document.getElementById('altB').innerHTML;
-  const altC = document.getElementById('altC').innerHTML;
-  const altD = document.getElementById('altD').innerHTML;
   const gab = document.getElementById('gabarito').value;
-  const disc = document.getElementById('disciplina').value;
-  const file = document.getElementById('imagem').files[0];
-  const imgHtml = file ? `<img src="${URL.createObjectURL(file)}" style="max-width:300px;margin:8px 0;border-radius:6px;border:1px solid #ddd;">` : '';
+  const file = document.getElementById('img-input').files[0];
+  const imgH = file ? `<img src="${URL.createObjectURL(file)}" style="max-width:280px;border-radius:8px;margin:8px 0;border:1px solid var(--border)">` : '';
+  const alts = ['A','B','C','D'].map(l => {
+    const txt = document.getElementById('alt'+l).innerHTML;
+    const dest = l===gab ? 'background:#e8f8f1;border-left:3px solid #00b86b;padding-left:8px;border-radius:3px;' : '';
+    return `<div style="padding:6px 0;font-size:0.9rem;${dest}"><strong>${l})</strong> ${txt||'<em style="color:#aaa">vazio</em>'}</div>`;
+  }).join('');
 
-  document.getElementById('preview-box').style.display = 'none';
-
-  box.innerHTML = `
-    <div style="border:2px solid #004aad;border-radius:8px;padding:18px;background:#f8faff;">
-      ${disc ? `<span style="background:#e8f0fe;color:#004aad;padding:2px 10px;border-radius:10px;font-size:0.78rem;border:1px solid #c0d4f5;">${disc}</span><br><br>` : ''}
-      <div style="font-size:0.95rem;line-height:1.6;color:#222;margin-bottom:12px;">${enunc || '<em style="color:#aaa;">Enunciado vazio</em>'}</div>
-      ${imgHtml}
-      <div style="margin-top:10px;">
-        ${['A','B','C','D'].map((l,i) => {
-          const txt = [altA,altB,altC,altD][i];
-          const destaque = l === gab ? 'background:#e8f5e8;border-left:3px solid #4CAF50;padding-left:8px;border-radius:3px;' : '';
-          return `<div style="padding:5px 0;font-size:0.92rem;${destaque}"><strong>${l})</strong> ${txt || '<em style="color:#aaa;">Alternativa vazia</em>'}</div>`;
-        }).join('')}
-      </div>
-      <div style="margin-top:12px;font-size:0.85rem;background:#e8f5e8;border-left:4px solid #4CAF50;padding:8px 12px;border-radius:0 5px 5px 0;color:#2a6e2a;font-weight:bold;">
-        ✅ Gabarito: ${gab}
-      </div>
-    </div>
+  document.getElementById('preview-conteudo').innerHTML = `
+    <div style="font-size:0.95rem;line-height:1.6;margin-bottom:12px;">${enunc||'<em style="color:#aaa">Enunciado vazio</em>'}</div>
+    ${imgH}<div style="margin-top:10px;">${alts}</div>
+    <div style="margin-top:12px;padding:8px 12px;background:#e8f8f1;border-left:4px solid #00b86b;border-radius:0 6px 6px 0;font-size:0.85rem;font-weight:600;color:#1a7a4a;">✅ Gabarito: ${gab}</div>
   `;
-  box.style.display = 'block';
+  document.getElementById('card-preview').style.display='block';
+  document.getElementById('card-preview').scrollIntoView({behavior:'smooth'});
 }
 
 // ================================================================
 //  SALVAR QUESTÃO
 // ================================================================
-async function salvarQuestao() {
+async function salvar() {
+  const curso = document.getElementById('sel-curso').value;
+  if (!curso) { toast('Selecione o curso.','av'); return; }
   const enunciado = document.getElementById('enunciado').innerHTML.trim();
-  const altA = document.getElementById('altA').innerHTML.trim();
-  const altB = document.getElementById('altB').innerHTML.trim();
-  const altC = document.getElementById('altC').innerHTML.trim();
-  const altD = document.getElementById('altD').innerHTML.trim();
-
-  if (!enunciado) { toast('Preencha o enunciado da questão.', 'aviso'); return; }
-  if (!altA || !altB || !altC || !altD) { toast('Preencha todas as alternativas (A, B, C e D).', 'aviso'); return; }
+  if (!enunciado) { toast('Preencha o enunciado.','av'); return; }
+  const alts = ['A','B','C','D'].map(l => document.getElementById('alt'+l).innerHTML.trim());
+  if (alts.some(a=>!a)) { toast('Preencha todas as alternativas.','av'); return; }
 
   const btn = document.getElementById('btn-salvar');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="mini-spinner"></span> Salvando...';
+  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>Salvando...';
 
-  // Converte imagem para base64 se houver
   let base64 = '';
-  const file = document.getElementById('imagem').files[0];
-  if (file) {
-    base64 = await new Promise((res, rej) => {
-      const r = new FileReader();
-      r.readAsDataURL(file);
-      r.onload = () => res(r.result);
-      r.onerror = rej;
-    });
-  }
+  const file = document.getElementById('img-input').files[0];
+  if (file) base64 = await new Promise((res,rej)=>{const r=new FileReader();r.readAsDataURL(file);r.onload=()=>res(r.result);r.onerror=rej});
 
   try {
     const res = await fetch(getApiUrl(), {
-      method: 'POST',
+      method:'POST',
       body: JSON.stringify({
-        tipo: 'INSERIR_QUESTAO',
+        tipo:'INSERIR_QUESTAO', curso,
         disciplina: document.getElementById('disciplina').value,
-        enunciado,
-        imagem: base64,
-        A: altA, B: altB, C: altC, D: altD,
+        enunciado, imagem: base64,
+        A: alts[0], B: alts[1], C: alts[2], D: alts[3],
         gabarito: document.getElementById('gabarito').value
       })
     });
     const r = await res.json();
-    if (r.status === 'ok') {
-      toast('✅ Questão salva com sucesso!', 'sucesso');
-      limparFormulario();
-    } else {
-      toast('❌ Erro ao salvar: ' + (r.erro || JSON.stringify(r)), 'erro');
-    }
-  } catch(e) {
-    toast('❌ Erro de conexão: ' + e.message, 'erro');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '💾 Salvar Questão';
-  }
+    if (r.status==='ok') { toast('✅ Questão salva!','ok'); limparForm(); }
+    else toast('Erro: '+(r.erro||JSON.stringify(r)),'err');
+  } catch(e) { toast('Erro de conexão: '+e.message,'err'); }
+  finally { btn.disabled=false; btn.innerHTML='💾 Salvar Questão'; }
+}
+
+function limparForm() {
+  ['enunciado','altA','altB','altC','altD'].forEach(id=>document.getElementById(id).innerHTML='');
+  document.getElementById('disciplina').value='';
+  document.getElementById('gabarito').value='A';
+  rmImagem({stopPropagation:()=>{}});
+  document.getElementById('card-preview').style.display='none';
 }
 
 // ================================================================
-//  LIMPAR FORMULÁRIO
+//  LISTAR QUESTÕES
 // ================================================================
-function limparFormulario() {
-  document.getElementById('disciplina').value = '';
-  document.getElementById('enunciado').innerHTML = '';
-  document.getElementById('altA').innerHTML = '';
-  document.getElementById('altB').innerHTML = '';
-  document.getElementById('altC').innerHTML = '';
-  document.getElementById('altD').innerHTML = '';
-  document.getElementById('gabarito').value = 'A';
-  removerImagem({ stopPropagation:()=>{} });
-  document.getElementById('preview-box-real').style.display = 'none';
-  document.getElementById('preview-box').style.display = 'block';
-  document.getElementById('preview-box').innerHTML = '<p><em>Clique em "Visualizar Preview" para ver como a questão ficará no simulado.</em></p>';
-}
-
-// ================================================================
-//  CARREGAR QUESTÕES
-// ================================================================
-let todasQuestoes = [];
+let todasQ = [];
 
 async function carregarQuestoes() {
   const lista = document.getElementById('lista-questoes');
-  lista.innerHTML = '<p style="text-align:center;"><span class="mini-spinner"></span> Carregando...</p>';
-
+  lista.innerHTML = '<p><span class="spin"></span> Carregando...</p>';
   try {
-    const res = await fetch(getApiUrl() + '?tipo=LISTAR_QUESTOES');
-    todasQuestoes = await res.json();
-
-    if (!Array.isArray(todasQuestoes) || todasQuestoes.length === 0) {
-      lista.innerHTML = '<p style="color:#888;text-align:center;">Nenhuma questão cadastrada ainda.</p>';
-      document.getElementById('stat-total').textContent = '0';
-      document.getElementById('stat-disc').textContent = '0';
+    const res = await fetch(getApiUrl()+'?tipo=LISTAR_QUESTOES');
+    todasQ = await res.json();
+    if (!Array.isArray(todasQ)||todasQ.length===0) {
+      lista.innerHTML='<p style="color:var(--muted);text-align:center;">Nenhuma questão cadastrada.</p>';
+      document.getElementById('stat-total').textContent='0';
+      document.getElementById('stat-disc').textContent='0';
+      document.getElementById('stat-cursos').textContent='0';
       return;
     }
+    const discs = new Set(todasQ.map(q=>q.disciplina).filter(Boolean));
+    const cursos = new Set(todasQ.map(q=>q.curso).filter(Boolean));
+    document.getElementById('stat-total').textContent = todasQ.length;
+    document.getElementById('stat-disc').textContent = discs.size;
+    document.getElementById('stat-cursos').textContent = cursos.size;
 
-    // Stats
-    const disciplinas = [...new Set(todasQuestoes.map(q => q.disciplina).filter(Boolean))];
-    document.getElementById('stat-total').textContent = todasQuestoes.length;
-    document.getElementById('stat-disc').textContent = disciplinas.length;
+    // Popula filtro
+    const sel = document.getElementById('filtro-curso-lista');
+    sel.innerHTML = '<option value="">Todos os cursos</option>';
+    CURSOS.forEach(c=>{const o=new Option(c.nome,c.id);sel.appendChild(o);});
 
-    // Filtro de disciplinas
-    const sel = document.getElementById('filtro-disc');
-    sel.innerHTML = '<option value="">Todas as disciplinas</option>' +
-      disciplinas.map(d => `<option value="${d}">${d}</option>`).join('');
-
-    renderizarLista(todasQuestoes);
-  } catch(e) {
-    lista.innerHTML = `<p style="color:#e53935;">Erro ao carregar: ${e.message}</p>`;
-  }
+    renderLista(todasQ);
+  } catch(e) { lista.innerHTML=`<p style="color:var(--vermelho)">Erro: ${e.message}</p>`; }
 }
 
-function renderizarLista(questoes) {
+function renderLista(questoes) {
   const lista = document.getElementById('lista-questoes');
-  if (questoes.length === 0) {
-    lista.innerHTML = '<p style="color:#888;text-align:center;">Nenhuma questão encontrada.</p>';
-    return;
-  }
-  lista.innerHTML = questoes.map((q, i) => `
+  if (!questoes.length) { lista.innerHTML='<p style="color:var(--muted);text-align:center;">Nenhuma questão encontrada.</p>'; return; }
+  lista.innerHTML = questoes.map((q,i)=>`
     <div class="quest-item">
       <div class="quest-num">${i+1}</div>
       <div class="quest-body">
-        <div class="quest-enunciado">${q.enunciado || '(sem enunciado)'}</div>
+        <div class="quest-enunciado">${q.enunciado||'(sem enunciado)'}</div>
         <div class="quest-meta">
-          ${q.disciplina ? `<strong>${q.disciplina}</strong> · ` : ''}
-          Gabarito: <strong>${q.gabarito || '?'}</strong>
-          ${q.imagem ? ' · 🖼 Com imagem' : ''}
+          ${q.curso?`<strong>${CURSOS.find(c=>c.id===q.curso)?.nome||q.curso}</strong> · `:''}
+          ${q.disciplina?`${q.disciplina} · `:''}
+          Gabarito: <strong>${q.gabarito||'?'}</strong>
+          ${q.imagem?' · 🖼':''}
         </div>
       </div>
-      <div class="quest-actions">
-        <button class="btn-del" onclick="excluirQuestao(${i})">🗑 Excluir</button>
-      </div>
+      <button class="quest-del" onclick="excluir(${i})">🗑 Excluir</button>
     </div>
   `).join('');
 }
 
-function filtrarQuestoes() {
-  const busca = document.getElementById('filtro-busca').value.toLowerCase();
-  const disc = document.getElementById('filtro-disc').value;
-  const filtradas = todasQuestoes.filter(q => {
-    const matchBusca = !busca || (q.enunciado||'').toLowerCase().includes(busca);
-    const matchDisc = !disc || q.disciplina === disc;
-    return matchBusca && matchDisc;
-  });
-  renderizarLista(filtradas);
+function filtrar() {
+  const txt = document.getElementById('filtro-txt').value.toLowerCase();
+  const curso = document.getElementById('filtro-curso-lista').value;
+  renderLista(todasQ.filter(q=>{
+    const matchTxt = !txt||(q.enunciado||'').toLowerCase().includes(txt);
+    const matchCurso = !curso||(q.curso===curso);
+    return matchTxt&&matchCurso;
+  }));
 }
 
-async function excluirQuestao(idx) {
-  if (!confirm('Tem certeza que deseja excluir esta questão?')) return;
+async function excluir(idx) {
+  if (!confirm('Excluir esta questão?')) return;
   try {
-    const res = await fetch(getApiUrl(), {
-      method: 'POST',
-      body: JSON.stringify({ tipo: 'EXCLUIR_QUESTAO', indice: idx })
-    });
+    const res = await fetch(getApiUrl(),{method:'POST',body:JSON.stringify({tipo:'EXCLUIR_QUESTAO',indice:idx})});
     const r = await res.json();
-    if (r.status === 'ok') {
-      toast('Questão excluída.', 'sucesso');
-      carregarQuestoes();
-    } else {
-      toast('Erro ao excluir: ' + (r.erro || ''), 'erro');
-    }
-  } catch(e) {
-    toast('Erro de conexão: ' + e.message, 'erro');
-  }
+    if (r.status==='ok') { toast('Questão excluída.','ok'); carregarQuestoes(); }
+    else toast('Erro: '+(r.erro||''),'err');
+  } catch(e) { toast('Erro: '+e.message,'err'); }
 }
 
 // ================================================================
 //  RESULTADOS
 // ================================================================
 async function carregarResultados() {
-  const div = document.getElementById('tabela-resultados');
-  div.innerHTML = '<p><span class="mini-spinner"></span> Carregando...</p>';
+  const div = document.getElementById('area-resultados');
+  const curso = document.getElementById('filtro-curso-result').value;
+  div.innerHTML = '<p><span class="spin"></span> Carregando...</p>';
   try {
-    const res = await fetch(getApiUrl() + '?tipo=RANKING');
+    const url = `${getApiUrl()}?tipo=RANKING${curso?'&curso='+encodeURIComponent(curso):''}`;
+    const res = await fetch(url);
     const data = await res.json();
+    if (!Array.isArray(data)||data.length===0) { div.innerHTML='<p style="color:var(--muted)">Nenhum resultado ainda.</p>'; return; }
+    div.innerHTML = `<table class="tabela">
+      <thead><tr><th>#</th><th>Nome</th><th>Acertos</th><th>Total</th><th>%</th></tr></thead>
+      <tbody>${data.map((r,i)=>{
+        const pct=Number(r.percentual||0).toFixed(1);
+        const cls=pct>=70?'pct-alto':pct>=50?'pct-medio':'pct-baixo';
+        return `<tr><td style="font-weight:700;color:var(--azul)">${i+1}</td><td>${r.nome||'—'}</td><td>${r.acertos||'—'}</td><td>${r.total||'—'}</td><td class="${cls}">${pct}%</td></tr>`;
+      }).join('')}</tbody>
+    </table>`;
+  } catch(e) { div.innerHTML=`<p style="color:var(--vermelho)">Erro: ${e.message}</p>`; }
+}
 
-    if (!Array.isArray(data) || data.length === 0) {
-      div.innerHTML = '<p style="color:#888;">Nenhum resultado registrado ainda.</p>';
-      return;
-    }
+// Popula select de filtro resultados
+window.addEventListener('DOMContentLoaded', ()=>{
+  const sel = document.getElementById('filtro-curso-result');
+  CURSOS.forEach(c=>{const o=new Option(c.nome,c.id);sel.appendChild(o);});
+});
 
-    div.innerHTML = `
-      <table style="width:100%;border-collapse:collapse;font-size:0.88rem;">
-        <thead>
-          <tr style="background:#004aad;color:white;">
-            <th style="padding:9px 12px;text-align:left;">#</th>
-            <th style="padding:9px 12px;text-align:left;">Nome</th>
-            <th style="padding:9px 12px;text-align:center;">Acertos</th>
-            <th style="padding:9px 12px;text-align:center;">Total</th>
-            <th style="padding:9px 12px;text-align:center;">%</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${data.map((r, i) => `
-            <tr style="${i%2===0?'background:#f8faff;':''}">
-              <td style="padding:8px 12px;font-weight:bold;color:#004aad;">${i+1}</td>
-              <td style="padding:8px 12px;">${r.nome || '—'}</td>
-              <td style="padding:8px 12px;text-align:center;">${r.acertos || '—'}</td>
-              <td style="padding:8px 12px;text-align:center;">${r.total || '—'}</td>
-              <td style="padding:8px 12px;text-align:center;font-weight:bold;color:${(r.percentual||0)>=60?'#2a6e2a':'#c62828'};">
-                ${Number(r.percentual||0).toFixed(1)}%
-              </td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    `;
-  } catch(e) {
-    div.innerHTML = `<p style="color:#e53935;">Erro: ${e.message}</p>`;
-  }
+// ================================================================
+//  CURSOS CONFIG
+// ================================================================
+function renderCursosConfig() {
+  const div = document.getElementById('lista-cursos-config');
+  div.innerHTML = CURSOS.map(c => `
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;">
+      <div style="flex:1;">
+        <div style="font-weight:600;font-size:0.9rem;">${c.nome}</div>
+        <div style="font-size:0.75rem;color:var(--muted);font-family:monospace;">ID: ${c.id}</div>
+      </div>
+      <a href="simulado.html?curso=${c.id}" target="_blank" style="font-size:0.78rem;color:var(--azul);text-decoration:none;padding:4px 10px;border:1px solid var(--border);border-radius:6px;">Abrir ↗</a>
+    </div>
+  `).join('');
+}
+
+// ================================================================
+//  CONFIG
+// ================================================================
+function salvarConfig() {
+  const url = document.getElementById('cfg-url').value.trim();
+  const senha = document.getElementById('cfg-senha-nova').value.trim();
+  const cfg = getCfg();
+  if (url) cfg.apiUrl = url;
+  if (senha && senha.length>=4) cfg.senha = senha;
+  else if (senha) { toast('Senha muito curta (mín. 4 chars)','av'); return; }
+  localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
+  toast('Configurações salvas!','ok');
+  if (senha) { toast('Senha alterada. Você precisará fazer login novamente.','av'); setTimeout(sair,2000); }
+}
+async function testarConexao() {
+  const st = document.getElementById('cfg-status');
+  st.innerHTML = '<span class="spin"></span> Testando...';
+  try {
+    const res = await fetch(getApiUrl()+'?tipo=LISTAR_QUESTOES');
+    const data = await res.json();
+    st.innerHTML = `<span style="color:var(--verde);font-weight:600;">✅ OK! ${Array.isArray(data)?data.length:'?'} questões encontradas.</span>`;
+  } catch(e) { st.innerHTML=`<span style="color:var(--vermelho);font-weight:600;">❌ Falha: ${e.message}</span>`; }
 }
 
 // ================================================================
 //  TOAST
 // ================================================================
-let toastTimer = null;
-function toast(msg, tipo = 'sucesso') {
+let toastTmr;
+function toast(msg, tipo='ok') {
   const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = `show ${tipo}`;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { el.className = tipo; }, 3200);
+  el.textContent = msg; el.className = `show ${tipo}`;
+  clearTimeout(toastTmr);
+  toastTmr = setTimeout(()=>el.className=tipo, 3200);
 }
 </script>
-
 </body>
 </html>

@@ -1,1080 +1,419 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>SIMULADO - SAEP</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SAEP — Simulados</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  /* ===== BASE ===== */
-  * { box-sizing: border-box; }
-  html, body { height: 100%; margin: 0; }
-  body {
-    font-family: Arial, sans-serif;
-    display: flex;
-    min-height: 100vh;
-    background: #f5f5f5;
-  }
+:root {
+  --azul: #004aad;
+  --azul-escuro: #00317a;
+  --azul-brilho: #1a6dd4;
+  --verde: #00b86b;
+  --verde-escuro: #008f52;
+  --branco: #ffffff;
+  --cinza-claro: #f4f6fa;
+  --cinza-medio: #e2e8f4;
+  --texto: #1a2340;
+  --texto-muted: #5a6a8a;
+}
 
-  /* ===== SIDEBAR / ÍNDICE ===== */
-  #indice {
-    width: 240px;
-    background-color: #004aad;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: fixed;
-    height: 100vh;
-    overflow-y: auto;
-    padding: 10px 8px;
-    z-index: 100;
-  }
-  #indice .logo-indice {
-    display: block;
-    max-width: 90%;
-    height: auto;
-    margin: 0 auto 10px auto;
-  }
-  #indice h2 {
-    text-align: center;
-    margin: 0 0 10px;
-    font-size: 1rem;
-    font-weight: normal;
-    letter-spacing: 2px;
-    width: 100%;
-  }
-  #indice .grade-botoes {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 4px;
-    width: 100%;
-  }
-  #indice button {
-    background-color: transparent;
-    border: 2px solid white;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    padding: 6px 0;
-    border-radius: 5px;
-    font-size: 0.8rem;
-    transition: all 0.25s ease;
-    width: 100%;
-  }
-  #indice button.green {
-    background-color: #4CAF50;
-    border-color: #4CAF50;
-  }
-  #indice button:hover:not(.green) {
-    background-color: rgba(255,255,255,0.15);
-  }
-  #indice .info-simulado {
-    margin-top: 12px;
-    font-size: 0.75rem;
-    text-align: center;
-    opacity: 0.85;
-    width: 100%;
-    border-top: 1px solid rgba(255,255,255,0.3);
-    padding-top: 10px;
-  }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* ===== CONTEÚDO PRINCIPAL ===== */
-  #conteudo {
-    margin-left: 240px;
-    padding: 20px 30px 80px 30px;
-    flex: 1;
-    background: white;
-    min-height: 100vh;
-  }
+body {
+  font-family: 'Barlow', sans-serif;
+  background: var(--texto);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
 
-  /* Cabeçalho do simulado */
-  #header-simulado {
-    text-align: center;
-    border-bottom: 3px solid #004aad;
-    padding-bottom: 16px;
-    margin-bottom: 24px;
-  }
-  #header-simulado h1 {
-    color: #004aad;
-    font-size: 1.4rem;
-    margin: 0 0 4px 0;
-    letter-spacing: 1px;
-  }
-  #header-simulado p {
-    margin: 0;
-    color: #555;
-    font-size: 0.9rem;
-  }
+/* ── FUNDO ANIMADO ── */
+.bg-mesh {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 20%, rgba(0,74,173,0.35) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 60% at 80% 80%, rgba(0,184,107,0.2) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 70% at 50% 50%, rgba(0,49,122,0.4) 0%, transparent 70%),
+    #0d1a30;
+}
+.bg-grid {
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
 
-  /* Campo de nome */
-  #campo-nome {
-    background: #f0f5ff;
-    border: 1px solid #c0d4f5;
-    border-radius: 8px;
-    padding: 14px 18px;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  #campo-nome label {
-    font-weight: bold;
-    color: #004aad;
-    white-space: nowrap;
-  }
-  #campo-nome input {
-    flex: 1;
-    min-width: 200px;
-    padding: 8px 12px;
-    border: 1px solid #aac;
-    border-radius: 5px;
-    font-size: 1rem;
-    outline: none;
-  }
-  #campo-nome input:focus {
-    border-color: #004aad;
-    box-shadow: 0 0 0 2px rgba(0,74,173,0.15);
-  }
+/* ── LAYOUT ── */
+.page {
+  position: relative; z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
 
-  /* Questões */
-  .questao {
-    margin-bottom: 30px;
-    border-bottom: 1px solid #e0e0e0;
-    padding-bottom: 20px;
-  }
-  .questao-numero-disc {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    margin-bottom: 6px;
-  }
-  .num-questao {
-    background: #004aad;
-    color: white;
-    font-weight: bold;
-    font-size: 0.8rem;
-    padding: 2px 9px;
-    border-radius: 12px;
-  }
-  .disc-tag {
-    font-size: 0.75rem;
-    background: #e8f0fe;
-    color: #004aad;
-    padding: 2px 8px;
-    border-radius: 10px;
-    border: 1px solid #c0d4f5;
-  }
-  .enunciado {
-    text-align: justify;
-    font-weight: normal;
-    margin-bottom: 12px;
-    line-height: 1.5;
-    color: #222;
-  }
-  .questao img {
-    max-width: 100%;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    margin: 8px 0 12px 0;
-  }
-  .alternativas label {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    margin-bottom: 7px;
-    cursor: pointer;
-    padding: 6px 8px;
-    border-radius: 5px;
-    transition: background 0.15s;
-    line-height: 1.4;
-  }
-  .alternativas label:hover {
-    background: #f0f5ff;
-  }
-  .alternativas input[type="radio"] {
-    margin-top: 2px;
-    flex-shrink: 0;
-    cursor: pointer;
-    accent-color: #004aad;
-    width: 16px;
-    height: 16px;
-  }
-  .btn-gabarito {
-    margin-top: 8px;
-    padding: 7px 16px;
-    cursor: pointer;
-    background-color: #004aad;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 0.85rem;
-    transition: background 0.2s;
-  }
-  .btn-gabarito:hover:not(:disabled) {
-    background-color: #003580;
-  }
-  .btn-gabarito:disabled {
-    background-color: #aaa;
-    cursor: not-allowed;
-  }
-  .gabarito {
-    margin-top: 10px;
-    background-color: #e8f5e8;
-    border-left: 4px solid #4CAF50;
-    padding: 10px 14px;
-    display: none;
-    font-weight: bold;
-    border-radius: 0 5px 5px 0;
-    color: #2a6e2a;
-  }
+/* ── HEADER ── */
+header {
+  padding: 28px 40px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  animation: fadeDown 0.6s ease both;
+}
+.logo-marca {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.logo-badge {
+  width: 46px; height: 46px;
+  background: linear-gradient(135deg, var(--azul-brilho), var(--verde));
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800; font-size: 1.3rem; color: white;
+  letter-spacing: -1px;
+  box-shadow: 0 4px 20px rgba(0,74,173,0.5);
+}
+.logo-texto h1 {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700; font-size: 1.3rem;
+  color: white; letter-spacing: 3px;
+  line-height: 1;
+}
+.logo-texto span {
+  font-size: 0.7rem; color: rgba(255,255,255,0.5);
+  letter-spacing: 2px; text-transform: uppercase;
+}
+.header-ano {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.85rem; color: rgba(255,255,255,0.4);
+  letter-spacing: 2px;
+}
 
-  /* Área de loading */
-  #loading-area {
-    text-align: center;
-    padding: 60px 20px;
-    color: #555;
-  }
-  #loading-area .spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid #e0e0e0;
-    border-top-color: #004aad;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 16px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* ── HERO ── */
+.hero {
+  padding: 60px 40px 40px;
+  animation: fadeDown 0.7s ease 0.1s both;
+}
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(0,184,107,0.15);
+  border: 1px solid rgba(0,184,107,0.3);
+  border-radius: 100px;
+  padding: 5px 14px;
+  margin-bottom: 20px;
+}
+.hero-tag-dot {
+  width: 7px; height: 7px;
+  background: var(--verde);
+  border-radius: 50%;
+  animation: pulse 2s ease infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(0.8)} }
+.hero-tag span {
+  font-size: 0.75rem; font-weight: 600;
+  color: var(--verde); letter-spacing: 1px; text-transform: uppercase;
+}
+.hero h2 {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800; font-size: clamp(2.4rem, 5vw, 4rem);
+  color: white; line-height: 1.05;
+  letter-spacing: -1px;
+}
+.hero h2 em {
+  font-style: normal;
+  background: linear-gradient(90deg, #4da6ff, var(--verde));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero p {
+  margin-top: 14px;
+  font-size: 1rem; color: rgba(255,255,255,0.55);
+  max-width: 500px; line-height: 1.6; font-weight: 300;
+}
 
-  /* Área de erro */
-  #erro-area {
-    text-align: center;
-    padding: 40px;
-    color: #b00020;
-    background: #fff0f3;
-    border-radius: 8px;
-    border: 1px solid #f5c0cc;
-    display: none;
-  }
+/* ── GRID DE CURSOS ── */
+.cursos-section {
+  padding: 0 40px 60px;
+  flex: 1;
+}
+.cursos-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.75rem; font-weight: 600;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  margin-bottom: 20px;
+}
+.cursos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
 
-  /* Botões finais */
-  #botoes-finais {
-    margin-top: 30px;
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-  #botoes-finais button {
-    padding: 12px 22px;
-    font-size: 1rem;
-    cursor: pointer;
-    background-color: #004aad;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    flex: 1;
-    min-width: 160px;
-    transition: background 0.2s;
-  }
-  #botoes-finais button:hover:not(:disabled) {
-    background-color: #003580;
-  }
-  #botoes-finais button:disabled {
-    background-color: #aaa;
-    cursor: not-allowed;
-  }
-  #btn-reiniciar {
-    background-color: #888 !important;
-  }
-  #btn-reiniciar:hover:not(:disabled) {
-    background-color: #666 !important;
-  }
+/* ── CARD DE CURSO ── */
+.curso-card {
+  position: relative;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 28px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+  text-decoration: none;
+  display: block;
+  overflow: hidden;
+  animation: fadeUp 0.5s ease both;
+}
+.curso-card:nth-child(1){ animation-delay: 0.15s; }
+.curso-card:nth-child(2){ animation-delay: 0.22s; }
+.curso-card:nth-child(3){ animation-delay: 0.29s; }
+.curso-card:nth-child(4){ animation-delay: 0.36s; }
+.curso-card:nth-child(5){ animation-delay: 0.43s; }
+.curso-card:nth-child(6){ animation-delay: 0.50s; }
 
-  /* Resultado */
-  #resultado {
-    margin-top: 30px;
-    padding: 20px 24px;
-    background: linear-gradient(135deg, #004aad, #0060d6);
-    border-radius: 10px;
-    color: white;
-    font-size: 1rem;
-    line-height: 1.8;
-    display: none;
-    box-shadow: 0 4px 14px rgba(0,74,173,0.3);
-  }
-  #resultado h3 {
-    margin: 0 0 10px 0;
-    font-size: 1.2rem;
-    letter-spacing: 1px;
-    border-bottom: 1px solid rgba(255,255,255,0.3);
-    padding-bottom: 8px;
-  }
-  .resultado-stat {
-    display: flex;
-    justify-content: space-between;
-    padding: 3px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-  }
-  .resultado-stat:last-child { border-bottom: none; }
-  .resultado-pct {
-    font-size: 2rem;
-    font-weight: bold;
-    text-align: center;
-    margin-top: 14px;
-    letter-spacing: 2px;
-  }
+.curso-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(0,74,173,0.0) 0%, rgba(0,74,173,0.15) 100%);
+  opacity: 0; transition: opacity 0.3s;
+  border-radius: 16px;
+}
+.curso-card:hover {
+  border-color: rgba(0,184,107,0.4);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(0,184,107,0.2);
+  background: rgba(255,255,255,0.07);
+}
+.curso-card:hover::before { opacity: 1; }
 
-  /* Ranking */
-  #area-ranking {
-    margin-top: 30px;
-    display: none;
-  }
-  #area-ranking h3 {
-    color: #004aad;
-    border-bottom: 2px solid #004aad;
-    padding-bottom: 6px;
-    margin-bottom: 12px;
-  }
-  .ranking-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 12px;
-    margin-bottom: 6px;
-    background: #f5f8ff;
-    border-radius: 6px;
-    border-left: 3px solid #004aad;
-    font-size: 0.92rem;
-  }
-  .ranking-pos {
-    font-weight: bold;
-    color: #004aad;
-    width: 24px;
-    text-align: center;
-  }
-  .ranking-nome { flex: 1; }
-  .ranking-pct { font-weight: bold; color: #004aad; }
+.card-brilho {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+}
 
-  /* Link inserir questões */
-  #link-painel {
-    margin-top: 40px;
-    text-align: center;
-    padding: 20px;
-    border-top: 1px solid #e0e0e0;
-  }
-  #link-painel a button {
-    padding: 10px 24px;
-    background: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  #link-painel a button:hover {
-    background: #388E3C;
-  }
-  #link-painel p {
-    margin-top: 8px;
-    font-size: 0.8rem;
-    color: #888;
-  }
+.card-icone {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 18px;
+  position: relative;
+  z-index: 1;
+}
+.card-nome {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700; font-size: 1.35rem;
+  color: white; letter-spacing: 0.5px;
+  line-height: 1.2;
+  position: relative; z-index: 1;
+  margin-bottom: 6px;
+}
+.card-desc {
+  font-size: 0.83rem; color: rgba(255,255,255,0.45);
+  line-height: 1.5; font-weight: 300;
+  position: relative; z-index: 1;
+  margin-bottom: 20px;
+}
+.card-meta {
+  display: flex; align-items: center; gap: 14px;
+  position: relative; z-index: 1;
+  flex-wrap: wrap;
+}
+.meta-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 0.75rem; color: rgba(255,255,255,0.4);
+}
+.meta-item svg { opacity: 0.5; }
 
-  /* ===== MODAL INÍCIO ===== */
-  #start-modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,.55);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 10000;
-  }
-  #start-modal {
-    background: #fff;
-    width: 90%; max-width: 480px;
-    border-radius: 12px;
-    box-shadow: 0 16px 40px rgba(0,0,0,.35);
-    overflow: hidden;
-    font-family: Arial, sans-serif;
-  }
-  #start-modal header {
-    background: #004aad;
-    color: #fff;
-    padding: 16px 20px;
-    font-weight: bold;
-    font-size: 1.1rem;
-  }
-  #start-modal .body {
-    padding: 20px;
-    color: #333;
-    line-height: 1.5;
-  }
-  #start-modal .body ul {
-    margin: 8px 0;
-    padding-left: 20px;
-  }
-  #start-modal .actions {
-    display: flex; gap: 12px;
-    padding: 0 20px 20px;
-  }
-  #start-modal .actions button {
-    flex: 1; padding: 12px;
-    border: 0; border-radius: 6px;
-    cursor: pointer; font-size: 1rem;
-    transition: opacity 0.2s;
-  }
-  #start-modal .actions button:hover { opacity: 0.88; }
-  #btn-modal-iniciar { background: #004aad; color: #fff; }
-  #btn-modal-continuar { background: #4CAF50; color: #fff; display: none; }
-  #btn-modal-cancelar { background: #eee; color: #333; }
+.card-seta {
+  position: absolute; bottom: 24px; right: 24px;
+  width: 32px; height: 32px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.3s;
+  z-index: 1;
+}
+.curso-card:hover .card-seta {
+  background: var(--verde);
+  transform: translateX(3px);
+}
 
-  /* ===== TIMER BADGE ===== */
-  #timer-badge {
-    position: fixed; top: 10px; right: 10px; z-index: 9998;
-    background: #004aad; color: #fff;
-    padding: 8px 14px; border-radius: 6px;
-    font-family: Arial, sans-serif; font-weight: bold;
-    box-shadow: 0 4px 12px rgba(0,0,0,.25);
-    user-select: none;
-  }
+/* Cores dos ícones */
+.icone-azul { background: rgba(0,74,173,0.25); }
+.icone-verde { background: rgba(0,184,107,0.2); }
+.icone-laranja { background: rgba(245,130,32,0.2); }
+.icone-roxo { background: rgba(100,60,200,0.2); }
+.icone-vermelho { background: rgba(220,50,50,0.2); }
+.icone-ciano { background: rgba(0,180,200,0.2); }
 
-  /* ===== RESPONSIVO ===== */
-  @media (max-width: 768px) {
-    #indice {
-      width: 160px;
-      padding: 8px 6px;
-    }
-    #indice .grade-botoes {
-      grid-template-columns: repeat(4, 1fr);
-    }
-    #indice h2 { font-size: 0.82rem; }
-    #indice button { font-size: 0.72rem; padding: 5px 0; }
-    #conteudo {
-      margin-left: 168px;
-      padding: 14px 16px 60px;
-    }
-    #botoes-finais { flex-direction: column; }
-  }
-  @media (max-width: 480px) {
-    #indice { width: 120px; }
-    #conteudo { margin-left: 128px; padding: 12px 12px 60px; }
-    #indice .grade-botoes { grid-template-columns: repeat(3, 1fr); }
-  }
+/* ── FOOTER ── */
+footer {
+  padding: 20px 40px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  display: flex; align-items: center; justify-content: space-between;
+  animation: fadeUp 0.5s ease 0.5s both;
+}
+.footer-texto {
+  font-size: 0.75rem; color: rgba(255,255,255,0.2);
+  letter-spacing: 1px;
+}
+.footer-link {
+  font-size: 0.75rem; color: rgba(255,255,255,0.15);
+  text-decoration: none;
+  letter-spacing: 1px;
+  transition: color 0.2s;
+}
+.footer-link:hover { color: rgba(255,255,255,0.4); }
+
+/* ── ANIMAÇÕES ── */
+@keyframes fadeDown {
+  from { opacity:0; transform: translateY(-16px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+@keyframes fadeUp {
+  from { opacity:0; transform: translateY(20px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+/* ── RESPONSIVO ── */
+@media (max-width: 600px) {
+  header, .hero, .cursos-section { padding-left: 20px; padding-right: 20px; }
+  .hero { padding-top: 36px; }
+  .cursos-grid { grid-template-columns: 1fr; }
+  footer { flex-direction: column; gap: 8px; text-align: center; }
+}
 </style>
 </head>
 <body>
 
-<!-- ===== SIDEBAR ===== -->
-<div id="indice">
-  <!-- A logo será inserida via JS se existir; caso contrário, exibe título -->
-  <h2>ÍNDICE</h2>
-  <div class="grade-botoes" id="grade-botoes">
-    <!-- gerado via JS -->
-  </div>
-  <div class="info-simulado" id="info-simulado"></div>
-</div>
+<div class="bg-mesh"></div>
+<div class="bg-grid"></div>
 
-<!-- ===== CONTEÚDO ===== -->
-<div id="conteudo">
+<div class="page">
 
-  <div id="header-simulado">
-    <h1 id="titulo-prova">SIMULADO SAEP</h1>
-    <p id="subtitulo-prova">Carregando questões...</p>
-  </div>
-
-  <div id="campo-nome">
-    <label for="nome">👤 Seu nome:</label>
-    <input type="text" id="nome" placeholder="Digite seu nome completo" autocomplete="name" />
-  </div>
-
-  <!-- Loading -->
-  <div id="loading-area">
-    <div class="spinner"></div>
-    <p>Carregando questões da planilha...</p>
-  </div>
-
-  <!-- Erro -->
-  <div id="erro-area">
-    <h3>⚠️ Erro ao carregar questões</h3>
-    <p id="erro-msg"></p>
-    <button onclick="iniciarCarregamento()" style="margin-top:12px;padding:8px 20px;background:#004aad;color:white;border:none;border-radius:5px;cursor:pointer;">
-      Tentar novamente
-    </button>
-  </div>
-
-  <!-- Questões (populadas via JS) -->
-  <div id="questoes"></div>
-
-  <!-- Botões finais -->
-  <div id="botoes-finais" style="display:none;">
-    <button id="btn-checar">✅ Verificar Resultado</button>
-    <button id="btn-reiniciar">🔄 Reiniciar Questionário</button>
-  </div>
-
-  <!-- Resultado -->
-  <div id="resultado"></div>
-
-  <!-- Ranking -->
-  <div id="area-ranking">
-    <h3>🏆 Ranking de Participantes</h3>
-    <div id="lista-ranking"></div>
-  </div>
-
-  <!-- Link para o painel -->
-  <div id="link-painel">
-    <a href="painel.html" target="_blank">
-      <button>➕ INSERIR QUESTÕES</button>
-    </a>
-    <p>Acesso exclusivo para o aplicador do simulado.</p>
-  </div>
-
-</div>
-
-<!-- ===== MODAL DE INÍCIO ===== -->
-<div id="start-modal-overlay" style="display:none;">
-  <div id="start-modal">
-    <header>🎓 Simulado SAEP</header>
-    <div class="body">
-      <p>Bem-vindo ao <strong>Simulado SAEP</strong>!</p>
-      <ul>
-        <li>Total de <strong>40 questões</strong> carregadas da planilha</li>
-        <li>Tempo limite: <strong>2 horas</strong></li>
-        <li>Sua resposta é salva automaticamente</li>
-        <li>Você pode verificar o gabarito de cada questão individualmente</li>
-      </ul>
-      <p id="modal-progresso-hint" style="display:none;color:#4CAF50;font-weight:bold;">
-        ✅ Encontramos um progresso salvo. Você pode continuar de onde parou!
-      </p>
+  <!-- HEADER -->
+  <header>
+    <div class="logo-marca">
+      <div class="logo-badge">SP</div>
+      <div class="logo-texto">
+        <h1>SAEP</h1>
+        <span>Sistema de Avaliação</span>
+      </div>
     </div>
-    <div class="actions">
-      <button id="btn-modal-iniciar">▶ Iniciar Agora</button>
-      <button id="btn-modal-continuar">↩ Continuar</button>
-      <button id="btn-modal-cancelar">✕ Cancelar</button>
+    <div class="header-ano" id="ano-letivo">2025</div>
+  </header>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-tag">
+      <div class="hero-tag-dot"></div>
+      <span>Simulados disponíveis</span>
+    </div>
+    <h2>Escolha seu <em>curso</em><br>e comece o simulado</h2>
+    <p>Questões elaboradas por instrutores. Gabarito imediato. Resultado salvo automaticamente.</p>
+  </div>
+
+  <!-- CURSOS -->
+  <div class="cursos-section">
+    <div class="cursos-label">Cursos disponíveis</div>
+    <div class="cursos-grid" id="cursos-grid">
+      <!-- gerado via JS -->
     </div>
   </div>
-</div>
 
-<!-- ===== TIMER BADGE ===== -->
-<div id="timer-badge" style="display:none;"></div>
+  <!-- FOOTER -->
+  <footer>
+    <span class="footer-texto">SENAI · SAEP · Avaliações</span>
+    <a href="painel.html" class="footer-link">acesso restrito</a>
+  </footer>
+
+</div>
 
 <script>
-// ================================================================
-//  CONFIGURAÇÃO — altere apenas esta seção
-// ================================================================
-const CONFIG = {
-  // Cole aqui a URL do seu Google Apps Script publicado como Web App
-  API_URL: "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec",
-  TOTAL_QUESTOES: 40,      // quantas questões exibir (sorteia aleatório do banco)
-  TEMPO_MINUTOS: 120,      // tempo em minutos (2 horas)
-  TITULO: "SIMULADO SAEP",
-  SUBTITULO: "Ciber Sistemas | Técnico em Automação"
-};
+document.getElementById('ano-letivo').textContent = new Date().getFullYear();
 
-// ================================================================
-//  CHAVES DE PERSISTÊNCIA
-// ================================================================
-const KEY_STATE = 'saepState_v2';
-const KEY_TIMER = 'saepTimer_v2';
-
-let questoesCarregadas = [];
-let timerHandle = null;
-
-// ================================================================
-//  UTILITÁRIOS DE ESTADO
-// ================================================================
-function getState() {
-  try { return JSON.parse(localStorage.getItem(KEY_STATE)) || { answers:{}, shown:{}, allRevealed:false, resultadoHTML:'', nome:'' }; }
-  catch(e) { return { answers:{}, shown:{}, allRevealed:false, resultadoHTML:'', nome:'' }; }
-}
-function saveState(s) { localStorage.setItem(KEY_STATE, JSON.stringify(s)); }
-
-function getTimer() {
-  try { return JSON.parse(localStorage.getItem(KEY_TIMER)) || {}; }
-  catch(e) { return {}; }
-}
-function saveTimer(t) { localStorage.setItem(KEY_TIMER, JSON.stringify(t)); }
-function clearTimer() { localStorage.removeItem(KEY_TIMER); }
-
-function hasProgress() {
-  const s = getState();
-  return !!(s && (Object.keys(s.answers||{}).length > 0 || s.allRevealed));
-}
-
-// ================================================================
-//  INICIALIZAÇÃO — seta título e abre modal
-// ================================================================
-window.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('titulo-prova').textContent = CONFIG.TITULO;
-  document.getElementById('subtitulo-prova').textContent = CONFIG.SUBTITULO;
-  document.title = CONFIG.TITULO;
-
-  // Restaura nome salvo
-  const st = getState();
-  if (st.nome) document.getElementById('nome').value = st.nome;
-
-  mostrarModal();
-});
-
-document.getElementById('nome').addEventListener('input', (e) => {
-  const st = getState(); st.nome = e.target.value; saveState(st);
-});
-
-// ================================================================
-//  MODAL DE INÍCIO
-// ================================================================
-function mostrarModal() {
-  const overlay = document.getElementById('start-modal-overlay');
-  overlay.style.display = 'flex';
-  document.documentElement.style.overflow = 'hidden';
-
-  if (hasProgress()) {
-    document.getElementById('btn-modal-continuar').style.display = 'inline-block';
-    document.getElementById('modal-progresso-hint').style.display = 'block';
+// ── CONFIGURAÇÃO DOS CURSOS ──
+// Para adicionar um novo curso, basta adicionar um objeto aqui.
+const CURSOS = [
+  {
+    id: "ciber-sistemas",
+    nome: "Ciber Sistemas",
+    desc: "Automação, redes, IoT e sistemas cyber-físicos",
+    icone: "⚡",
+    cor: "icone-azul",
+    questoes: 40,
+    tempo: "2h"
+  },
+  {
+    id: "instalacoes-eletricas",
+    nome: "Instalações Elétricas",
+    desc: "Projetos, normas NBR, dimensionamento e segurança",
+    icone: "🔌",
+    cor: "icone-verde",
+    questoes: 40,
+    tempo: "2h"
+  },
+  {
+    id: "automacao-industrial",
+    nome: "Automação Industrial",
+    desc: "CLP, sensores, atuadores e sistemas SCADA",
+    icone: "⚙️",
+    cor: "icone-laranja",
+    questoes: 40,
+    tempo: "2h"
+  },
+  {
+    id: "eletronica",
+    nome: "Eletrônica",
+    desc: "Circuitos analógicos, digitais e microcontroladores",
+    icone: "🔬",
+    cor: "icone-roxo",
+    questoes: 40,
+    tempo: "2h"
+  },
+  {
+    id: "redes-computadores",
+    nome: "Redes de Computadores",
+    desc: "TCP/IP, infraestrutura, segurança e protocolos",
+    icone: "🌐",
+    cor: "icone-ciano",
+    questoes: 40,
+    tempo: "2h"
   }
+];
 
-  document.getElementById('btn-modal-iniciar').addEventListener('click', () => {
-    fecharModal();
-    iniciarSimulado(false);
-  });
-  document.getElementById('btn-modal-continuar').addEventListener('click', () => {
-    fecharModal();
-    iniciarSimulado(true); // continua sem apagar progresso
-  });
-  document.getElementById('btn-modal-cancelar').addEventListener('click', () => {
-    document.documentElement.style.overflow = '';
-    document.body.innerHTML = "<h2 style='text-align:center;margin:80px 20px;font-family:Arial;color:#555;'>Simulado não iniciado.</h2>";
-  });
-}
-function fecharModal() {
-  document.getElementById('start-modal-overlay').style.display = 'none';
-  document.documentElement.style.overflow = '';
-}
-
-// ================================================================
-//  INICIAR SIMULADO
-// ================================================================
-function iniciarSimulado(continuar) {
-  if (!continuar) {
-    localStorage.removeItem(KEY_STATE);
-    localStorage.removeItem(KEY_TIMER);
-  }
-  iniciarCarregamento();
-}
-
-// ================================================================
-//  CARREGAMENTO DAS QUESTÕES
-// ================================================================
-async function iniciarCarregamento() {
-  document.getElementById('loading-area').style.display = 'block';
-  document.getElementById('erro-area').style.display = 'none';
-  document.getElementById('questoes').innerHTML = '';
-  document.getElementById('botoes-finais').style.display = 'none';
-
-  try {
-    const res = await fetch(CONFIG.API_URL + "?tipo=LISTAR_QUESTOES");
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    let todas = await res.json();
-
-    if (!Array.isArray(todas) || todas.length === 0) {
-      throw new Error("Nenhuma questão encontrada na planilha.");
-    }
-
-    // Embaralha e pega N questões
-    todas = todas.sort(() => 0.5 - Math.random());
-    questoesCarregadas = todas.slice(0, Math.min(CONFIG.TOTAL_QUESTOES, todas.length));
-
-    document.getElementById('loading-area').style.display = 'none';
-    renderizarQuestoes();
-    iniciarTimer();
-    carregarRanking();
-  } catch(err) {
-    document.getElementById('loading-area').style.display = 'none';
-    document.getElementById('erro-area').style.display = 'block';
-    document.getElementById('erro-msg').textContent = err.message;
-    console.error(err);
-  }
-}
-
-// ================================================================
-//  RENDERIZAÇÃO DAS QUESTÕES
-// ================================================================
-function renderizarQuestoes() {
-  const qDiv = document.getElementById('questoes');
-  const gradeDiv = document.getElementById('grade-botoes');
-  const infoDiv = document.getElementById('info-simulado');
-
-  qDiv.innerHTML = '';
-  gradeDiv.innerHTML = '';
-  infoDiv.textContent = `${questoesCarregadas.length} questões`;
-
-  questoesCarregadas.forEach((q, i) => {
-    const num = i + 1;
-
-    // Botão do índice
-    const btn = document.createElement('button');
-    btn.textContent = num;
-    btn.setAttribute('data-q', num);
-    btn.onclick = () => document.getElementById('q' + num).scrollIntoView({ behavior: 'smooth' });
-    gradeDiv.appendChild(btn);
-
-    // Alternativas
-    const alts = ['A','B','C','D'].map(l => `
-      <label>
-        <input type="radio" name="q${num}" value="${l}" />
-        <span>${l}) ${escapeHtml(q[l] || '')}</span>
-      </label>
-    `).join('');
-
-    // Imagem opcional
-    const imgHtml = q.imagem ? `<img src="${q.imagem}" alt="Imagem da questão ${num}" />` : '';
-
-    // Tag de disciplina
-    const discHtml = q.disciplina ? `<span class="disc-tag">${escapeHtml(q.disciplina)}</span>` : '';
-
-    qDiv.innerHTML += `
-      <div class="questao" id="q${num}">
-        <div class="questao-numero-disc">
-          <span class="num-questao">${num}</span>
-          ${discHtml}
-        </div>
-        <div class="enunciado">${escapeHtml(q.enunciado || '')}</div>
-        ${imgHtml}
-        <div class="alternativas">${alts}</div>
-        <button class="btn-gabarito" data-q="${num}" disabled>Mostrar Gabarito</button>
-        <div class="gabarito" id="gab${num}">Gabarito: ${q.gabarito || ''}</div>
+function renderCursos() {
+  const grid = document.getElementById('cursos-grid');
+  grid.innerHTML = CURSOS.map(c => `
+    <a class="curso-card" href="simulado.html?curso=${c.id}" title="${c.nome}">
+      <div class="card-brilho"></div>
+      <div class="card-icone ${c.cor}">${c.icone}</div>
+      <div class="card-nome">${c.nome}</div>
+      <div class="card-desc">${c.desc}</div>
+      <div class="card-meta">
+        <span class="meta-item">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          ${c.tempo}
+        </span>
+        <span class="meta-item">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          ${c.questoes} questões
+        </span>
       </div>
-    `;
-  });
-
-  // Botões finais
-  document.getElementById('botoes-finais').style.display = 'flex';
-
-  // Registra eventos
-  registrarEventos();
-
-  // Restaura estado
-  restaurarEstado();
-}
-
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;');
-}
-
-// ================================================================
-//  EVENTOS DAS QUESTÕES
-// ================================================================
-function registrarEventos() {
-  // Radio change → habilita botão gabarito + índice verde
-  document.querySelectorAll('.questao input[type="radio"]').forEach(r => {
-    r.addEventListener('change', (e) => {
-      const qDiv = e.target.closest('.questao');
-      const num = qDiv.id.replace('q','');
-      const btnGab = qDiv.querySelector('.btn-gabarito');
-      const indiceBtn = document.querySelector(`#grade-botoes button[data-q="${num}"]`);
-
-      if (!btnGab.dataset.mostrado || btnGab.dataset.mostrado !== 'true') {
-        btnGab.disabled = false;
-      }
-      if (indiceBtn) indiceBtn.classList.add('green');
-
-      // Salvar resposta
-      const st = getState();
-      st.answers[num] = e.target.value;
-      saveState(st);
-    });
-  });
-
-  // Botão gabarito individual
-  document.querySelectorAll('.btn-gabarito').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const num = btn.getAttribute('data-q');
-      const qDiv = document.getElementById('q' + num);
-      const radios = qDiv.querySelectorAll('input[type="radio"]');
-      const marcado = [...radios].some(r => r.checked);
-
-      if (!marcado) { alert('Selecione uma alternativa antes de mostrar o gabarito!'); return; }
-
-      document.getElementById('gab' + num).style.display = 'block';
-      btn.disabled = true;
-      btn.dataset.mostrado = 'true';
-      radios.forEach(r => r.disabled = true);
-
-      const st = getState();
-      st.shown[num] = true;
-      saveState(st);
-    });
-  });
-
-  // Verificar Resultado
-  document.getElementById('btn-checar').addEventListener('click', verificarResultado);
-
-  // Reiniciar
-  document.getElementById('btn-reiniciar').addEventListener('click', reiniciar);
-}
-
-// ================================================================
-//  RESTAURAR ESTADO APÓS CARREGAR
-// ================================================================
-function restaurarEstado() {
-  const st = getState();
-
-  document.querySelectorAll('.questao').forEach(qDiv => {
-    const num = qDiv.id.replace('q','');
-    const radios = qDiv.querySelectorAll('input[type="radio"]');
-    const btnGab = qDiv.querySelector('.btn-gabarito');
-    const gabDiv = document.getElementById('gab' + num);
-    const indiceBtn = document.querySelector(`#grade-botoes button[data-q="${num}"]`);
-
-    if (st.answers[num]) {
-      const r = qDiv.querySelector(`input[value="${st.answers[num]}"]`);
-      if (r) { r.checked = true; btnGab.disabled = false; }
-      if (indiceBtn) indiceBtn.classList.add('green');
-    }
-
-    if (st.shown[num]) {
-      gabDiv.style.display = 'block';
-      btnGab.disabled = true;
-      btnGab.dataset.mostrado = 'true';
-      radios.forEach(r => r.disabled = true);
-    }
-  });
-
-  if (st.allRevealed && st.resultadoHTML) {
-    const rd = document.getElementById('resultado');
-    rd.style.display = 'block';
-    rd.innerHTML = st.resultadoHTML;
-  }
-}
-
-// ================================================================
-//  VERIFICAR RESULTADO
-// ================================================================
-async function verificarResultado() {
-  const questoes = document.querySelectorAll('.questao');
-  let naoRespondidas = 0;
-  questoes.forEach(q => {
-    const radios = q.querySelectorAll('input[type="radio"]');
-    if (![...radios].some(r => r.checked)) naoRespondidas++;
-  });
-
-  if (naoRespondidas > 0) {
-    alert(`Por favor, responda todas as questões antes de verificar o resultado.\nFaltam ${naoRespondidas} questão(ões).`);
-    return;
-  }
-
-  let acertos = 0;
-  const total = questoes.length;
-
-  questoes.forEach((q, i) => {
-    const num = q.id.replace('q','');
-    const radios = q.querySelectorAll('input[type="radio"]');
-    const gabDiv = document.getElementById('gab' + num);
-    const btnGab = q.querySelector('.btn-gabarito');
-    const indiceBtn = document.querySelector(`#grade-botoes button[data-q="${num}"]`);
-
-    gabDiv.style.display = 'block';
-    btnGab.disabled = true;
-    btnGab.dataset.mostrado = 'true';
-    radios.forEach(r => r.disabled = true);
-    if (indiceBtn) indiceBtn.classList.add('green');
-
-    const gabLetra = (gabDiv.textContent.split(':')[1] || '').trim();
-    const marcado = [...radios].find(r => r.checked);
-    if (marcado && marcado.value === gabLetra) acertos++;
-  });
-
-  const erros = total - acertos;
-  const pctAcerto = ((acertos/total)*100).toFixed(1);
-  const pctErro = ((erros/total)*100).toFixed(1);
-  const nome = document.getElementById('nome').value || 'Aluno';
-
-  const htmlResultado = `
-    <h3>📊 SEU RESULTADO</h3>
-    <div class="resultado-stat"><span>Total de questões</span><strong>${total}</strong></div>
-    <div class="resultado-stat"><span>Acertos</span><strong>${acertos}</strong></div>
-    <div class="resultado-stat"><span>Erros</span><strong>${erros}</strong></div>
-    <div class="resultado-stat"><span>% de Acertos</span><strong>${pctAcerto}%</strong></div>
-    <div class="resultado-stat"><span>% de Erros</span><strong>${pctErro}%</strong></div>
-    <div class="resultado-pct">${pctAcerto}% ✓</div>
-  `;
-
-  const rd = document.getElementById('resultado');
-  rd.style.display = 'block';
-  rd.innerHTML = htmlResultado;
-  rd.scrollIntoView({ behavior: 'smooth' });
-
-  const st = getState();
-  st.allRevealed = true;
-  st.resultadoHTML = htmlResultado;
-  document.querySelectorAll('.questao').forEach(q => { st.shown[q.id.replace('q','')] = true; });
-  saveState(st);
-
-  // Salvar resultado na planilha
-  try {
-    await fetch(CONFIG.API_URL, {
-      method: 'POST',
-      body: JSON.stringify({ tipo:'SALVAR_RESULTADO', nome, acertos, total })
-    });
-    carregarRanking();
-  } catch(e) { console.warn('Não foi possível salvar resultado:', e); }
-}
-
-// ================================================================
-//  REINICIAR
-// ================================================================
-function reiniciar() {
-  if (!confirm('Tem certeza que deseja reiniciar? Todo o progresso será perdido.')) return;
-  localStorage.removeItem(KEY_STATE);
-  localStorage.removeItem(KEY_TIMER);
-  const badge = document.getElementById('timer-badge');
-  if (badge) badge.style.display = 'none';
-  clearInterval(timerHandle);
-
-  document.querySelectorAll('.questao input[type="radio"]').forEach(r => { r.checked = false; r.disabled = false; });
-  document.querySelectorAll('.btn-gabarito').forEach(b => { b.disabled = true; delete b.dataset.mostrado; });
-  document.querySelectorAll('.gabarito').forEach(g => g.style.display = 'none');
-  document.querySelectorAll('#grade-botoes button').forEach(b => b.classList.remove('green'));
-  document.getElementById('resultado').style.display = 'none';
-  document.getElementById('resultado').innerHTML = '';
-
-  // Rola ao topo
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  iniciarTimer();
-}
-
-// ================================================================
-//  TIMER
-// ================================================================
-function iniciarTimer() {
-  const badge = document.getElementById('timer-badge');
-  let t = getTimer();
-
-  if (t.locked) {
-    badge.textContent = 'Tempo esgotado';
-    badge.style.background = '#b00020';
-    badge.style.display = 'block';
-    travar();
-    return;
-  }
-
-  if (!t.startAt) {
-    t = { startAt: Date.now(), locked: false };
-    saveTimer(t);
-  }
-
-  badge.style.display = 'block';
-  const duracaoMs = CONFIG.TEMPO_MINUTOS * 60 * 1000;
-
-  function tick() {
-    const rest = (t.startAt + duracaoMs) - Date.now();
-    if (rest <= 0) {
-      clearInterval(timerHandle);
-      encerrarPorTempo();
-      return;
-    }
-    const hh = String(Math.floor(rest/3600000)).padStart(2,'0');
-    const mm = String(Math.floor((rest%3600000)/60000)).padStart(2,'0');
-    const ss = String(Math.floor((rest%60000)/1000)).padStart(2,'0');
-    badge.textContent = `⏱ ${hh}:${mm}:${ss}`;
-    badge.style.background = rest < 300000 ? '#c0392b' : '#004aad';
-  }
-
-  tick();
-  timerHandle = setInterval(tick, 1000);
-}
-
-function encerrarPorTempo() {
-  const badge = document.getElementById('timer-badge');
-  badge.textContent = 'Tempo esgotado';
-  badge.style.background = '#b00020';
-
-  const t = getTimer(); t.locked = true; saveTimer(t);
-  travar();
-
-  const questoes = document.querySelectorAll('.questao');
-  let acertos = 0, naoRespondidas = 0, total = questoes.length;
-
-  questoes.forEach(q => {
-    const num = q.id.replace('q','');
-    const radios = q.querySelectorAll('input[type="radio"]');
-    const gabDiv = document.getElementById('gab' + num);
-    const btnGab = q.querySelector('.btn-gabarito');
-    const gabLetra = (gabDiv.textContent.split(':')[1]||'').trim();
-    const marcado = [...radios].find(r => r.checked);
-    if (!marcado) naoRespondidas++;
-    else if (marcado.value === gabLetra) acertos++;
-    gabDiv.style.display = 'block';
-    if (btnGab) { btnGab.disabled = true; btnGab.dataset.mostrado = 'true'; }
-    radios.forEach(r => r.disabled = true);
-  });
-
-  const erros = total - acertos;
-  const pctAcerto = ((acertos/total)*100).toFixed(1);
-  const htmlResultado = `
-    <h3>⏰ TEMPO ESGOTADO — Prova finalizada automaticamente</h3>
-    <div class="resultado-stat"><span>Total de questões</span><strong>${total}</strong></div>
-    <div class="resultado-stat"><span>Respondidas</span><strong>${total-naoRespondidas}</strong></div>
-    <div class="resultado-stat"><span>Não respondidas</span><strong>${naoRespondidas}</strong></div>
-    <div class="resultado-stat"><span>Acertos</span><strong>${acertos}</strong></div>
-    <div class="resultado-stat"><span>Erros</span><strong>${erros}</strong></div>
-    <div class="resultado-stat"><span>% de Acertos</span><strong>${pctAcerto}%</strong></div>
-    <div class="resultado-pct">${pctAcerto}% ✓</div>
-  `;
-  const rd = document.getElementById('resultado');
-  rd.style.display = 'block';
-  rd.innerHTML = htmlResultado;
-
-  const st = getState();
-  st.allRevealed = true;
-  st.resultadoHTML = htmlResultado;
-  saveState(st);
-}
-
-function travar() {
-  document.querySelectorAll('.questao input[type="radio"]').forEach(r => r.disabled = true);
-  document.querySelectorAll('.btn-gabarito').forEach(b => b.disabled = true);
-  const btnChecar = document.getElementById('btn-checar');
-  if (btnChecar) btnChecar.disabled = true;
-}
-
-// ================================================================
-//  RANKING
-// ================================================================
-async function carregarRanking() {
-  try {
-    const res = await fetch(CONFIG.API_URL + "?tipo=RANKING");
-    const data = await res.json();
-    if (!Array.isArray(data) || data.length === 0) return;
-
-    const area = document.getElementById('area-ranking');
-    const lista = document.getElementById('lista-ranking');
-    area.style.display = 'block';
-
-    lista.innerHTML = data.slice(0, 10).map((r, i) => `
-      <div class="ranking-item">
-        <span class="ranking-pos">${i+1}.</span>
-        <span class="ranking-nome">${escapeHtml(r.nome)}</span>
-        <span class="ranking-pct">${Number(r.percentual||0).toFixed(1)}%</span>
+      <div class="card-seta">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </div>
-    `).join('');
-  } catch(e) {
-    console.warn('Ranking indisponível:', e);
-  }
+    </a>
+  `).join('');
 }
 
-// ================================================================
-//  BLOQUEIO DEFENSIVO: não aceita marcação se timer travado
-// ================================================================
-document.addEventListener('change', (e) => {
-  const t = getTimer();
-  if (t.locked && e.target.matches('.questao input[type="radio"]')) {
-    e.preventDefault(); e.target.checked = false;
-  }
-});
+renderCursos();
 </script>
-
 </body>
 </html>

@@ -1,1 +1,485 @@
 
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Importar Questões — SAEP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --azul:#004aad;--verde:#00b86b;--vermelho:#e53935;--amarelo:#f59e0b;
+  --bg:#f0f4fb;--surface:#fff;--border:#e2e8f4;--texto:#1a2340;--muted:#5a6a8a;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--texto);min-height:100vh;}
+.header{background:var(--azul);color:white;padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 3px 12px rgba(0,0,0,.15);position:sticky;top:0;z-index:100;}
+.header-logo{display:flex;align-items:center;gap:12px;}
+.hbadge{width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:.95rem;}
+.htxt{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.05rem;letter-spacing:2px;line-height:1;}
+.htxt small{font-size:.6rem;opacity:.5;font-weight:400;letter-spacing:1px;display:block;}
+.btn-back{padding:6px 14px;background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.8);border-radius:7px;cursor:pointer;font-family:'Barlow',sans-serif;font-size:.8rem;font-weight:600;text-decoration:none;transition:background .2s;}
+.btn-back:hover{background:rgba(255,255,255,.2);color:white;}
+.page{max-width:960px;margin:0 auto;padding:28px 24px 120px;}
+.card{background:var(--surface);border-radius:14px;border:1px solid var(--border);padding:24px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+.passo-h{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+.pnum{width:32px;height:32px;background:var(--azul);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1rem;flex-shrink:0;transition:background .3s;}
+.pnum.ok{background:var(--verde);}
+.ptit{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.15rem;letter-spacing:.5px;}
+.psub{font-size:.82rem;color:var(--muted);}
+/* CONFIG */
+.cfg-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:20px;}
+.cfg-item{flex:1;min-width:180px;}
+.cfg-item label{display:block;font-weight:600;font-size:.82rem;margin-bottom:5px;}
+.cfg-item select,.cfg-item input{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.9rem;font-family:'Barlow',sans-serif;outline:none;background:white;}
+.cfg-item select:focus,.cfg-item input:focus{border-color:var(--azul);}
+/* UPLOAD */
+.upload-area{border:2.5px dashed #c7d7f5;border-radius:12px;padding:44px 24px;text-align:center;background:#f8faff;cursor:pointer;transition:all .25s;position:relative;}
+.upload-area:hover,.upload-area.drag{border-color:var(--azul);background:#eef4ff;}
+.upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.u-icon{font-size:2.8rem;margin-bottom:12px;}
+.u-tit{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.25rem;color:var(--azul);margin-bottom:6px;}
+.u-sub{font-size:.84rem;color:var(--muted);}
+.fmt-row{margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.fmt{background:#eef4ff;border:1px solid #c7d7f5;color:var(--azul);padding:3px 12px;border-radius:20px;font-size:.76rem;font-weight:600;}
+/* PARSING */
+#pstatus{display:none;text-align:center;padding:32px;color:var(--muted);}
+.spinner{width:38px;height:38px;border:3px solid #e2e8f4;border-top-color:var(--azul);border-radius:50%;animation:sp .7s linear infinite;margin:0 auto 14px;}
+@keyframes sp{to{transform:rotate(360deg)}}
+/* SUMÁRIO */
+#sumario{display:none;}
+.sum-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px;}
+.scard{background:#f0f6ff;border:1px solid #c7d7f5;border-radius:10px;padding:14px;text-align:center;}
+.scard.av .snum{color:var(--amarelo);}
+.scard.ok .snum{color:var(--verde);}
+.snum{font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:800;color:var(--azul);line-height:1;}
+.slbl{font-size:.74rem;color:var(--muted);margin-top:3px;}
+.aviso-img{display:none;background:#fff8e1;border:1px solid #fcd34d;border-radius:10px;padding:12px 16px;font-size:.84rem;color:#b45309;margin-bottom:16px;}
+/* QUESTÃO CARD */
+#lista-rev{display:none;}
+.qcard{background:white;border:1px solid var(--border);border-radius:12px;margin-bottom:14px;overflow:hidden;transition:box-shadow .2s;}
+.qcard:hover{box-shadow:0 4px 16px rgba(0,74,173,.1);}
+.qcard.c-img{border-left:4px solid var(--amarelo);}
+.qcard.c-ok{border-left:4px solid var(--verde);}
+.qcard.c-ign{opacity:.4;}
+.qcard-h{display:flex;align-items:center;gap:8px;padding:11px 16px;background:#f8faff;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.qnbadge{background:var(--azul);color:white;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;padding:3px 10px;border-radius:20px;}
+.sbadge{font-size:.7rem;font-weight:600;padding:3px 10px;border-radius:20px;}
+.s-ok{background:#e8f8f1;color:#1a7a4a;border:1px solid #a5d6be;}
+.s-img{background:#fff8e1;color:#b45309;border:1px solid #fcd34d;}
+.s-ngab{background:#fff0f0;color:#c0392b;border:1px solid #fecaca;}
+.qtoggle{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.1rem;padding:4px 8px;border-radius:6px;}
+.qtoggle:hover{background:var(--border);}
+.qign-btn{font-size:.7rem;padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:white;cursor:pointer;color:var(--muted);font-family:'Barlow',sans-serif;font-weight:600;transition:all .2s;}
+.qign-btn:hover,.qign-btn.on{background:#fff0f0;color:var(--vermelho);border-color:#fecaca;}
+.qcard-b{padding:16px;display:none;}
+.qcard-b.open{display:block;}
+.flbl{font-size:.75rem;font-weight:600;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;}
+.fed{border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:.9rem;font-family:'Barlow',sans-serif;line-height:1.5;min-height:42px;outline:none;background:white;margin-bottom:12px;transition:border-color .2s;}
+.fed:focus{border-color:var(--azul);}
+[contenteditable].fed{cursor:text;}
+.alts2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.albl{font-size:.73rem;font-weight:700;color:var(--azul);margin-bottom:3px;}
+.gab-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+.gbtn{width:40px;height:40px;border:2px solid var(--border);border-radius:8px;background:white;font-weight:700;font-size:.95rem;cursor:pointer;transition:all .2s;color:var(--muted);font-family:'Barlow',sans-serif;}
+.gbtn:hover{border-color:var(--azul);color:var(--azul);}
+.gbtn.on{background:var(--azul);border-color:var(--azul);color:white;}
+.img-drop{border:2px dashed #c7d7f5;border-radius:8px;padding:12px;text-align:center;cursor:pointer;background:#f8faff;transition:border-color .2s;margin-bottom:12px;position:relative;min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.img-drop:hover{border-color:var(--azul);}
+.img-drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.img-drop p{font-size:.82rem;color:var(--muted);pointer-events:none;}
+.ithumb{max-width:200px;max-height:130px;border-radius:6px;border:1px solid var(--border);margin-top:8px;pointer-events:none;}
+/* BARRA */
+#barra{position:fixed;bottom:0;left:0;right:0;background:white;border-top:2px solid var(--border);padding:13px 28px;display:none;align-items:center;justify-content:space-between;box-shadow:0 -4px 20px rgba(0,0,0,.1);z-index:200;flex-wrap:wrap;gap:12px;}
+.binfo{font-size:.87rem;color:var(--muted);}
+.binfo strong{color:var(--texto);font-size:1rem;}
+.bacoes{display:flex;gap:10px;}
+.btn{padding:11px 22px;border:none;border-radius:9px;font-family:'Barlow',sans-serif;font-weight:600;font-size:.9rem;cursor:pointer;transition:all .2s;}
+.btn-g{background:var(--verde);color:white;box-shadow:0 3px 12px rgba(0,184,107,.3);}
+.btn-g:hover{background:#009058;transform:translateY(-1px);}
+.btn-g:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.btn-o{background:white;color:var(--azul);border:1.5px solid var(--azul);}
+.btn-o:hover{background:#f0f5ff;}
+/* RESULTADO */
+#resultado{display:none;}
+.res-box{background:linear-gradient(135deg,var(--azul),#1a6dd4);border-radius:14px;padding:28px;color:white;text-align:center;box-shadow:0 8px 30px rgba(0,74,173,.3);}
+.res-box h2{font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:800;margin-bottom:8px;}
+.res-box p{opacity:.8;margin-bottom:20px;}
+.rac{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.btn-w{background:white;color:var(--azul);padding:11px 22px;border:none;border-radius:9px;font-family:'Barlow',sans-serif;font-weight:700;cursor:pointer;font-size:.9rem;transition:all .2s;}
+.btn-w:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.15);}
+#toast{position:fixed;bottom:80px;right:24px;padding:12px 20px;border-radius:10px;color:white;font-weight:600;font-size:.87rem;box-shadow:0 4px 20px rgba(0,0,0,.2);opacity:0;transform:translateY(10px);transition:all .3s;z-index:9999;pointer-events:none;}
+#toast.show{opacity:1;transform:translateY(0);}
+#toast.ok{background:var(--verde);}
+#toast.err{background:var(--vermelho);}
+#toast.av{background:var(--amarelo);color:#1a2340;}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:sp .6s linear infinite;vertical-align:middle;margin-right:5px;}
+@media(max-width:600px){.alts2{grid-template-columns:1fr;}.barra{flex-direction:column;}.page{padding:16px 14px 110px;}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">
+    <div class="hbadge">SP</div>
+    <div class="htxt">IMPORTAR QUESTÕES<small>SAEP · Importação em Lote</small></div>
+  </div>
+  <a href="painel.html" class="btn-back">← Painel</a>
+</div>
+
+<div class="page">
+
+  <!-- PASSO 1: UPLOAD -->
+  <div class="card" id="card-upload">
+    <div class="passo-h">
+      <div class="pnum" id="p1">1</div>
+      <div><div class="ptit">Selecione o arquivo Word</div><div class="psub">O sistema extrai todas as questões automaticamente</div></div>
+    </div>
+
+    <div class="cfg-row">
+      <div class="cfg-item">
+        <label>Curso de destino *</label>
+        <select id="cfg-curso">
+          <option value="">Selecione...</option>
+          <option value="ciber-sistemas">Ciber Sistemas</option>
+          <option value="instalacoes-eletricas">Instalações Elétricas</option>
+          <option value="automacao-industrial">Automação Industrial</option>
+          <option value="eletronica">Eletrônica</option>
+          <option value="redes-computadores">Redes de Computadores</option>
+        </select>
+      </div>
+      <div class="cfg-item">
+        <label>Disciplina padrão</label>
+        <select id="cfg-disc"><option value="">— selecione o curso —</option></select>
+      </div>
+    </div>
+
+    <div class="upload-area" id="uarea">
+      <input type="file" id="finput" accept=".docx,.txt" onchange="processarArq(this.files[0])"/>
+      <div class="u-icon">📄</div>
+      <div class="u-tit">Arraste ou clique para selecionar</div>
+      <div class="u-sub">Arquivo .docx do Word com as questões</div>
+      <div class="fmt-row"><span class="fmt">.docx</span><span class="fmt">.txt</span></div>
+    </div>
+
+    <div id="pstatus">
+      <div class="spinner"></div>
+      <p id="pmsg">Lendo arquivo...</p>
+    </div>
+  </div>
+
+  <!-- PASSO 2: SUMÁRIO -->
+  <div id="sumario">
+    <div class="passo-h">
+      <div class="pnum ok">2</div>
+      <div><div class="ptit">Resultado da extração</div><div class="psub">Veja o que foi encontrado</div></div>
+    </div>
+    <div class="card">
+      <div class="sum-grid" id="sgrid"></div>
+      <div class="aviso-img" id="aviso-img">⚠️ <strong>Questões com imagem detectadas.</strong> Você pode adicionar as imagens manualmente em cada questão abaixo.</div>
+      <button class="btn btn-g" onclick="mostrarRev()" style="width:100%;padding:13px;">✏️ Revisar e configurar questões</button>
+    </div>
+  </div>
+
+  <!-- PASSO 3: REVISÃO -->
+  <div id="lista-rev">
+    <div class="passo-h">
+      <div class="pnum" id="p3">3</div>
+      <div><div class="ptit">Revise as questões</div><div class="psub">Edite textos, adicione imagens e confirme os gabaritos</div></div>
+    </div>
+    <div id="qcards"></div>
+  </div>
+
+  <!-- RESULTADO -->
+  <div id="resultado">
+    <div class="res-box">
+      <h2>✅ Importação concluída!</h2>
+      <p id="rmsg"></p>
+      <div class="rac">
+        <button class="btn-w" onclick="location.href='painel.html'">← Ir ao Painel</button>
+        <button class="btn-w" onclick="reiniciar()">📄 Importar outro arquivo</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BARRA FIXA -->
+<div id="barra">
+  <div class="binfo"><strong id="bcount">0</strong> questões prontas <span id="bign" style="color:var(--vermelho);margin-left:6px;"></span></div>
+  <div class="bacoes">
+    <button class="btn btn-o" onclick="expandAll()">Expandir todas</button>
+    <button class="btn btn-g" id="btn-imp" onclick="importar()">🚀 Importar tudo</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec";
+
+const DISCS = {
+  "ciber-sistemas":        ["Ciber Sistemas","IoT","Redes Industriais","Automação","Segurança Digital","Programação"],
+  "instalacoes-eletricas": ["Instalações Prediais","Projetos Elétricos","Normas NBR","Dimensionamento","Segurança","Aterramento"],
+  "automacao-industrial":  ["CLP","Sensores e Atuadores","SCADA","Pneumática","Hidráulica","Instrumentação"],
+  "eletronica":            ["Eletrônica Analógica","Eletrônica Digital","Microcontroladores","Componentes","Circuitos"],
+  "redes-computadores":    ["TCP/IP","Infraestrutura","Segurança","Cabeamento","Protocolos","Wi-Fi"]
+};
+
+document.getElementById('cfg-curso').addEventListener('change', function(){
+  const d = document.getElementById('cfg-disc');
+  const ds = DISCS[this.value]||[];
+  d.innerHTML = ds.map(x=>`<option value="${x}">${x}</option>`).join('') || '<option>—</option>';
+  document.querySelectorAll('.dsel').forEach(s=>{
+    const cur=s.value;
+    s.innerHTML=ds.map(x=>`<option value="${x}" ${x===cur?'selected':''}>${x}</option>`).join('');
+  });
+});
+
+// Drag drop
+const ua=document.getElementById('uarea');
+ua.addEventListener('dragover',e=>{e.preventDefault();ua.classList.add('drag');});
+ua.addEventListener('dragleave',()=>ua.classList.remove('drag'));
+ua.addEventListener('drop',e=>{e.preventDefault();ua.classList.remove('drag');if(e.dataTransfer.files[0])processarArq(e.dataTransfer.files[0]);});
+
+let QQ=[], IMGS={};
+
+async function processarArq(file){
+  if(!document.getElementById('cfg-curso').value){toast('Selecione o curso primeiro.','av');return;}
+  if(!file)return;
+  document.getElementById('pstatus').style.display='block';
+  document.getElementById('uarea').style.opacity='.4';
+  try{
+    let txt='';
+    if(file.name.endsWith('.txt')){
+      txt=await file.text();
+    } else if(file.name.endsWith('.docx')){
+      document.getElementById('pmsg').textContent='Extraindo texto do Word...';
+      const buf=await file.arrayBuffer();
+      const res=await mammoth.extractRawText({arrayBuffer:buf});
+      txt=res.value;
+    } else { throw new Error('Use .docx ou .txt'); }
+    document.getElementById('pmsg').textContent='Identificando questões...';
+    await delay(200);
+    QQ=extrair(txt);
+    if(!QQ.length) throw new Error('Nenhuma questão encontrada. Verifique o formato.');
+    document.getElementById('pstatus').style.display='none';
+    mostrarSum();
+  }catch(e){
+    document.getElementById('pstatus').style.display='none';
+    document.getElementById('uarea').style.opacity='1';
+    toast('Erro: '+e.message,'err');
+  }
+}
+
+function delay(ms){return new Promise(r=>setTimeout(r,ms));}
+
+function extrair(txt){
+  const linhas=txt.split('\n').map(l=>l.trim()).filter(l=>l);
+  const qq=[];
+  let cur=null, enc=[], coletando=false;
+  const rQ=/^Questão\s+(\d+)/i;
+  const rA=/^([a-dA-D])[).\s]\s*(.*)/;
+  const rImg=/\[(Diagrama|Tabela|Gráfico|Ícone|Forma|Figura|Imagem|Texto|Interface|Tela|Recibo|Esquemático|Uma imagem)[^\]]*\]/i;
+
+  for(const linha of linhas){
+    const mQ=linha.match(rQ);
+    if(mQ){
+      if(cur){ cur.enunciado=enc.join(' ').replace(/\s+/g,' ').trim(); qq.push(cur); }
+      cur={num:parseInt(mQ[1]),enunciado:'',A:'',B:'',C:'',D:'',gabarito:'',temImg:false,ign:false};
+      enc=[];coletando=true;continue;
+    }
+    if(!cur)continue;
+    const mA=linha.match(rA);
+    if(mA){
+      coletando=false;
+      const l=mA[1].toUpperCase();
+      let v=mA[2].trim();
+      if(/gabarito/i.test(v)){cur.gabarito=l;v=v.replace(/gabarito/i,'').trim();}
+      if(rImg.test(v)){cur.temImg=true;v=v.replace(rImg,'').trim()||'[ver imagem]';}
+      if('ABCD'.includes(l))cur[l]=v;
+      continue;
+    }
+    if(rImg.test(linha)){cur.temImg=true;continue;}
+    if(coletando&&linha.length>2)enc.push(linha);
+  }
+  if(cur){cur.enunciado=enc.join(' ').replace(/\s+/g,' ').trim();qq.push(cur);}
+  return qq.filter(q=>q.enunciado&&(q.A||q.B));
+}
+
+function mostrarSum(){
+  const tot=QQ.length, img=QQ.filter(q=>q.temImg).length, cgab=QQ.filter(q=>q.gabarito).length;
+  document.getElementById('sgrid').innerHTML=`
+    <div class="scard ok"><div class="snum">${tot}</div><div class="slbl">questões encontradas</div></div>
+    <div class="scard ok"><div class="snum">${cgab}</div><div class="slbl">com gabarito</div></div>
+    <div class="scard av"><div class="snum">${tot-cgab}</div><div class="slbl">sem gabarito</div></div>
+    <div class="scard av"><div class="snum">${img}</div><div class="slbl">precisam de imagem</div></div>`;
+  if(img>0)document.getElementById('aviso-img').style.display='block';
+  document.getElementById('sumario').style.display='block';
+  document.getElementById('p1').classList.add('ok');
+  document.getElementById('sumario').scrollIntoView({behavior:'smooth'});
+}
+
+function mostrarRev(){
+  const curso=document.getElementById('cfg-curso').value;
+  const dpd=document.getElementById('cfg-disc').value;
+  const ds=DISCS[curso]||[];
+  const cont=document.getElementById('qcards');
+  cont.innerHTML='';
+
+  QQ.forEach((q,i)=>{
+    const gok=!!q.gabarito;
+    const badge=q.temImg?`<span class="sbadge s-img">🖼 Precisa imagem</span>`
+      :gok?`<span class="sbadge s-ok">✅ Completa</span>`
+      :`<span class="sbadge s-ngab">⚠️ Sem gabarito</span>`;
+    const dopts=ds.map(d=>`<option value="${d}" ${d===dpd?'selected':''}>${d}</option>`).join('');
+    const gbtns=['A','B','C','D'].map(l=>`<button class="gbtn ${q.gabarito===l?'on':''}" onclick="setG(${i},'${l}',this)">${l}</button>`).join('');
+    const cc=q.temImg?'c-img':gok?'c-ok':'';
+    cont.innerHTML+=`
+    <div class="qcard ${cc}" id="qc-${i}">
+      <div class="qcard-h">
+        <span class="qnbadge">Q ${q.num}</span>${badge}
+        <button class="qign-btn" id="ib-${i}" onclick="togIgn(${i})">Ignorar</button>
+        <button class="qtoggle" onclick="togCard(${i})">▼</button>
+      </div>
+      <div class="qcard-b" id="qb-${i}">
+        <div class="flbl">Disciplina</div>
+        <select class="fed dsel" id="dsc-${i}" style="margin-bottom:12px;">${dopts}</select>
+        <div class="flbl">Enunciado</div>
+        <div class="fed" id="en-${i}" contenteditable="true">${q.enunciado}</div>
+        <div class="flbl">Imagem do enunciado ${q.temImg?'<span style="color:var(--amarelo)">⚠️ recomendada</span>':''}</div>
+        <div class="img-drop" onclick="document.getElementById('fi-${i}').click()">
+          <input type="file" id="fi-${i}" accept="image/*" onchange="loadImg(${i},this)"/>
+          <p id="ilbl-${i}">🖼 Clique para adicionar imagem</p>
+          <img id="ith-${i}" class="ithumb" style="display:none"/>
+        </div>
+        <div class="flbl">Texto após imagem <span style="font-weight:400;color:var(--muted)">(opcional)</span></div>
+        <div class="fed" id="tp-${i}" contenteditable="true" style="min-height:34px;"></div>
+        <div class="alts2">
+          <div><div class="albl">A)</div><div class="fed" id="a-${i}-A" contenteditable="true">${q.A}</div></div>
+          <div><div class="albl">B)</div><div class="fed" id="a-${i}-B" contenteditable="true">${q.B}</div></div>
+          <div><div class="albl">C)</div><div class="fed" id="a-${i}-C" contenteditable="true">${q.C}</div></div>
+          <div><div class="albl">D)</div><div class="fed" id="a-${i}-D" contenteditable="true">${q.D}</div></div>
+        </div>
+        <div class="flbl">Gabarito correto</div>
+        <div class="gab-row" id="gr-${i}">${gbtns}</div>
+      </div>
+    </div>`;
+  });
+
+  document.getElementById('lista-rev').style.display='block';
+  document.getElementById('barra').style.display='flex';
+  updBarra();
+  document.getElementById('lista-rev').scrollIntoView({behavior:'smooth'});
+}
+
+function togCard(i){
+  const b=document.getElementById('qb-'+i);
+  const btn=b.previousElementSibling.querySelector('.qtoggle');
+  b.classList.toggle('open');
+  btn.textContent=b.classList.contains('open')?'▲':'▼';
+}
+function expandAll(){
+  document.querySelectorAll('.qcard-b').forEach(b=>{
+    b.classList.add('open');
+    b.previousElementSibling.querySelector('.qtoggle').textContent='▲';
+  });
+}
+function togIgn(i){
+  QQ[i].ign=!QQ[i].ign;
+  document.getElementById('qc-'+i).classList.toggle('c-ign',QQ[i].ign);
+  const b=document.getElementById('ib-'+i);
+  b.classList.toggle('on',QQ[i].ign);
+  b.textContent=QQ[i].ign?'Incluir':'Ignorar';
+  updBarra();
+}
+function setG(i,l,btn){
+  QQ[i].gabarito=l;
+  btn.closest('.gab-row').querySelectorAll('.gbtn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const h=document.getElementById('qc-'+i).querySelector('.qcard-h');
+  const sb=h.querySelector('.sbadge');
+  if(sb&&!QQ[i].temImg){sb.className='sbadge s-ok';sb.textContent='✅ Completa';document.getElementById('qc-'+i).classList.add('c-ok');}
+  updBarra();
+}
+async function loadImg(i,inp){
+  if(!inp.files[0])return;
+  const b64=await new Promise((res,rej)=>{const r=new FileReader();r.readAsDataURL(inp.files[0]);r.onload=()=>res(r.result);r.onerror=rej;});
+  IMGS[i]=b64;
+  const th=document.getElementById('ith-'+i);
+  th.src=b64;th.style.display='block';
+  document.getElementById('ilbl-'+i).textContent='✅ '+inp.files[0].name;
+  if(QQ[i].gabarito){
+    const sb=document.getElementById('qc-'+i).querySelector('.sbadge');
+    if(sb){sb.className='sbadge s-ok';sb.textContent='✅ Completa';}
+    document.getElementById('qc-'+i).className='qcard c-ok';
+  }
+}
+function updBarra(){
+  const at=QQ.filter(q=>!q.ign).length, ig=QQ.filter(q=>q.ign).length;
+  document.getElementById('bcount').textContent=at+' questões';
+  document.getElementById('bign').textContent=ig>0?`(${ig} ignoradas)`:'';
+}
+
+async function importar(){
+  const curso=document.getElementById('cfg-curso').value;
+  if(!curso){toast('Selecione o curso.','av');return;}
+  const btn=document.getElementById('btn-imp');
+  btn.disabled=true;
+  const ativas=QQ.filter(q=>!q.ign);
+  let ok=0,err=0;
+  for(let i=0;i<QQ.length;i++){
+    const q=QQ[i];
+    if(q.ign)continue;
+    const done=ativas.slice(0,ativas.indexOf(q)+1).length;
+    btn.innerHTML=`<span class="spin"></span>Q${q.num}... (${done}/${ativas.length})`;
+    const payload={
+      tipo:'INSERIR_QUESTAO',curso,
+      disciplina:document.getElementById('dsc-'+i)?.value||'',
+      enunciado:document.getElementById('en-'+i)?.innerHTML?.trim()||q.enunciado,
+      imagem:IMGS[i]||'',
+      texto_pos_imagem:document.getElementById('tp-'+i)?.innerHTML?.trim()||'',
+      A:document.getElementById('a-'+i+'-A')?.innerHTML?.trim()||q.A,
+      B:document.getElementById('a-'+i+'-B')?.innerHTML?.trim()||q.B,
+      C:document.getElementById('a-'+i+'-C')?.innerHTML?.trim()||q.C,
+      D:document.getElementById('a-'+i+'-D')?.innerHTML?.trim()||q.D,
+      gabarito:q.gabarito||''
+    };
+    try{
+      const r=await fetch(API,{method:'POST',body:JSON.stringify(payload)});
+      const j=await r.json();
+      j.status==='ok'?ok++:err++;
+    }catch(e){err++;}
+    await delay(220);
+  }
+  btn.disabled=false;
+  btn.innerHTML='🚀 Importar tudo';
+  document.getElementById('barra').style.display='none';
+  document.getElementById('resultado').style.display='block';
+  document.getElementById('rmsg').textContent=`${ok} questão(ões) importada(s) com sucesso${err>0?` · ${err} com erro`:''}. Verifique no Painel.`;
+  document.getElementById('resultado').scrollIntoView({behavior:'smooth'});
+}
+
+function reiniciar(){
+  QQ=[];IMGS={};
+  ['sumario','lista-rev','resultado'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('barra').style.display='none';
+  document.getElementById('uarea').style.opacity='1';
+  document.getElementById('finput').value='';
+  document.getElementById('qcards').innerHTML='';
+  document.getElementById('p1').classList.remove('ok');
+  document.getElementById('aviso-img').style.display='none';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+let tT;
+function toast(msg,tipo='ok'){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.className=`show ${tipo}`;
+  clearTimeout(tT);tT=setTimeout(()=>el.className=tipo,3200);
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+</body>
+</html>

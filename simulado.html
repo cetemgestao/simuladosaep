@@ -597,7 +597,7 @@ body {
     </div>
 
     <div id="resultado"></div>
-    <div id="area-ranking"></div>
+    // /*<div id="area-ranking"></div>*/
 
     <!-- Link painel — SEM destaque, discreto -->
     <div style="margin-top:50px;padding-top:20px;border-top:1px solid #e2e8f4;text-align:center;">
@@ -799,7 +799,7 @@ async function carregarQuestoes(continuar = false) {
     renderQuestoes();
     if (!continuar) iniciarTimer();
     else restaurarTimer();
-    carregarRanking();
+    //carregarRanking();
 
   } catch(err) {
     document.getElementById('loading-area').style.display = 'none';
@@ -1040,7 +1040,7 @@ async function verificarResultado() {
       method:'POST',
       body: JSON.stringify({tipo:'SALVAR_RESULTADO', nome, acertos, total, curso: CURSO_ID})
     });
-    carregarRanking();
+    //carregarRanking();
   } catch(e) {}
 }
 

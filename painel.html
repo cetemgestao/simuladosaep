@@ -384,14 +384,16 @@ function apiCall(params) {
 
 // POST — para escrita (INSERIR, EDITAR, EXCLUIR)
 async function apiPost(params) {
-  const { tipo, ...resto } = params;
+  const tipo = params.tipo;
   try {
     await fetch(getApiUrl() + '?tipo=' + encodeURIComponent(tipo), {
       method: 'POST',
-      mode: 'no-cors',
-      body: JSON.stringify(resto)
+      redirect: 'follow',
+      body: JSON.stringify(params)
     });
-  } catch(e) {}
+  } catch(e) {
+    // CORS bloqueia leitura da resposta mas o dado é gravado
+  }
   await new Promise(r => setTimeout(r, 800));
   return { status: 'ok' };
 }

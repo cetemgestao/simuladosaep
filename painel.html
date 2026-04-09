@@ -8,255 +8,84 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  --azul: #004aad;
-  --azul-escuro: #00317a;
-  --verde: #00b86b;
-  --vermelho: #e53935;
-  --amarelo: #f59e0b;
-  --bg: #f0f4fb;
-  --surface: #ffffff;
-  --border: #e2e8f4;
-  --texto: #1a2340;
-  --muted: #5a6a8a;
+  --azul: #004aad; --azul-escuro: #00317a; --verde: #00b86b;
+  --vermelho: #e53935; --amarelo: #f59e0b; --bg: #f0f4fb;
+  --surface: #ffffff; --border: #e2e8f4; --texto: #1a2340; --muted: #5a6a8a;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--texto); min-height: 100vh; }
 
-/* ─── TELA DE LOGIN ─── */
-#login-screen {
-  position: fixed; inset: 0; z-index: 9999;
-  background: linear-gradient(135deg, #0d1a30, #00317a);
-  display: flex; align-items: center; justify-content: center;
-}
-.login-box {
-  background: white; border-radius: 20px;
-  width: 90%; max-width: 400px;
-  padding: 40px; text-align: center;
-  box-shadow: 0 30px 80px rgba(0,0,0,0.4);
-  animation: popIn 0.4s cubic-bezier(0.4,0,0.2,1);
-}
-@keyframes popIn {
-  from{opacity:0;transform:scale(0.9)translateY(20px)}
-  to{opacity:1;transform:scale(1)translateY(0)}
-}
-.login-icon {
-  width: 60px; height: 60px;
-  background: linear-gradient(135deg, var(--azul), #1a6dd4);
-  border-radius: 16px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.8rem; margin: 0 auto 20px;
-}
-.login-box h1 {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1.6rem; font-weight: 800;
-  color: var(--texto); letter-spacing: 1px; margin-bottom: 4px;
-}
+#login-screen { position: fixed; inset: 0; z-index: 9999; background: linear-gradient(135deg, #0d1a30, #00317a); display: flex; align-items: center; justify-content: center; }
+.login-box { background: white; border-radius: 20px; width: 90%; max-width: 400px; padding: 40px; text-align: center; box-shadow: 0 30px 80px rgba(0,0,0,0.4); animation: popIn 0.4s cubic-bezier(0.4,0,0.2,1); }
+@keyframes popIn { from{opacity:0;transform:scale(0.9)translateY(20px)} to{opacity:1;transform:scale(1)translateY(0)} }
+.login-icon { width: 60px; height: 60px; background: linear-gradient(135deg, var(--azul), #1a6dd4); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 20px; }
+.login-box h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--texto); letter-spacing: 1px; margin-bottom: 4px; }
 .login-box p { font-size: 0.85rem; color: var(--muted); margin-bottom: 24px; }
-.login-campo {
-  width: 100%; padding: 12px 16px;
-  border: 1.5px solid var(--border);
-  border-radius: 10px; font-size: 1rem;
-  font-family: 'Barlow', sans-serif;
-  text-align: center; letter-spacing: 4px;
-  outline: none; margin-bottom: 12px;
-  transition: border-color 0.2s;
-}
+.login-campo { width: 100%; padding: 12px 16px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 1rem; font-family: 'Barlow', sans-serif; text-align: center; letter-spacing: 4px; outline: none; margin-bottom: 12px; transition: border-color 0.2s; }
 .login-campo:focus { border-color: var(--azul); box-shadow: 0 0 0 3px rgba(0,74,173,0.1); }
-.login-erro {
-  background: #fff0f0; border: 1px solid #fecaca;
-  border-radius: 8px; padding: 8px; font-size: 0.82rem;
-  color: var(--vermelho); margin-bottom: 12px; display: none;
-}
-.btn-login {
-  width: 100%; padding: 13px;
-  background: var(--azul); color: white;
-  border: none; border-radius: 10px;
-  font-family: 'Barlow', sans-serif;
-  font-weight: 600; font-size: 1rem;
-  cursor: pointer; transition: background 0.2s;
-}
+.login-erro { background: #fff0f0; border: 1px solid #fecaca; border-radius: 8px; padding: 8px; font-size: 0.82rem; color: var(--vermelho); margin-bottom: 12px; display: none; }
+.btn-login { width: 100%; padding: 13px; background: var(--azul); color: white; border: none; border-radius: 10px; font-family: 'Barlow', sans-serif; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
 .btn-login:hover { background: var(--azul-escuro); }
 .login-hint { font-size: 0.72rem; color: #aab; margin-top: 14px; }
 
-/* ─── LAYOUT PRINCIPAL ─── */
 #app { display: none; flex-direction: column; min-height: 100vh; }
-
-/* Header */
-.app-header {
-  background: var(--azul);
-  padding: 0 28px;
-  height: 58px;
-  display: flex; align-items: center; justify-content: space-between;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.15);
-  position: sticky; top: 0; z-index: 100;
-}
-.header-logo {
-  display: flex; align-items: center; gap: 12px;
-}
-.header-logo-badge {
-  width: 36px; height: 36px;
-  background: rgba(255,255,255,0.15);
-  border-radius: 9px;
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 800; font-size: 0.95rem; color: white;
-}
-.header-logo-txt {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700; font-size: 1.1rem;
-  letter-spacing: 2px; color: white; line-height: 1;
-}
+.app-header { background: var(--azul); padding: 0 28px; height: 58px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 3px 12px rgba(0,0,0,0.15); position: sticky; top: 0; z-index: 100; }
+.header-logo { display: flex; align-items: center; gap: 12px; }
+.header-logo-badge { width: 36px; height: 36px; background: rgba(255,255,255,0.15); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 0.95rem; color: white; }
+.header-logo-txt { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1.1rem; letter-spacing: 2px; color: white; line-height: 1; }
 .header-logo-txt small { font-size: 0.6rem; opacity: 0.5; font-weight: 400; letter-spacing: 1px; }
-.header-acoes {
-  display: flex; align-items: center; gap: 10px;
-}
-.btn-header {
-  padding: 6px 14px; border-radius: 7px;
-  font-family: 'Barlow', sans-serif;
-  font-weight: 600; font-size: 0.8rem;
-  cursor: pointer; transition: all 0.2s; border: none;
-}
+.header-acoes { display: flex; align-items: center; gap: 10px; }
+.btn-header { padding: 6px 14px; border-radius: 7px; font-family: 'Barlow', sans-serif; font-weight: 600; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; border: none; }
 .btn-sair { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
 .btn-sair:hover { background: rgba(255,255,255,0.2); color: white; }
 .btn-ver-sim { background: rgba(255,255,255,0.15); color: white; }
 .btn-ver-sim:hover { background: rgba(255,255,255,0.25); }
 
-/* Tabs */
-.app-tabs {
-  background: white;
-  border-bottom: 2px solid var(--border);
-  display: flex; padding: 0 28px; gap: 2px;
-}
-.tab-btn {
-  padding: 14px 20px;
-  border: none; background: none;
-  font-family: 'Barlow', sans-serif;
-  font-weight: 600; font-size: 0.88rem;
-  cursor: pointer; color: var(--muted);
-  border-bottom: 3px solid transparent;
-  margin-bottom: -2px; transition: all 0.2s;
-}
+.app-tabs { background: white; border-bottom: 2px solid var(--border); display: flex; padding: 0 28px; gap: 2px; }
+.tab-btn { padding: 14px 20px; border: none; background: none; font-family: 'Barlow', sans-serif; font-weight: 600; font-size: 0.88rem; cursor: pointer; color: var(--muted); border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
 .tab-btn:hover { color: var(--azul); }
 .tab-btn.ativa { color: var(--azul); border-bottom-color: var(--azul); }
 
-/* Conteúdo */
 .app-body { padding: 28px; max-width: 1000px; flex: 1; }
 .tab-painel { display: none; }
 .tab-painel.ativa { display: block; }
 
-/* Cards */
-.card {
-  background: var(--surface);
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  padding: 24px;
-  margin-bottom: 20px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-}
-.card-titulo {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1.05rem; font-weight: 700;
-  color: var(--azul); letter-spacing: 0.5px;
-  margin-bottom: 18px; padding-bottom: 12px;
-  border-bottom: 2px solid var(--border);
-}
+.card { background: var(--surface); border-radius: 14px; border: 1px solid var(--border); padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+.card-titulo { font-family: 'Barlow Condensed', sans-serif; font-size: 1.05rem; font-weight: 700; color: var(--azul); letter-spacing: 0.5px; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 2px solid var(--border); }
 
-/* Seletor de curso */
-.curso-select-row {
-  display: flex; align-items: center; gap: 12px;
-  background: #f0f6ff; border: 1px solid #c7d7f5;
-  border-radius: 10px; padding: 12px 16px;
-  margin-bottom: 20px; flex-wrap: wrap;
-}
+.curso-select-row { display: flex; align-items: center; gap: 12px; background: #f0f6ff; border: 1px solid #c7d7f5; border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; flex-wrap: wrap; }
 .curso-select-row label { font-weight: 600; font-size: 0.88rem; color: var(--azul); white-space: nowrap; }
-#sel-curso {
-  flex: 1; min-width: 180px;
-  padding: 8px 12px; border: 1.5px solid #c7d7f5;
-  border-radius: 8px; font-size: 0.95rem;
-  font-family: 'Barlow', sans-serif;
-  color: var(--texto); outline: none;
-  background: white;
-}
+#sel-curso { flex: 1; min-width: 180px; padding: 8px 12px; border: 1.5px solid #c7d7f5; border-radius: 8px; font-size: 0.95rem; font-family: 'Barlow', sans-serif; color: var(--texto); outline: none; background: white; }
 #sel-curso:focus { border-color: var(--azul); }
 
-/* Form */
 .form-row { margin-bottom: 16px; }
-.form-row label {
-  display: block; font-weight: 600;
-  font-size: 0.83rem; color: var(--texto);
-  margin-bottom: 5px;
-}
-.form-row input[type="text"] {
-  width: 100%; padding: 9px 12px;
-  border: 1.5px solid var(--border);
-  border-radius: 8px; font-size: 0.95rem;
-  font-family: 'Barlow', sans-serif;
-  outline: none; transition: border-color 0.2s;
-}
+.form-row label { display: block; font-weight: 600; font-size: 0.83rem; color: var(--texto); margin-bottom: 5px; }
+.form-row input[type="text"] { width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.95rem; font-family: 'Barlow', sans-serif; outline: none; transition: border-color 0.2s; }
 .form-row input:focus { border-color: var(--azul); box-shadow: 0 0 0 3px rgba(0,74,173,0.1); }
 
-/* Editor */
-.editor-toolbar {
-  display: flex; gap: 4px;
-  margin-bottom: 4px; flex-wrap: wrap; align-items: center;
-}
-.editor-toolbar button {
-  padding: 4px 9px; font-size: 0.8rem;
-  background: var(--bg); border: 1px solid var(--border);
-  border-radius: 5px; cursor: pointer;
-  transition: background 0.15s; color: var(--texto);
-}
+.editor-toolbar { display: flex; gap: 4px; margin-bottom: 4px; flex-wrap: wrap; align-items: center; }
+.editor-toolbar button { padding: 4px 9px; font-size: 0.8rem; background: var(--bg); border: 1px solid var(--border); border-radius: 5px; cursor: pointer; transition: background 0.15s; color: var(--texto); }
 .editor-toolbar button:hover { background: #d8e4ff; }
 .btn-limpar-fmt { background: #fff3e0 !important; border-color: #ffb74d !important; color: #e65100 !important; }
 .btn-limpar-fmt:hover { background: #ffe0b2 !important; }
 .editor-sep { width: 1px; height: 20px; background: var(--border); }
-.editor {
-  border: 1.5px solid var(--border); min-height: 72px;
-  padding: 10px 12px; border-radius: 8px;
-  background: white; font-size: 0.95rem; line-height: 1.55;
-  outline: none; transition: border-color 0.2s;
-  font-family: 'Barlow', sans-serif;
-}
+.editor { border: 1.5px solid var(--border); min-height: 72px; padding: 10px 12px; border-radius: 8px; background: white; font-size: 0.95rem; line-height: 1.55; outline: none; transition: border-color 0.2s; font-family: 'Barlow', sans-serif; }
 .editor:focus { border-color: var(--azul); box-shadow: 0 0 0 3px rgba(0,74,173,0.1); }
-.paste-aviso {
-  font-size: 0.75rem; color: #e65100;
-  background: #fff3e0; border: 1px solid #ffb74d;
-  border-radius: 5px; padding: 4px 10px;
-  margin-bottom: 4px; display: none;
-}
+.paste-aviso { font-size: 0.75rem; color: #e65100; background: #fff3e0; border: 1px solid #ffb74d; border-radius: 5px; padding: 4px 10px; margin-bottom: 4px; display: none; }
 
-/* Imagem */
-.img-drop {
-  border: 2px dashed #c7d7f5; border-radius: 10px;
-  padding: 18px; text-align: center;
-  background: #f8faff; cursor: pointer;
-  transition: border-color 0.2s;
-}
+.img-drop { border: 2px dashed #c7d7f5; border-radius: 10px; padding: 18px; text-align: center; background: #f8faff; cursor: pointer; transition: border-color 0.2s; }
 .img-drop:hover { border-color: var(--azul); }
 .img-preview { max-width: 260px; border-radius: 8px; margin-top: 10px; border: 1px solid var(--border); }
 
-/* Alternativas */
 .alts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .alt-lbl-txt { font-weight: 700; color: var(--azul); font-size: 0.85rem; margin-bottom: 4px; }
 
-/* Gabarito row */
 .gab-row { display: flex; align-items: center; gap: 14px; margin-top: 14px; }
 .gab-row label { font-weight: 600; font-size: 0.88rem; }
-.gab-row select {
-  padding: 8px 16px; border: 2px solid var(--azul);
-  border-radius: 8px; color: var(--azul); font-weight: 700;
-  font-family: 'Barlow', sans-serif; font-size: 1rem;
-  outline: none; background: white;
-}
+.gab-row select { padding: 8px 16px; border: 2px solid var(--azul); border-radius: 8px; color: var(--azul); font-weight: 700; font-family: 'Barlow', sans-serif; font-size: 1rem; outline: none; background: white; }
 
-/* Botões ação */
 .btn-row { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
-.btn {
-  padding: 11px 22px; border: none; border-radius: 9px;
-  font-family: 'Barlow', sans-serif; font-weight: 600;
-  font-size: 0.9rem; cursor: pointer; transition: all 0.2s;
-  flex: 1; min-width: 130px; letter-spacing: 0.3px;
-}
+.btn { padding: 11px 22px; border: none; border-radius: 9px; font-family: 'Barlow', sans-serif; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; flex: 1; min-width: 130px; letter-spacing: 0.3px; }
 .btn-primary { background: var(--azul); color: white; box-shadow: 0 3px 12px rgba(0,74,173,0.25); }
 .btn-primary:hover { background: var(--azul-escuro); transform: translateY(-1px); }
 .btn-sucesso { background: var(--verde); color: white; box-shadow: 0 3px 12px rgba(0,184,107,0.25); }
@@ -267,51 +96,23 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
 .btn-outline:hover { background: #f0f5ff; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
 
-/* Preview */
-.preview-questao {
-  border: 2px solid var(--border); border-radius: 10px;
-  padding: 20px; background: var(--bg);
-}
+.preview-questao { border: 2px solid var(--border); border-radius: 10px; padding: 20px; background: var(--bg); }
 
-/* Stats */
 .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px; }
 .stat-card { background: #f0f6ff; border: 1px solid #c7d7f5; border-radius: 10px; padding: 16px; text-align: center; }
 .stat-num { font-family: 'Barlow Condensed', sans-serif; font-size: 2rem; font-weight: 800; color: var(--azul); line-height: 1; }
 .stat-lbl { font-size: 0.75rem; color: var(--muted); margin-top: 3px; }
 
-/* Lista questões */
-.quest-item {
-  display: flex; align-items: flex-start; gap: 12px;
-  padding: 14px; border: 1px solid var(--border);
-  border-radius: 10px; margin-bottom: 10px; background: white;
-  transition: box-shadow 0.2s;
-}
+.quest-item { display: flex; align-items: flex-start; gap: 12px; padding: 14px; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; background: white; transition: box-shadow 0.2s; }
 .quest-item:hover { box-shadow: 0 3px 12px rgba(0,74,173,0.1); }
-.quest-num {
-  background: var(--azul); color: white;
-  width: 32px; height: 32px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-weight: 700; font-size: 0.82rem; flex-shrink: 0;
-}
+.quest-num { background: var(--azul); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.82rem; flex-shrink: 0; }
 .quest-body { flex: 1; }
-.quest-enunciado {
-  font-size: 0.88rem; color: var(--texto); line-height: 1.4; margin-bottom: 4px;
-  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-}
+.quest-enunciado { font-size: 0.88rem; color: var(--texto); line-height: 1.4; margin-bottom: 4px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .quest-meta { font-size: 0.76rem; color: var(--muted); }
 .quest-meta strong { color: var(--azul); }
-.quest-del {
-  padding: 5px 10px; font-size: 0.76rem;
-  background: #fff0f0; color: var(--vermelho);
-  border: 1px solid #fecaca; border-radius: 6px;
-  cursor: pointer; flex-shrink: 0; white-space: nowrap;
-  font-family: 'Barlow', sans-serif; font-weight: 600;
-  transition: background 0.2s;
-}
+.quest-del { padding: 5px 10px; font-size: 0.76rem; background: #fff0f0; color: var(--vermelho); border: 1px solid #fecaca; border-radius: 6px; cursor: pointer; flex-shrink: 0; white-space: nowrap; font-family: 'Barlow', sans-serif; font-weight: 600; transition: background 0.2s; }
 .quest-del:hover { background: #ffe0e0; }
 
-/* Tabela resultados */
 .tabela { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
 .tabela th { background: var(--azul); color: white; padding: 10px 14px; text-align: left; font-weight: 600; }
 .tabela td { padding: 9px 14px; border-bottom: 1px solid var(--border); }
@@ -320,65 +121,38 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
 .pct-medio { color: var(--amarelo); font-weight: 700; }
 .pct-baixo { color: var(--vermelho); font-weight: 700; }
 
-/* Filtros */
 .filtros-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-.filtros-row input, .filtros-row select {
-  flex: 1; min-width: 160px; padding: 8px 12px;
-  border: 1.5px solid var(--border); border-radius: 8px;
-  font-size: 0.88rem; font-family: 'Barlow', sans-serif;
-  outline: none;
-}
+.filtros-row input, .filtros-row select { flex: 1; min-width: 160px; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.88rem; font-family: 'Barlow', sans-serif; outline: none; }
 .filtros-row input:focus, .filtros-row select:focus { border-color: var(--azul); }
 
-/* Toast */
-#toast {
-  position: fixed; bottom: 24px; right: 24px;
-  padding: 12px 20px; border-radius: 10px;
-  color: white; font-weight: 600; font-size: 0.9rem;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-  opacity: 0; transform: translateY(16px);
-  transition: all 0.3s; z-index: 9999; pointer-events: none;
-}
+#toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: 10px; color: white; font-weight: 600; font-size: 0.9rem; box-shadow: 0 6px 20px rgba(0,0,0,0.2); opacity: 0; transform: translateY(16px); transition: all 0.3s; z-index: 9999; pointer-events: none; }
 #toast.show { opacity: 1; transform: translateY(0); }
-#toast.ok   { background: var(--verde); }
-#toast.err  { background: var(--vermelho); }
-#toast.av   { background: var(--amarelo); color: #1a2340; }
+#toast.ok { background: var(--verde); }
+#toast.err { background: var(--vermelho); }
+#toast.av { background: var(--amarelo); color: #1a2340; }
 
-/* Spinner inline */
 .spin { display: inline-block; width: 20px; height: 20px; border: 2px solid #ddd; border-top-color: var(--azul); border-radius: 50%; animation: sp .6s linear infinite; vertical-align: middle; margin-right: 6px; }
 @keyframes sp { to { transform: rotate(360deg); } }
 
-/* Responsivo */
-@media(max-width:640px){
-  .alts-grid{ grid-template-columns:1fr; }
-  .app-header nav { display: none; }
-  .app-body { padding: 16px; }
-}
+@media(max-width:640px){ .alts-grid{ grid-template-columns:1fr; } .app-body { padding: 16px; } }
 </style>
 </head>
 <body>
 
-<!-- ─── TELA DE LOGIN ─── -->
 <div id="login-screen">
   <div class="login-box">
     <div class="login-icon">🔐</div>
     <h1>PAINEL SAEP-CETEM</h1>
     <p>Acesso exclusivo para aplicadores</p>
     <div id="login-erro" class="login-erro">Senha incorreta. Tente novamente.</div>
-    <input type="password" class="login-campo" id="login-senha"
-      placeholder="••••••••" maxlength="30"
-      onkeydown="if(event.key==='Enter') tentarLogin()"/>
+    <input type="password" class="login-campo" id="login-senha" placeholder="••••••••" maxlength="30" onkeydown="if(event.key==='Enter') tentarLogin()"/>
     <button class="btn-login" onclick="tentarLogin()">Entrar</button>
-    <!-- FIX 2: botão voltar na tela de login -->
     <a href="index.html" style="display:block;margin-top:14px;font-size:0.8rem;color:#aab;text-decoration:none;text-align:center;">← Voltar para os simulados</a>
     <p class="login-hint">Solicite a senha ao coordenador do curso.</p>
   </div>
 </div>
 
-<!-- ─── APP PRINCIPAL ─── -->
 <div id="app">
-
-  <!-- Header -->
   <div class="app-header">
     <div class="header-logo">
       <div class="header-logo-badge">SP</div>
@@ -390,7 +164,6 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
     </div>
   </div>
 
-  <!-- Tabs -->
   <div class="app-tabs">
     <button class="tab-btn ativa" onclick="trocarAba('inserir',this)">➕ Inserir Questão</button>
     <button class="tab-btn" onclick="trocarAba('listar',this)">📋 Questões</button>
@@ -399,30 +172,22 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
     <button class="tab-btn" onclick="trocarAba('config',this)">⚙️ Config</button>
   </div>
 
-  <!-- Body -->
   <div class="app-body">
 
-    <!-- ── ABA INSERIR ── -->
+    <!-- INSERIR -->
     <div class="tab-painel ativa" id="tab-inserir">
-
       <div class="card">
         <div class="card-titulo">➕ Inserir Nova Questão</div>
-
         <div class="curso-select-row">
           <label>📚 Curso:</label>
-          <select id="sel-curso">
-            <option value="">Selecione o curso...</option>
-          </select>
+          <select id="sel-curso"><option value="">Selecione o curso...</option></select>
         </div>
-
         <div class="form-row">
           <label>Disciplina / Área *</label>
-          <!-- FIX 5: select de disciplinas filtrado por curso -->
           <select id="disciplina" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.95rem;font-family:'Barlow',sans-serif;outline:none;background:white;">
             <option value="">— selecione o curso primeiro —</option>
           </select>
         </div>
-
         <div class="form-row">
           <label>Enunciado *</label>
           <div id="aviso-paste" class="paste-aviso">⚠️ Formatação do Word removida automaticamente.</div>
@@ -437,7 +202,6 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
           </div>
           <div class="editor" id="enunciado" contenteditable="true"></div>
         </div>
-
         <div class="form-row">
           <label>Imagem do enunciado (opcional)</label>
           <div class="img-drop" id="img-drop" onclick="document.getElementById('img-input').click()">
@@ -447,41 +211,33 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
             <button id="btn-rm-img" style="display:none;margin-top:8px;padding:5px 12px;background:#fee;color:#c62828;border:1px solid #fecaca;border-radius:6px;cursor:pointer;font-size:0.8rem;" onclick="rmImagem(event)">✕ Remover</button>
           </div>
         </div>
-
-        <!-- FIX 7: texto após imagem -->
         <div class="form-row">
-          <label>Texto complementar após a imagem <span style="font-weight:400;color:var(--muted)">(opcional — aparece abaixo da imagem)</span></label>
+          <label>Texto complementar após a imagem <span style="font-weight:400;color:var(--muted)">(opcional)</span></label>
           <div class="editor" id="texto-pos-imagem" contenteditable="true" style="min-height:44px;"></div>
         </div>
-
         <div class="alts-grid">
           <div><div class="alt-lbl-txt">A)</div><div class="editor" id="altA" contenteditable="true"></div></div>
           <div><div class="alt-lbl-txt">B)</div><div class="editor" id="altB" contenteditable="true"></div></div>
           <div><div class="alt-lbl-txt">C)</div><div class="editor" id="altC" contenteditable="true"></div></div>
           <div><div class="alt-lbl-txt">D)</div><div class="editor" id="altD" contenteditable="true"></div></div>
         </div>
-
         <div class="gab-row">
           <label>Gabarito correto:</label>
           <select id="gabarito"><option>A</option><option>B</option><option>C</option><option>D</option></select>
         </div>
-
         <div class="btn-row">
           <button class="btn btn-outline" onclick="gerarPreview()">👁 Preview</button>
           <button class="btn btn-sucesso" id="btn-salvar" onclick="salvar()">💾 Salvar Questão</button>
           <button class="btn btn-perigo" onclick="limparForm()">🗑 Limpar</button>
         </div>
       </div>
-
-      <!-- Preview -->
       <div class="card" id="card-preview" style="display:none">
         <div class="card-titulo">👁 Preview</div>
         <div class="preview-questao" id="preview-conteudo"></div>
       </div>
-
     </div>
 
-    <!-- ── ABA LISTAR ── -->
+    <!-- LISTAR -->
     <div class="tab-painel" id="tab-listar">
       <div class="card">
         <div class="card-titulo">📋 Questões Cadastradas</div>
@@ -499,7 +255,7 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
       </div>
     </div>
 
-    <!-- FIX 4: Modal de edição -->
+    <!-- MODAL EDIÇÃO -->
     <div id="modal-editar-overlay" style="display:none;position:fixed;inset:0;z-index:5000;background:rgba(13,26,48,0.75);backdrop-filter:blur(3px);overflow-y:auto;padding:30px 16px;">
       <div style="background:white;border-radius:16px;max-width:760px;margin:0 auto;box-shadow:0 20px 60px rgba(0,0,0,0.35);">
         <div style="background:var(--azul);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;border-radius:16px 16px 0 0;">
@@ -538,7 +294,7 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
       </div>
     </div>
 
-    <!-- ── ABA RESULTADOS ── -->
+    <!-- RESULTADOS -->
     <div class="tab-painel" id="tab-resultados">
       <div class="card">
         <div class="card-titulo">📊 Resultados</div>
@@ -552,23 +308,22 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
       </div>
     </div>
 
-    <!-- ── ABA CURSOS ── -->
+    <!-- CURSOS -->
     <div class="tab-painel" id="tab-cursos">
       <div class="card">
         <div class="card-titulo">🎓 Gerenciar Cursos</div>
         <p style="font-size:0.85rem;color:var(--muted);margin-bottom:16px;line-height:1.6;">
           Os cursos listados aqui aparecem na tela inicial do simulado.
-          Edite a lista no arquivo <code>index.html</code> (array <code>CURSOS</code>) para adicionar, remover ou renomear cursos.
+          Edite o array <code>CURSOS</code> no arquivo <code>index.html</code> para adicionar, remover ou renomear cursos.
         </p>
         <div id="lista-cursos-config"></div>
       </div>
     </div>
 
-    <!-- ── ABA CONFIG ── -->
+    <!-- CONFIG -->
     <div class="tab-painel" id="tab-config">
       <div class="card">
         <div class="card-titulo">⚙️ Configuração</div>
-
         <div class="form-row">
           <label>URL do Google Apps Script</label>
           <input type="text" id="cfg-url" placeholder="https://script.google.com/macros/s/..."/>
@@ -583,18 +338,14 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
         </div>
         <div id="cfg-status" style="margin-top:14px;font-size:0.85rem;"></div>
       </div>
-
       <div class="card">
         <div class="card-titulo">📋 Estrutura da Planilha</div>
-        <p style="font-size:0.85rem;color:var(--muted);margin-bottom:14px;">
-          Sua planilha Google precisa de duas abas com esta estrutura:
-        </p>
-        <p style="font-size:0.85rem;font-weight:600;color:var(--azul);margin-bottom:8px;">Aba "Questoes"</p>
+        <p style="font-size:0.85rem;color:var(--muted);margin-bottom:14px;">Aba "Questoes" — 11 colunas:</p>
         <table class="tabela" style="margin-bottom:16px;">
-          <tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th></tr>
-          <tr><td>curso</td><td>disciplina</td><td>enunciado</td><td>imagem</td><td>A</td><td>B</td><td>C</td><td>D</td><td>gabarito</td></tr>
+          <tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th><th>K</th></tr>
+          <tr><td>curso</td><td>disciplina</td><td>enunciado</td><td>imagem</td><td>texto_pos_imagem</td><td>A</td><td>B</td><td>C</td><td>D</td><td>gabarito</td><td>simulado</td></tr>
         </table>
-        <p style="font-size:0.85rem;font-weight:600;color:var(--azul);margin-bottom:8px;">Aba "Resultados"</p>
+        <p style="font-size:0.85rem;color:var(--muted);margin-bottom:14px;">Aba "Resultados" — 5 colunas:</p>
         <table class="tabela">
           <tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>
           <tr><td>data</td><td>nome</td><td>acertos</td><td>total</td><td>curso</td></tr>
@@ -602,40 +353,27 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
       </div>
     </div>
 
-  </div><!-- /app-body -->
-</div><!-- /app -->
+  </div>
+</div>
 
 <div id="toast"></div>
 
 <script>
-// ================================================================
-//  CONFIG LOCAL
-// ================================================================
-const CFG_KEY = 'saepPainelCfg';
-const AUTH_KEY = 'saepPainelAuth';
-const SENHA_PADRAO = '346100'; // altere aqui ou pelo painel
+const CFG_KEY   = 'saepPainelCfg';
+const AUTH_KEY  = 'saepPainelAuth';
+const SENHA_PADRAO = '346100';
 
-function getCfg() {
-  try { return JSON.parse(localStorage.getItem(CFG_KEY)) || {}; }
-  catch(e) { return {}; }
-}
-function getApiUrl() {
-  return getCfg().apiUrl || "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec";
-}
+function getCfg() { try { return JSON.parse(localStorage.getItem(CFG_KEY)) || {}; } catch(e) { return {}; } }
+function getApiUrl() { return getCfg().apiUrl || "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec"; }
 function getSenha() { return getCfg().senha || SENHA_PADRAO; }
-  
+
+// ── JSONP ──
 function apiCall(params) {
   return new Promise((resolve, reject) => {
     const cbName = 'cb_' + Date.now() + '_' + Math.floor(Math.random()*10000);
     const script = document.createElement('script');
-    const timeout = setTimeout(() => {
-      delete window[cbName]; script.remove();
-      reject(new Error('Timeout'));
-    }, 15000);
-    window[cbName] = (data) => {
-      clearTimeout(timeout); delete window[cbName]; script.remove();
-      resolve(data);
-    };
+    const timeout = setTimeout(() => { delete window[cbName]; script.remove(); reject(new Error('Timeout')); }, 15000);
+    window[cbName] = (data) => { clearTimeout(timeout); delete window[cbName]; script.remove(); resolve(data); };
     const qs = new URLSearchParams(params);
     qs.set('callback', cbName);
     script.src = getApiUrl() + '?' + qs.toString();
@@ -643,112 +381,71 @@ function apiCall(params) {
     document.head.appendChild(script);
   });
 }
-// ================================================================
-//  LISTA DE CURSOS (deve espelhar o index.html)
-// ================================================================
+
 const CURSOS = [
-  { id:"ciber-sistemas",        nome:"Técnico em Cibersistemas" },
-  { id:"eletrotecnica",         nome:"Técnico em Eletrotécnica" },
-  { id:"eletromecanica",        nome:"Técnico em Eletromecânica" },
-  { id:"mecatonica",            nome:"Técnico em Mecatrônica" },
-  { id:"mecanica",              nome:"Técnico em Mecânica" }
+  { id:"ciber-sistemas",  nome:"Técnico em Cibersistemas" },
+  { id:"eletrotecnica",   nome:"Técnico em Eletrotécnica" },
+  { id:"eletromecanica",  nome:"Técnico em Eletromecânica" },
+  { id:"mecatonica",      nome:"Técnico em Mecatrônica" },
+  { id:"mecanica",        nome:"Técnico em Mecânica" }
 ];
 
-// ================================================================
-//  LOGIN
-// ================================================================
+const DISCIPLINAS_POR_CURSO = {
+  "ciber-sistemas":  ["Ciber Sistemas","IoT","Redes Industriais","Automação","Segurança Digital","Programação"],
+  "eletrotecnica":   ["Comunicação Oral e Escrita","Eletricidade","Leitura e Interpretação de Desenho","Qualidade, Saúde, Meio Ambiente e Segurança no trabalho (QSMS)","Instalações Elétricas Prediais","Projetos Elétricos Prediais","Segurança em Eletricidade","Acionamento de Dispositivos Eletricos Automatizados","Instalações Elétricas Industriais","Projetos Elétricos Industriais","Eficiência Energética","Gestão da Manutenção","Instalações de Sistemas Elétricos de Potência (SEP)","Manutenções e Operações de Sistemas Elétricos de Potência (SEP)","Manutenção Elétrica Predial e Industrial","Projetos de Sistemas Elétricos de Potência (SEP)"],
+  "mecatonica":      ["CLP","Sensores e Atuadores","SCADA","Pneumática","Hidráulica","Instrumentação"],
+  "eletromecanica":  ["Eletrônica Analógica","Eletrônica Digital","Microcontroladores","Componentes","Circuitos"],
+  "mecanica":        ["TCP/IP","Infraestrutura","Segurança","Cabeamento","Protocolos","Wi-Fi"]
+};
+
+// LOGIN
 window.addEventListener('DOMContentLoaded', () => {
-  // FIX 1: usa sessionStorage → sessão expira ao fechar a aba/navegador
   if (sessionStorage.getItem(AUTH_KEY) === 'ok') mostrarApp();
   const cfg = getCfg();
   if (cfg.apiUrl) document.getElementById('cfg-url').value = cfg.apiUrl;
   preencherSelects();
 });
-
 function tentarLogin() {
   const senha = document.getElementById('login-senha').value;
-  if (senha === getSenha()) {
-    // FIX 1: sessionStorage em vez de localStorage
-    sessionStorage.setItem(AUTH_KEY, 'ok');
-    mostrarApp();
-  } else {
-    document.getElementById('login-erro').style.display = 'block';
-    document.getElementById('login-senha').value = '';
-    document.getElementById('login-senha').focus();
-  }
+  if (senha === getSenha()) { sessionStorage.setItem(AUTH_KEY,'ok'); mostrarApp(); }
+  else { document.getElementById('login-erro').style.display='block'; document.getElementById('login-senha').value=''; document.getElementById('login-senha').focus(); }
 }
 function mostrarApp() {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
-  document.getElementById('app').style.flexDirection = 'column';
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('app').style.flexDirection='column';
   renderCursosConfig();
 }
-function sair() {
-  // FIX 1: limpa sessionStorage
-  sessionStorage.removeItem(AUTH_KEY);
-  location.reload();
-}
+function sair() { sessionStorage.removeItem(AUTH_KEY); location.reload(); }
 
-// ================================================================
-//  PREENCHE SELECTS DE CURSO
-// ================================================================
+// SELECTS
 function preencherSelects() {
   ['sel-curso','filtro-curso-lista','filtro-curso-result'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const primeiro = el.options[0];
-    el.innerHTML = '';
-    el.appendChild(primeiro);
-    CURSOS.forEach(c => {
-      const o = new Option(c.nome, c.id);
-      el.appendChild(o);
-    });
+    const el = document.getElementById(id); if (!el) return;
+    const primeiro = el.options[0]; el.innerHTML=''; el.appendChild(primeiro);
+    CURSOS.forEach(c => el.appendChild(new Option(c.nome, c.id)));
   });
 }
 
-// ================================================================
-//  ABAS
-// ================================================================
+// ABAS
 function trocarAba(id, btn) {
-  document.querySelectorAll('.tab-painel').forEach(p => p.classList.remove('ativa'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('ativa'));
-  document.getElementById('tab-'+id).classList.add('ativa');
-  btn.classList.add('ativa');
+  document.querySelectorAll('.tab-painel').forEach(p=>p.classList.remove('ativa'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('ativa'));
+  document.getElementById('tab-'+id).classList.add('ativa'); btn.classList.add('ativa');
   if (id==='listar') carregarQuestoes();
   if (id==='resultados') carregarResultados();
 }
 
-// ================================================================
-//  FIX 5: DISCIPLINAS POR CURSO
-// ================================================================
-const DISCIPLINAS_POR_CURSO = {
-  "ciber-sistemas":        ["Ciber Sistemas","IoT","Redes Industriais","Automação","Segurança Digital","Programação"],
-  "eletrotecnica": ["Comunicação Oral e Escrita","Eletricidade","Leitura e Interpretação de Desenho","Qualidade, Saúde, Meio Ambiente e Segurança no trabalho (QSMS)","Instalações Elétricas Prediais","Projetos Elétricos Prediais","Segurança em Eletricidade","Acionamento de Dispositivos Eletricos Automatizados","Instalações Elétricas Industriais","Projetos Elétricos Industriais","Eficiência Energética","Gestão da Manutenção","Instalações de Sistemas Elétricos de Potência (SEP)","Manutenções e Operações de Sistemas Elétricos de Potência (SEP)","Manutenção Elétrica Predial e Industrial","Projetos de Sistemas Elétricos de Potência (SEP)"],
-  "mecatronica":  ["CLP","Sensores e Atuadores","SCADA","Pneumática","Hidráulica","Instrumentação"],
-  "eletromecanica":            ["Eletrônica Analógica","Eletrônica Digital","Microcontroladores","Componentes","Circuitos"],
-  "mecanica":    ["TCP/IP","Infraestrutura","Segurança","Cabeamento","Protocolos","Wi-Fi"]
-};
-
+// DISCIPLINAS
 function atualizarDiscs(cursoId, selectId, valorAtual) {
   const sel = document.getElementById(selectId);
   const discs = DISCIPLINAS_POR_CURSO[cursoId] || [];
-  sel.innerHTML = discs.length
-    ? discs.map(d => `<option value="${d}" ${d===valorAtual?'selected':''}>${d}</option>`).join('')
-    : '<option value="">— nenhuma disciplina cadastrada —</option>';
+  sel.innerHTML = discs.length ? discs.map(d=>`<option value="${d}" ${d===valorAtual?'selected':''}>${d}</option>`).join('') : '<option value="">— nenhuma disciplina cadastrada —</option>';
 }
+document.getElementById('sel-curso').addEventListener('change', function() { atualizarDiscs(this.value,'disciplina',''); });
+function atualizarDiscEdicao() { atualizarDiscs(document.getElementById('edit-curso').value,'edit-disciplina',''); }
 
-// Atualiza select de disciplina quando muda o curso (formulário principal)
-document.getElementById('sel-curso').addEventListener('change', function() {
-  atualizarDiscs(this.value, 'disciplina', '');
-});
-
-function atualizarDiscEdicao() {
-  atualizarDiscs(document.getElementById('edit-curso').value, 'edit-disciplina', '');
-}
-
-// ================================================================
-//  LIMPEZA WORD
-// ================================================================
+// WORD CLEANER
 function limparWord(html) {
   let s = String(html||'');
   s = s.replace(/<\/?o:[^>]*>/gi,'').replace(/<\/?w:[^>]*>/gi,'').replace(/<\/?m:[^>]*>/gi,'');
@@ -761,28 +458,22 @@ function limparWord(html) {
 function ehWord(html) { return /mso-|MsoNormal|font-family:Aptos/i.test(html); }
 function limparEditor(id) { document.getElementById(id).innerHTML = limparWord(document.getElementById(id).innerHTML); toast('Formatação limpa!','ok'); }
 function fmt(c) { document.execCommand(c,false,null); }
-
 document.addEventListener('paste', e => {
-  const alvo = e.target.closest('.editor');
-  if (!alvo) return;
+  const alvo = e.target.closest('.editor'); if (!alvo) return;
   const html = (e.clipboardData||window.clipboardData).getData('text/html');
   if (html && ehWord(html)) {
-    e.preventDefault();
-    document.execCommand('insertHTML',false,limparWord(html));
+    e.preventDefault(); document.execCommand('insertHTML',false,limparWord(html));
     const av = document.getElementById('aviso-paste');
     if (av) { av.style.display='block'; setTimeout(()=>av.style.display='none',4000); }
   }
 });
 
-// ================================================================
-//  IMAGEM
-// ================================================================
+// IMAGEM
 function prevImagem(input) {
   if (!input.files[0]) return;
-  const img = document.getElementById('img-preview');
-  img.src = URL.createObjectURL(input.files[0]);
-  img.style.display = 'block';
-  document.getElementById('btn-rm-img').style.display = 'inline-block';
+  document.getElementById('img-preview').src = URL.createObjectURL(input.files[0]);
+  document.getElementById('img-preview').style.display='block';
+  document.getElementById('btn-rm-img').style.display='inline-block';
 }
 function rmImagem(e) {
   e.stopPropagation();
@@ -791,9 +482,7 @@ function rmImagem(e) {
   document.getElementById('btn-rm-img').style.display='none';
 }
 
-// ================================================================
-//  PREVIEW
-// ================================================================
+// PREVIEW
 function gerarPreview() {
   const enunc = document.getElementById('enunciado').innerHTML;
   const textoPos = document.getElementById('texto-pos-imagem').innerHTML;
@@ -809,15 +498,12 @@ function gerarPreview() {
   document.getElementById('preview-conteudo').innerHTML = `
     <div style="font-size:0.95rem;line-height:1.6;margin-bottom:12px;">${enunc||'<em style="color:#aaa">Enunciado vazio</em>'}</div>
     ${imgH}${textoPosH}<div style="margin-top:10px;">${alts}</div>
-    <div style="margin-top:12px;padding:8px 12px;background:#e8f8f1;border-left:4px solid #00b86b;border-radius:0 6px 6px 0;font-size:0.85rem;font-weight:600;color:#1a7a4a;">✅ Gabarito: ${gab}</div>
-  `;
+    <div style="margin-top:12px;padding:8px 12px;background:#e8f8f1;border-left:4px solid #00b86b;border-radius:0 6px 6px 0;font-size:0.85rem;font-weight:600;color:#1a7a4a;">✅ Gabarito: ${gab}</div>`;
   document.getElementById('card-preview').style.display='block';
   document.getElementById('card-preview').scrollIntoView({behavior:'smooth'});
 }
 
-// ================================================================
-//  SALVAR QUESTÃO — FIX 7: inclui texto_pos_imagem
-// ================================================================
+// SALVAR QUESTÃO
 async function salvar() {
   const curso = document.getElementById('sel-curso').value;
   if (!curso) { toast('Selecione o curso.','av'); return; }
@@ -825,30 +511,23 @@ async function salvar() {
   if (!enunciado) { toast('Preencha o enunciado.','av'); return; }
   const alts = ['A','B','C','D'].map(l => document.getElementById('alt'+l).innerHTML.trim());
   if (alts.some(a=>!a)) { toast('Preencha todas as alternativas.','av'); return; }
-
   const btn = document.getElementById('btn-salvar');
-  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>Salvando...';
-
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span>Salvando...';
   let base64 = '';
   const file = document.getElementById('img-input').files[0];
   if (file) base64 = await new Promise((res,rej)=>{const r=new FileReader();r.readAsDataURL(file);r.onload=()=>res(r.result);r.onerror=rej});
-
   try {
-    const res = await apiCall(getApiUrl(), {
-      method:'POST',
-      body: JSON.stringify({
-        tipo:'INSERIR_QUESTAO', curso,
-        disciplina: document.getElementById('disciplina').value,
-        enunciado, imagem: base64,
-        texto_pos_imagem: document.getElementById('texto-pos-imagem').innerHTML.trim(),
-        A: alts[0], B: alts[1], C: alts[2], D: alts[3],
-        gabarito: document.getElementById('gabarito').value
-      })
+    const r = await apiCall({
+      tipo:'INSERIR_QUESTAO', curso,
+      disciplina: document.getElementById('disciplina').value,
+      enunciado, imagem: base64,
+      texto_pos_imagem: document.getElementById('texto-pos-imagem').innerHTML.trim(),
+      A: alts[0], B: alts[1], C: alts[2], D: alts[3],
+      gabarito: document.getElementById('gabarito').value
     });
-    const r = await res.json();
     if (r.status==='ok') { toast('✅ Questão salva!','ok'); limparForm(); }
     else toast('Erro: '+(r.erro||JSON.stringify(r)),'err');
-  } catch(e) { toast('Erro de conexão: '+e.message,'err'); }
+  } catch(e) { toast('Erro: '+e.message,'err'); }
   finally { btn.disabled=false; btn.innerHTML='💾 Salvar Questão'; }
 }
 
@@ -860,32 +539,26 @@ function limparForm() {
   document.getElementById('card-preview').style.display='none';
 }
 
-// ================================================================
-//  LISTAR QUESTÕES
-// ================================================================
+// LISTAR QUESTÕES
 let todasQ = [];
-
 async function carregarQuestoes() {
   const lista = document.getElementById('lista-questoes');
-  lista.innerHTML = '<p><span class="spin"></span> Carregando...</p>';
+  lista.innerHTML='<p><span class="spin"></span> Carregando...</p>';
   try {
-    const res = await apiCall(getApiUrl()+'?tipo=LISTAR_QUESTOES');
-    todasQ = await res.json();
+    todasQ = await apiCall({ tipo:'LISTAR_QUESTOES' });
     if (!Array.isArray(todasQ)||todasQ.length===0) {
       lista.innerHTML='<p style="color:var(--muted);text-align:center;">Nenhuma questão cadastrada.</p>';
       ['stat-total','stat-disc','stat-cursos'].forEach(id=>document.getElementById(id).textContent='0');
       return;
     }
-    const discs = new Set(todasQ.map(q=>q.disciplina).filter(Boolean));
+    const discs  = new Set(todasQ.map(q=>q.disciplina).filter(Boolean));
     const cursos = new Set(todasQ.map(q=>q.curso).filter(Boolean));
-    document.getElementById('stat-total').textContent = todasQ.length;
-    document.getElementById('stat-disc').textContent = discs.size;
+    document.getElementById('stat-total').textContent  = todasQ.length;
+    document.getElementById('stat-disc').textContent   = discs.size;
     document.getElementById('stat-cursos').textContent = cursos.size;
-
     const sel = document.getElementById('filtro-curso-lista');
-    sel.innerHTML = '<option value="">Todos os cursos</option>';
-    CURSOS.forEach(c=>{const o=new Option(c.nome,c.id);sel.appendChild(o);});
-
+    sel.innerHTML='<option value="">Todos os cursos</option>';
+    CURSOS.forEach(c=>sel.appendChild(new Option(c.nome,c.id)));
     renderLista(todasQ);
   } catch(e) { lista.innerHTML=`<p style="color:var(--vermelho)">Erro: ${e.message}</p>`; }
 }
@@ -905,149 +578,113 @@ function renderLista(questoes) {
           ${q.imagem?' · 🖼':''}
         </div>
       </div>
-      <!-- FIX 4: botão editar -->
       <button class="quest-del" style="background:#eef4ff;color:var(--azul);border-color:#c7d7f5;margin-right:4px;" onclick="abrirEditar(${i})">✏️ Editar</button>
       <button class="quest-del" onclick="excluir(${i})">🗑 Excluir</button>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
 function filtrar() {
-  const txt = document.getElementById('filtro-txt').value.toLowerCase();
+  const txt  = document.getElementById('filtro-txt').value.toLowerCase();
   const curso = document.getElementById('filtro-curso-lista').value;
-  renderLista(todasQ.filter(q=>{
-    const matchTxt = !txt||(q.enunciado||'').toLowerCase().includes(txt);
-    const matchCurso = !curso||(q.curso===curso);
-    return matchTxt&&matchCurso;
-  }));
+  renderLista(todasQ.filter(q => (!txt||(q.enunciado||'').toLowerCase().includes(txt)) && (!curso||(q.curso===curso))));
 }
 
 async function excluir(idx) {
   if (!confirm('Excluir esta questão?')) return;
   try {
-    const res = await apiCall(getApiUrl(),{method:'POST',body:JSON.stringify({tipo:'EXCLUIR_QUESTAO',indice:idx})});
-    const r = await res.json();
+    const r = await apiCall({ tipo:'EXCLUIR_QUESTAO', indice: idx });
     if (r.status==='ok') { toast('Questão excluída.','ok'); carregarQuestoes(); }
     else toast('Erro: '+(r.erro||''),'err');
   } catch(e) { toast('Erro: '+e.message,'err'); }
 }
 
-// ================================================================
-//  FIX 4: EDITAR QUESTÃO
-// ================================================================
+// EDITAR
 function abrirEditar(idx) {
-  const q = todasQ[idx];
-  if (!q) return;
+  const q = todasQ[idx]; if (!q) return;
   document.getElementById('edit-indice').value = idx;
-
-  // Preenche selects de curso
   const selCurso = document.getElementById('edit-curso');
-  selCurso.innerHTML = '<option value="">Selecione...</option>';
+  selCurso.innerHTML='<option value="">Selecione...</option>';
   CURSOS.forEach(c=>{const o=new Option(c.nome,c.id);if(c.id===q.curso)o.selected=true;selCurso.appendChild(o);});
-
-  // Preenche disciplinas do curso
-  atualizarDiscs(q.curso, 'edit-disciplina', q.disciplina);
-
+  atualizarDiscs(q.curso,'edit-disciplina',q.disciplina);
   document.getElementById('edit-enunciado').innerHTML = q.enunciado||'';
   document.getElementById('edit-texto-pos').innerHTML = q.texto_pos_imagem||'';
   document.getElementById('edit-altA').innerHTML = q.A||'';
   document.getElementById('edit-altB').innerHTML = q.B||'';
   document.getElementById('edit-altC').innerHTML = q.C||'';
   document.getElementById('edit-altD').innerHTML = q.D||'';
-  document.getElementById('edit-gabarito').value = q.gabarito||'A';
-
-  document.getElementById('modal-editar-overlay').style.display = 'block';
-  document.body.style.overflow = 'hidden';
+  document.getElementById('edit-gabarito').value  = q.gabarito||'A';
+  document.getElementById('modal-editar-overlay').style.display='block';
+  document.body.style.overflow='hidden';
 }
-
-function fecharEditar() {
-  document.getElementById('modal-editar-overlay').style.display = 'none';
-  document.body.style.overflow = '';
-}
+function fecharEditar() { document.getElementById('modal-editar-overlay').style.display='none'; document.body.style.overflow=''; }
 
 async function salvarEdicao() {
-  const idx = parseInt(document.getElementById('edit-indice').value);
-  const curso = document.getElementById('edit-curso').value;
+  const idx      = parseInt(document.getElementById('edit-indice').value);
+  const curso    = document.getElementById('edit-curso').value;
   const enunciado = document.getElementById('edit-enunciado').innerHTML.trim();
   if (!curso||!enunciado) { toast('Preencha curso e enunciado.','av'); return; }
-
   const btn = document.getElementById('btn-salvar-edit');
-  btn.disabled = true; btn.innerHTML = '<span class="spin"></span>Salvando...';
-
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span>Salvando...';
   try {
-    const res = await apiCall(getApiUrl(), {
-      method:'POST',
-      body: JSON.stringify({
-        tipo: 'EDITAR_QUESTAO', indice: idx, curso,
-        disciplina: document.getElementById('edit-disciplina').value,
-        enunciado,
-        texto_pos_imagem: document.getElementById('edit-texto-pos').innerHTML.trim(),
-        A: document.getElementById('edit-altA').innerHTML.trim(),
-        B: document.getElementById('edit-altB').innerHTML.trim(),
-        C: document.getElementById('edit-altC').innerHTML.trim(),
-        D: document.getElementById('edit-altD').innerHTML.trim(),
-        gabarito: document.getElementById('edit-gabarito').value
-      })
+    const r = await apiCall({
+      tipo:'EDITAR_QUESTAO', indice: idx, curso,
+      disciplina:       document.getElementById('edit-disciplina').value,
+      enunciado,
+      texto_pos_imagem: document.getElementById('edit-texto-pos').innerHTML.trim(),
+      A: document.getElementById('edit-altA').innerHTML.trim(),
+      B: document.getElementById('edit-altB').innerHTML.trim(),
+      C: document.getElementById('edit-altC').innerHTML.trim(),
+      D: document.getElementById('edit-altD').innerHTML.trim(),
+      gabarito: document.getElementById('edit-gabarito').value
     });
-    const r = await res.json();
     if (r.status==='ok') { toast('✅ Questão atualizada!','ok'); fecharEditar(); carregarQuestoes(); }
     else toast('Erro: '+(r.erro||''),'err');
   } catch(e) { toast('Erro: '+e.message,'err'); }
   finally { btn.disabled=false; btn.innerHTML='💾 Salvar Alterações'; }
 }
 
-// ================================================================
-//  RESULTADOS
-// ================================================================
+// RESULTADOS
 async function carregarResultados() {
-  const div = document.getElementById('area-resultados');
+  const div  = document.getElementById('area-resultados');
   const curso = document.getElementById('filtro-curso-result').value;
-  div.innerHTML = '<p><span class="spin"></span> Carregando...</p>';
+  div.innerHTML='<p><span class="spin"></span> Carregando...</p>';
   try {
-    const url = `${getApiUrl()}?tipo=RANKING${curso?'&curso='+encodeURIComponent(curso):''}`;
-    const res = await apiCall(url);
-    const data = await res.json();
+    const params = { tipo:'RANKING' };
+    if (curso) params.curso = curso;
+    const data = await apiCall(params);
     if (!Array.isArray(data)||data.length===0) { div.innerHTML='<p style="color:var(--muted)">Nenhum resultado ainda.</p>'; return; }
-    div.innerHTML = `<table class="tabela">
+    div.innerHTML=`<table class="tabela">
       <thead><tr><th>#</th><th>Nome</th><th>Acertos</th><th>Total</th><th>%</th></tr></thead>
       <tbody>${data.map((r,i)=>{
         const pct=Number(r.percentual||0).toFixed(1);
         const cls=pct>=70?'pct-alto':pct>=50?'pct-medio':'pct-baixo';
         return `<tr><td style="font-weight:700;color:var(--azul)">${i+1}</td><td>${r.nome||'—'}</td><td>${r.acertos||'—'}</td><td>${r.total||'—'}</td><td class="${cls}">${pct}%</td></tr>`;
-      }).join('')}</tbody>
-    </table>`;
+      }).join('')}</tbody></table>`;
   } catch(e) { div.innerHTML=`<p style="color:var(--vermelho)">Erro: ${e.message}</p>`; }
 }
-
-// Popula select de filtro resultados
 window.addEventListener('DOMContentLoaded', ()=>{
   const sel = document.getElementById('filtro-curso-result');
-  CURSOS.forEach(c=>{const o=new Option(c.nome,c.id);sel.appendChild(o);});
+  CURSOS.forEach(c=>sel.appendChild(new Option(c.nome,c.id)));
 });
 
-// ================================================================
-//  CURSOS CONFIG
-// ================================================================
+// CURSOS CONFIG
 function renderCursosConfig() {
   const div = document.getElementById('lista-cursos-config');
-  div.innerHTML = CURSOS.map(c => `
+  div.innerHTML = CURSOS.map(c=>`
     <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;">
       <div style="flex:1;">
         <div style="font-weight:600;font-size:0.9rem;">${c.nome}</div>
         <div style="font-size:0.75rem;color:var(--muted);font-family:monospace;">ID: ${c.id}</div>
       </div>
       <a href="simulado.html?curso=${c.id}" target="_blank" style="font-size:0.78rem;color:var(--azul);text-decoration:none;padding:4px 10px;border:1px solid var(--border);border-radius:6px;">Abrir ↗</a>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
-// ================================================================
-//  CONFIG
-// ================================================================
+// CONFIG
 function salvarConfig() {
-  const url = document.getElementById('cfg-url').value.trim();
+  const url   = document.getElementById('cfg-url').value.trim();
   const senha = document.getElementById('cfg-senha-nova').value.trim();
-  const cfg = getCfg();
+  const cfg   = getCfg();
   if (url) cfg.apiUrl = url;
   if (senha && senha.length>=4) cfg.senha = senha;
   else if (senha) { toast('Senha muito curta (mín. 4 chars)','av'); return; }
@@ -1057,23 +694,19 @@ function salvarConfig() {
 }
 async function testarConexao() {
   const st = document.getElementById('cfg-status');
-  st.innerHTML = '<span class="spin"></span> Testando...';
+  st.innerHTML='<span class="spin"></span> Testando...';
   try {
-    const res = await apiCall(getApiUrl()+'?tipo=LISTAR_QUESTOES');
-    const data = await res.json();
-    st.innerHTML = `<span style="color:var(--verde);font-weight:600;">✅ OK! ${Array.isArray(data)?data.length:'?'} questões encontradas.</span>`;
+    const data = await apiCall({ tipo:'LISTAR_QUESTOES' });
+    st.innerHTML=`<span style="color:var(--verde);font-weight:600;">✅ OK! ${Array.isArray(data)?data.length:'?'} questões encontradas.</span>`;
   } catch(e) { st.innerHTML=`<span style="color:var(--vermelho);font-weight:600;">❌ Falha: ${e.message}</span>`; }
 }
 
-// ================================================================
-//  TOAST
-// ================================================================
+// TOAST
 let toastTmr;
 function toast(msg, tipo='ok') {
   const el = document.getElementById('toast');
-  el.textContent = msg; el.className = `show ${tipo}`;
-  clearTimeout(toastTmr);
-  toastTmr = setTimeout(()=>el.className=tipo, 3200);
+  el.textContent=msg; el.className=`show ${tipo}`;
+  clearTimeout(toastTmr); toastTmr=setTimeout(()=>el.className=tipo,3200);
 }
 </script>
 </body>

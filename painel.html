@@ -383,21 +383,16 @@ function apiCall(params) {
 }
 
 // POST — para escrita (INSERIR, EDITAR, EXCLUIR)
-// Usa no-cors pois Apps Script não retorna cabeçalhos CORS no POST
-// O dado É gravado mesmo que o navegador bloqueie a leitura da resposta
 async function apiPost(params) {
+  const { tipo, ...resto } = params;
   try {
-    await fetch(getApiUrl(), {
+    await fetch(getApiUrl() + '?tipo=' + encodeURIComponent(tipo), {
       method: 'POST',
       mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(params)
+      body: JSON.stringify(resto)
     });
-  } catch(e) {
-    // Ignora — gravação ocorreu mesmo com erro CORS
-  }
-  // Aguarda 1s e confirma lendo a lista (verifica se salvou)
-  await new Promise(r => setTimeout(r, 1000));
+  } catch(e) {}
+  await new Promise(r => setTimeout(r, 800));
   return { status: 'ok' };
 }
 

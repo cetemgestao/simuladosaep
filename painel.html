@@ -623,7 +623,26 @@ function getApiUrl() {
   return getCfg().apiUrl || "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec";
 }
 function getSenha() { return getCfg().senha || SENHA_PADRAO; }
-
+  
+function apiCall(params) {
+  return new Promise((resolve, reject) => {
+    const cbName = 'cb_' + Date.now() + '_' + Math.floor(Math.random()*10000);
+    const script = document.createElement('script');
+    const timeout = setTimeout(() => {
+      delete window[cbName]; script.remove();
+      reject(new Error('Timeout'));
+    }, 15000);
+    window[cbName] = (data) => {
+      clearTimeout(timeout); delete window[cbName]; script.remove();
+      resolve(data);
+    };
+    const qs = new URLSearchParams(params);
+    qs.set('callback', cbName);
+    script.src = getApiUrl() + '?' + qs.toString();
+    script.onerror = () => { clearTimeout(timeout); delete window[cbName]; reject(new Error('Erro ao carregar script')); };
+    document.head.appendChild(script);
+  });
+}
 // ================================================================
 //  LISTA DE CURSOS (deve espelhar o index.html)
 // ================================================================
@@ -815,7 +834,7 @@ async function salvar() {
   if (file) base64 = await new Promise((res,rej)=>{const r=new FileReader();r.readAsDataURL(file);r.onload=()=>res(r.result);r.onerror=rej});
 
   try {
-    const res = await fetch(getApiUrl(), {
+    const res = await apiCall(getApiUrl(), {
       method:'POST',
       body: JSON.stringify({
         tipo:'INSERIR_QUESTAO', curso,
@@ -850,7 +869,7 @@ async function carregarQuestoes() {
   const lista = document.getElementById('lista-questoes');
   lista.innerHTML = '<p><span class="spin"></span> Carregando...</p>';
   try {
-    const res = await fetch(getApiUrl()+'?tipo=LISTAR_QUESTOES');
+    const res = await apiCall(getApiUrl()+'?tipo=LISTAR_QUESTOES');
     todasQ = await res.json();
     if (!Array.isArray(todasQ)||todasQ.length===0) {
       lista.innerHTML='<p style="color:var(--muted);text-align:center;">Nenhuma questão cadastrada.</p>';
@@ -906,7 +925,7 @@ function filtrar() {
 async function excluir(idx) {
   if (!confirm('Excluir esta questão?')) return;
   try {
-    const res = await fetch(getApiUrl(),{method:'POST',body:JSON.stringify({tipo:'EXCLUIR_QUESTAO',indice:idx})});
+    const res = await apiCall(getApiUrl(),{method:'POST',body:JSON.stringify({tipo:'EXCLUIR_QUESTAO',indice:idx})});
     const r = await res.json();
     if (r.status==='ok') { toast('Questão excluída.','ok'); carregarQuestoes(); }
     else toast('Erro: '+(r.erro||''),'err');
@@ -956,7 +975,7 @@ async function salvarEdicao() {
   btn.disabled = true; btn.innerHTML = '<span class="spin"></span>Salvando...';
 
   try {
-    const res = await fetch(getApiUrl(), {
+    const res = await apiCall(getApiUrl(), {
       method:'POST',
       body: JSON.stringify({
         tipo: 'EDITAR_QUESTAO', indice: idx, curso,
@@ -986,7 +1005,7 @@ async function carregarResultados() {
   div.innerHTML = '<p><span class="spin"></span> Carregando...</p>';
   try {
     const url = `${getApiUrl()}?tipo=RANKING${curso?'&curso='+encodeURIComponent(curso):''}`;
-    const res = await fetch(url);
+    const res = await apiCall(url);
     const data = await res.json();
     if (!Array.isArray(data)||data.length===0) { div.innerHTML='<p style="color:var(--muted)">Nenhum resultado ainda.</p>'; return; }
     div.innerHTML = `<table class="tabela">
@@ -1040,7 +1059,7 @@ async function testarConexao() {
   const st = document.getElementById('cfg-status');
   st.innerHTML = '<span class="spin"></span> Testando...';
   try {
-    const res = await fetch(getApiUrl()+'?tipo=LISTAR_QUESTOES');
+    const res = await apiCall(getApiUrl()+'?tipo=LISTAR_QUESTOES');
     const data = await res.json();
     st.innerHTML = `<span style="color:var(--verde);font-weight:600;">✅ OK! ${Array.isArray(data)?data.length:'?'} questões encontradas.</span>`;
   } catch(e) { st.innerHTML=`<span style="color:var(--vermelho);font-weight:600;">❌ Falha: ${e.message}</span>`; }

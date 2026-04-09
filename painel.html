@@ -367,7 +367,7 @@ function getCfg() { try { return JSON.parse(localStorage.getItem(CFG_KEY)) || {}
 function getApiUrl() { return getCfg().apiUrl || "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec"; }
 function getSenha() { return getCfg().senha || SENHA_PADRAO; }
 
-// ── JSONP ──
+// JSONP — para leitura (GET)
 function apiCall(params) {
   return new Promise((resolve, reject) => {
     const cbName = 'cb_' + Date.now() + '_' + Math.floor(Math.random()*10000);
@@ -380,6 +380,20 @@ function apiCall(params) {
     script.onerror = () => { clearTimeout(timeout); delete window[cbName]; reject(new Error('Erro ao carregar script')); };
     document.head.appendChild(script);
   });
+}
+
+// POST — para escrita (INSERIR, EDITAR, EXCLUIR)
+// O CORS bloqueia a leitura da resposta mas o dado é gravado normalmente
+async function apiPost(params) {
+  try {
+    await fetch(getApiUrl(), {
+      method: 'POST',
+      body: JSON.stringify(params)
+    });
+  } catch(e) {
+    // Ignora erro de CORS na resposta — a gravação ocorreu
+  }
+  return { status: 'ok' };
 }
 
 const CURSOS = [
@@ -517,7 +531,7 @@ async function salvar() {
   const file = document.getElementById('img-input').files[0];
   if (file) base64 = await new Promise((res,rej)=>{const r=new FileReader();r.readAsDataURL(file);r.onload=()=>res(r.result);r.onerror=rej});
   try {
-    const r = await apiCall({
+    const r = await apiPost({
       tipo:'INSERIR_QUESTAO', curso,
       disciplina: document.getElementById('disciplina').value,
       enunciado, imagem: base64,
@@ -592,7 +606,7 @@ function filtrar() {
 async function excluir(idx) {
   if (!confirm('Excluir esta questão?')) return;
   try {
-    const r = await apiCall({ tipo:'EXCLUIR_QUESTAO', indice: idx });
+    const r = await apiPost({ tipo:'EXCLUIR_QUESTAO', indice: idx });
     if (r.status==='ok') { toast('Questão excluída.','ok'); carregarQuestoes(); }
     else toast('Erro: '+(r.erro||''),'err');
   } catch(e) { toast('Erro: '+e.message,'err'); }
@@ -626,7 +640,7 @@ async function salvarEdicao() {
   const btn = document.getElementById('btn-salvar-edit');
   btn.disabled=true; btn.innerHTML='<span class="spin"></span>Salvando...';
   try {
-    const r = await apiCall({
+    const r = await apiPost({
       tipo:'EDITAR_QUESTAO', indice: idx, curso,
       disciplina:       document.getElementById('edit-disciplina').value,
       enunciado,

@@ -382,18 +382,19 @@ function apiCall(params) {
   });
 }
 
-// POST — igual ao sistema de controle de acesso que funciona
+// POST — tipo na URL + body no POST com no-cors
+// O redirect 302 preserva o body quando Content-Type não é setado
 async function apiPost(params) {
+  const tipo = params.tipo;
   try {
-    const res = await fetch(getApiUrl(), {
+    await fetch(getApiUrl() + '?tipo=' + encodeURIComponent(tipo), {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      mode: 'no-cors',
       body: JSON.stringify(params)
     });
-    return await res.json();
-  } catch(e) {
-    return { status: 'ok' };
-  }
+  } catch(e) {}
+  await new Promise(r => setTimeout(r, 1000));
+  return { status: 'ok' };
 }
 
 const CURSOS = [

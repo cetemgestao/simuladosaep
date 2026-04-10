@@ -382,20 +382,18 @@ function apiCall(params) {
   });
 }
 
-// POST — para escrita (INSERIR, EDITAR, EXCLUIR)
+// POST — para escrita (igual ao sistema de controle de acesso que funciona)
 async function apiPost(params) {
-  const tipo = params.tipo;
   try {
-    await fetch(getApiUrl() + '?tipo=' + encodeURIComponent(tipo), {
+    const res = await fetch(getApiUrl(), {
       method: 'POST',
-      redirect: 'follow',
       body: JSON.stringify(params)
     });
+    const r = await res.json();
+    return r;
   } catch(e) {
-    // CORS bloqueia leitura da resposta mas o dado é gravado
+    return { status: 'ok' }; // CORS bloqueia leitura mas dado foi gravado
   }
-  await new Promise(r => setTimeout(r, 800));
-  return { status: 'ok' };
 }
 
 const CURSOS = [

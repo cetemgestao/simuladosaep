@@ -713,8 +713,13 @@ function fecharEditar() { document.getElementById('modal-editar-overlay').style.
 async function salvarEdicao() {
   const idx      = parseInt(document.getElementById('edit-indice').value);
   const curso    = document.getElementById('edit-curso').value;
-  const enunciado = document.getElementById('edit-enunciado').innerHTML.trim();
+  let enunciado  = document.getElementById('edit-enunciado').innerHTML.trim();
   if (!curso||!enunciado) { toast('Preencha curso e enunciado.','av'); return; }
+
+  // Remove imagens base64 do enunciado antes de enviar (muito grandes para o POST)
+  // O GAS mantém a imagem original da planilha quando detecta base64 removido
+  enunciado = enunciado.replace(/<img[^>]+src="data:[^"]*"[^>]*>/gi, '<img src="base64_mantido">');
+
   const btn = document.getElementById('btn-salvar-edit');
   btn.disabled=true; btn.innerHTML='<span class="spin"></span>Salvando...';
   try {
@@ -728,7 +733,6 @@ async function salvarEdicao() {
       C: document.getElementById('edit-altC').innerHTML.trim(),
       D: document.getElementById('edit-altD').innerHTML.trim(),
       gabarito: document.getElementById('edit-gabarito').value
-      // imagem omitida — GAS mantém a imagem atual da questão
     });
     if (r.status==='ok') { toast('✅ Questão atualizada!','ok'); fecharEditar(); carregarQuestoes(); }
     else toast('Erro: '+(r.erro||''),'err');

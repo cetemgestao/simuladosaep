@@ -740,8 +740,8 @@ function carregarTurmasModal() {
 //  ESTADO
 // ================================================================
 function getState() {
-  try { return JSON.parse(localStorage.getItem(KEY_STATE)) || {answers:{},shown:{},allRevealed:false,resultadoHTML:'',nome:'',turma:''}; }
-  catch(e) { return {answers:{},shown:{},allRevealed:false,resultadoHTML:'',nome:'',turma:''}; }
+  try { return JSON.parse(localStorage.getItem(KEY_STATE)) || {answers:{},shown:{},allRevealed:false,resultadoHTML:'',nome:'',turma:'',ordemQuestoes:[]}; }
+  catch(e) { return {answers:{},shown:{},allRevealed:false,resultadoHTML:'',nome:'',turma:'',ordemQuestoes:[]}; }
 }
 function saveState(s) { localStorage.setItem(KEY_STATE, JSON.stringify(s)); }
 function getTimer() {
@@ -860,8 +860,28 @@ async function carregarQuestoes(continuar = false) {
     if (!Array.isArray(todas) || todas.length === 0)
       throw new Error(`Nenhuma questão encontrada para o curso "${CURSO_NOME}".`);
 
-    todas = todas.sort(() => .5 - Math.random());
-    questoesCarregadas = todas.slice(0, Math.min(TOTAL_QUESTOES, todas.length));
+    if (continuar) {
+      // Restaura a ordem exata do sorteio original usando os índices salvos
+      const st = getState();
+      if (st.ordemQuestoes && st.ordemQuestoes.length > 0) {
+        // Reconstrói o array na ordem salva (por indice da questão)
+        const mapa = {};
+        todas.forEach(q => { mapa[q.indice] = q; });
+        const restauradas = st.ordemQuestoes.map(idx => mapa[idx]).filter(Boolean);
+        questoesCarregadas = restauradas.length > 0 ? restauradas : todas.slice(0, Math.min(TOTAL_QUESTOES, todas.length));
+      } else {
+        // Estado antigo sem ordemQuestoes salva — sorteio normal (fallback)
+        todas = todas.sort(() => .5 - Math.random());
+        questoesCarregadas = todas.slice(0, Math.min(TOTAL_QUESTOES, todas.length));
+      }
+    } else {
+      // Novo simulado — sorteia e salva a ordem
+      todas = todas.sort(() => .5 - Math.random());
+      questoesCarregadas = todas.slice(0, Math.min(TOTAL_QUESTOES, todas.length));
+      const st = getState();
+      st.ordemQuestoes = questoesCarregadas.map(q => q.indice);
+      saveState(st);
+    }
 
     document.getElementById('modal-num-q').textContent = questoesCarregadas.length;
     document.getElementById('loading-area').style.display = 'none';

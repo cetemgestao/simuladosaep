@@ -615,14 +615,24 @@ body {
       <p id="modal-subtitulo">Carregando...</p>
     </div>
     <div class="modal-body">
-      <!-- FIX 3: campo nome obrigatório no modal -->
-      <div style="margin-bottom:16px;">
+      <!-- Campo nome -->
+      <div style="margin-bottom:14px;">
         <label style="display:block;font-size:0.82rem;font-weight:600;color:#1a2340;margin-bottom:6px;">👤 Seu nome completo *</label>
         <input type="text" id="modal-nome"
           placeholder="Digite seu nome antes de iniciar..."
           style="width:100%;padding:10px 14px;border:1.5px solid #d0daf0;border-radius:9px;font-size:0.95rem;font-family:'Barlow',sans-serif;outline:none;transition:border-color 0.2s;"
           onfocus="this.style.borderColor='#004aad'" onblur="this.style.borderColor='#d0daf0'"/>
         <div id="modal-nome-erro" style="display:none;font-size:0.78rem;color:#e53935;margin-top:5px;">⚠️ Por favor, informe seu nome para continuar.</div>
+      </div>
+      <!-- Campo turma -->
+      <div style="margin-bottom:16px;" id="bloco-turma">
+        <label style="display:block;font-size:0.82rem;font-weight:600;color:#1a2340;margin-bottom:6px;">🏫 Turma *</label>
+        <select id="modal-turma"
+          style="width:100%;padding:10px 14px;border:1.5px solid #d0daf0;border-radius:9px;font-size:0.95rem;font-family:'Barlow',sans-serif;outline:none;transition:border-color 0.2s;background:white;color:#1a2340;"
+          onfocus="this.style.borderColor='#004aad'" onblur="this.style.borderColor='#d0daf0'">
+          <option value="">Carregando turmas...</option>
+        </select>
+        <div id="modal-turma-erro" style="display:none;font-size:0.78rem;color:#e53935;margin-top:5px;">⚠️ Por favor, selecione sua turma para continuar.</div>
       </div>
       <div class="modal-info-grid">
         <div class="modal-info-item">
@@ -672,8 +682,8 @@ const NOMES_CURSOS = {
 };
 
 // ── Pega curso da URL ──
-const params = new URLSearchParams(location.search);
-const CURSO_ID = params.get('curso') || 'geral';
+const urlParams = new URLSearchParams(location.search);
+const CURSO_ID = urlParams.get('curso') || 'geral';
 const CURSO_NOME = NOMES_CURSOS[CURSO_ID] || CURSO_ID;
 
 // ── Chaves localStorage por curso ──
@@ -683,13 +693,55 @@ const KEY_TIMER = `saepTimer_${CURSO_ID}`;
 let questoesCarregadas = [];
 let timerHandle = null;
 let respostas = {}; // num → letra
+let TURMA_SELECIONADA = ''; // turma escolhida no modal
+
+// ================================================================
+//  TURMAS — carrega via JSONP e preenche o select do modal
+// ================================================================
+function carregarTurmasModal() {
+  const sel = document.getElementById('modal-turma');
+  sel.innerHTML = '<option value="">Carregando...</option>';
+
+  const cbName = 'cbTurmas_' + Date.now();
+  const script = document.createElement('script');
+  const timeout = setTimeout(() => {
+    delete window[cbName]; script.remove();
+    sel.innerHTML = '<option value="">Sem turmas cadastradas</option>';
+  }, 10000);
+
+  window[cbName] = (data) => {
+    clearTimeout(timeout); delete window[cbName]; script.remove();
+    if (!Array.isArray(data) || data.length === 0) {
+      sel.innerHTML = '<option value="">Sem turmas cadastradas para este curso</option>';
+      return;
+    }
+    sel.innerHTML = '<option value="">Selecione sua turma...</option>' +
+      data.map(t => {
+        const label = t.periodo ? `${t.nome} — ${t.periodo}` : t.nome;
+        return `<option value="${t.nome}">${label}</option>`;
+      }).join('');
+    // Restaura turma salva
+    const st = getState();
+    if (st.turma) {
+      sel.value = st.turma;
+      TURMA_SELECIONADA = st.turma;
+    }
+  };
+
+  script.src = `${API_URL}?tipo=LISTAR_TURMAS&curso=${encodeURIComponent(CURSO_ID)}&callback=${cbName}`;
+  script.onerror = () => {
+    clearTimeout(timeout); delete window[cbName];
+    sel.innerHTML = '<option value="">Erro ao carregar turmas</option>';
+  };
+  document.head.appendChild(script);
+}
 
 // ================================================================
 //  ESTADO
 // ================================================================
 function getState() {
-  try { return JSON.parse(localStorage.getItem(KEY_STATE)) || {answers:{},shown:{},allRevealed:false,resultadoHTML:'',nome:''}; }
-  catch(e) { return {answers:{},shown:{},allRevealed:false,resultadoHTML:'',nome:''}; }
+  try { return JSON.parse(localStorage.getItem(KEY_STATE)) || {answers:{},shown:{},allRevealed:false,resultadoHTML:'',nome:'',turma:''}; }
+  catch(e) { return {answers:{},shown:{},allRevealed:false,resultadoHTML:'',nome:'',turma:''}; }
 }
 function saveState(s) { localStorage.setItem(KEY_STATE, JSON.stringify(s)); }
 function getTimer() {
@@ -712,20 +764,23 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('modal-titulo').textContent = CURSO_NOME.toUpperCase();
   document.getElementById('modal-subtitulo').textContent = `SAEP-CETEM · Simulado Oficial`;
 
-  // FIX 3: restaura nome salvo no campo do modal
+  // Restaura nome salvo
   const st = getState();
   if (st.nome) {
     document.getElementById('modal-nome').value = st.nome;
     document.getElementById('nome').value = st.nome;
   }
+  if (st.turma) TURMA_SELECIONADA = st.turma;
+
+  // Carrega turmas do curso
+  carregarTurmasModal();
 
   if (hasProgress()) {
     document.getElementById('btn-modal-continuar').style.display = 'block';
     document.getElementById('modal-hint').style.display = 'block';
   }
 
-  // FIX 3: valida nome antes de iniciar
-  function validarNome() {
+  function validarModal() {
     const nome = document.getElementById('modal-nome').value.trim();
     if (!nome) {
       document.getElementById('modal-nome-erro').style.display = 'block';
@@ -734,23 +789,38 @@ window.addEventListener('DOMContentLoaded', () => {
       return false;
     }
     document.getElementById('modal-nome-erro').style.display = 'none';
-    // Sincroniza com o campo do topbar
+    document.getElementById('modal-nome').style.borderColor = '#d0daf0';
+
+    const turmaEl = document.getElementById('modal-turma');
+    const turma = turmaEl.value.trim();
+    if (!turma) {
+      document.getElementById('modal-turma-erro').style.display = 'block';
+      turmaEl.style.borderColor = '#e53935';
+      return false;
+    }
+    document.getElementById('modal-turma-erro').style.display = 'none';
+    turmaEl.style.borderColor = '#d0daf0';
+
+    // Sincroniza
     document.getElementById('nome').value = nome;
-    const s = getState(); s.nome = nome; saveState(s);
+    TURMA_SELECIONADA = turma;
+    const s = getState(); s.nome = nome; s.turma = turma; saveState(s);
     return true;
   }
 
   document.getElementById('btn-modal-iniciar').addEventListener('click', () => {
-    if (!validarNome()) return;
+    if (!validarModal()) return;
+    const nomeSalvo = document.getElementById('modal-nome').value.trim();
+    const turmaSalva = document.getElementById('modal-turma').value.trim();
     localStorage.removeItem(KEY_STATE);
     localStorage.removeItem(KEY_TIMER);
-    // Mantém o nome após limpar estado
-    const s = getState(); s.nome = document.getElementById('modal-nome').value.trim(); saveState(s);
+    const s = getState(); s.nome = nomeSalvo; s.turma = turmaSalva; saveState(s);
+    TURMA_SELECIONADA = turmaSalva;
     fecharModal();
     carregarQuestoes();
   });
   document.getElementById('btn-modal-continuar').addEventListener('click', () => {
-    if (!validarNome()) return;
+    if (!validarModal()) return;
     fecharModal();
     carregarQuestoes(true);
   });
@@ -1038,7 +1108,7 @@ async function verificarResultado() {
   try {
     await fetch(API_URL, {
       method:'POST',
-      body: JSON.stringify({tipo:'SALVAR_RESULTADO', nome, acertos, total, curso: CURSO_ID})
+      body: JSON.stringify({tipo:'SALVAR_RESULTADO', nome, acertos, total, curso: CURSO_ID, turma: TURMA_SELECIONADA})
     });
     //carregarRanking();
   } catch(e) {}

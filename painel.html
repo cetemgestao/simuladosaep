@@ -718,9 +718,8 @@ async function salvarEdicao() {
   const btn = document.getElementById('btn-salvar-edit');
   btn.disabled=true; btn.innerHTML='<span class="spin"></span>Salvando...';
   try {
-    await fetch(getApiUrl() + '?' + new URLSearchParams({
-      tipo: 'EDITAR_QUESTAO',
-      indice: idx, curso,
+    const r = await apiPost({
+      tipo:'EDITAR_QUESTAO', indice: idx, curso,
       disciplina:       document.getElementById('edit-disciplina').value,
       enunciado,
       texto_pos_imagem: document.getElementById('edit-texto-pos').innerHTML.trim(),
@@ -729,12 +728,10 @@ async function salvarEdicao() {
       C: document.getElementById('edit-altC').innerHTML.trim(),
       D: document.getElementById('edit-altD').innerHTML.trim(),
       gabarito: document.getElementById('edit-gabarito').value
-    }).toString(), {
-      method: 'GET',
-      mode: 'no-cors'
+      // imagem omitida — GAS mantém a imagem atual da questão
     });
-    await new Promise(r => setTimeout(r, 1200));
-    toast('✅ Questão atualizada!','ok'); fecharEditar(); carregarQuestoes();
+    if (r.status==='ok') { toast('✅ Questão atualizada!','ok'); fecharEditar(); carregarQuestoes(); }
+    else toast('Erro: '+(r.erro||''),'err');
   } catch(e) { toast('Erro: '+e.message,'err'); }
   finally { btn.disabled=false; btn.innerHTML='💾 Salvar Alterações'; }
 }

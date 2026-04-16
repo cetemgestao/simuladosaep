@@ -658,8 +658,9 @@ function filtrar() {
 
 async function excluir(idx) {
   if (!confirm('Excluir esta questão?')) return;
+  const q = todasQ[idx]; if (!q) return;
   try {
-    const r = await apiPost({ tipo:'EXCLUIR_QUESTAO', indice: idx });
+    const r = await apiPost({ tipo:'EXCLUIR_QUESTAO', indice: q.indice });
     if (r.status==='ok') { toast('Questão excluída.','ok'); carregarQuestoes(); }
     else toast('Erro: '+(r.erro||''),'err');
   } catch(e) { toast('Erro: '+e.message,'err'); }
@@ -668,7 +669,7 @@ async function excluir(idx) {
 // EDITAR
 function abrirEditar(idx) {
   const q = todasQ[idx]; if (!q) return;
-  document.getElementById('edit-indice').value = idx;
+  document.getElementById('edit-indice').value = q.indice; // índice real da planilha, não posição na lista
   const selCurso = document.getElementById('edit-curso');
   selCurso.innerHTML='<option value="">Selecione...</option>';
   CURSOS.forEach(c=>{const o=new Option(c.nome,c.id);if(c.id===q.curso)o.selected=true;selCurso.appendChild(o);});

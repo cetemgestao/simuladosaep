@@ -715,15 +715,14 @@ async function salvarEdicao() {
   const curso    = document.getElementById('edit-curso').value;
   const enunciado = document.getElementById('edit-enunciado').innerHTML.trim();
   if (!curso||!enunciado) { toast('Preencha curso e enunciado.','av'); return; }
-
-  // DIAGNÓSTICO TEMPORÁRIO — remover após confirmar
-  alert('DEBUG — índice que será enviado ao GAS: ' + idx + '\nGabarito: ' + document.getElementById('edit-gabarito').value);
-
   const btn = document.getElementById('btn-salvar-edit');
   btn.disabled=true; btn.innerHTML='<span class="spin"></span>Salvando...';
   try {
-    const r = await apiGet({
-      tipo:'EDITAR_QUESTAO', indice: idx, curso,
+    // Manda tudo via query string pois o body some no redirect do GAS com no-cors
+    const qs = new URLSearchParams({
+      tipo: 'EDITAR_QUESTAO',
+      indice: idx,
+      curso,
       disciplina:       document.getElementById('edit-disciplina').value,
       enunciado,
       texto_pos_imagem: document.getElementById('edit-texto-pos').innerHTML.trim(),
@@ -733,8 +732,12 @@ async function salvarEdicao() {
       D: document.getElementById('edit-altD').innerHTML.trim(),
       gabarito: document.getElementById('edit-gabarito').value
     });
-    if (r.status==='ok') { toast('✅ Questão atualizada!','ok'); fecharEditar(); carregarQuestoes(); }
-    else toast('Erro: '+(r.erro||''),'err');
+    await fetch(getApiUrl() + '?' + qs.toString(), {
+      method: 'GET',
+      mode: 'no-cors'
+    });
+    await new Promise(r => setTimeout(r, 1200));
+    toast('✅ Questão atualizada!','ok'); fecharEditar(); carregarQuestoes();
   } catch(e) { toast('Erro: '+e.message,'err'); }
   finally { btn.disabled=false; btn.innerHTML='💾 Salvar Alterações'; }
 }

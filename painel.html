@@ -168,6 +168,7 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
     <button class="tab-btn ativa" onclick="trocarAba('inserir',this)">➕ Inserir Questão</button>
     <button class="tab-btn" onclick="trocarAba('listar',this)">📋 Questões</button>
     <button class="tab-btn" onclick="trocarAba('resultados',this)">📊 Resultados</button>
+    <button class="tab-btn" onclick="trocarAba('turmas',this)">🏫 Turmas</button>
     <button class="tab-btn" onclick="trocarAba('cursos',this)">🎓 Cursos</button>
     <button class="tab-btn" onclick="trocarAba('config',this)">⚙️ Config</button>
   </div>
@@ -298,13 +299,63 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
     <div class="tab-painel" id="tab-resultados">
       <div class="card">
         <div class="card-titulo">📊 Resultados</div>
-        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
-          <select id="filtro-curso-result" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Barlow',sans-serif;outline:none;">
-            <option value="">Todos os cursos</option>
-          </select>
-          <button class="btn btn-primary" style="min-width:auto;padding:8px 20px;" onclick="carregarResultados()">🔄 Carregar</button>
+        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:flex-end;">
+          <div style="flex:1;min-width:160px;">
+            <label style="display:block;font-size:0.78rem;font-weight:600;color:var(--muted);margin-bottom:5px;">Curso</label>
+            <select id="filtro-curso-result" onchange="atualizarFiltroTurma()"
+              style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Barlow',sans-serif;outline:none;">
+              <option value="">Todos os cursos</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:160px;">
+            <label style="display:block;font-size:0.78rem;font-weight:600;color:var(--muted);margin-bottom:5px;">Turma</label>
+            <select id="filtro-turma-result"
+              style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Barlow',sans-serif;outline:none;">
+              <option value="">Todas as turmas</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" style="min-width:auto;padding:8px 20px;flex:0;" onclick="carregarResultados()">🔄 Carregar</button>
         </div>
         <div id="area-resultados"><p style="color:var(--muted);">Clique em Carregar para ver os dados.</p></div>
+      </div>
+    </div>
+
+    <!-- TURMAS -->
+    <div class="tab-painel" id="tab-turmas">
+      <div class="card">
+        <div class="card-titulo">🏫 Gerenciar Turmas</div>
+        <!-- Formulário de cadastro -->
+        <div style="background:#f0f6ff;border:1px solid #c7d7f5;border-radius:10px;padding:18px;margin-bottom:20px;">
+          <div style="font-weight:700;font-size:0.9rem;color:var(--azul);margin-bottom:12px;">➕ Nova Turma</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+            <div style="flex:1;min-width:150px;">
+              <label style="display:block;font-size:0.78rem;font-weight:600;margin-bottom:4px;">Curso *</label>
+              <select id="nova-turma-curso" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Barlow',sans-serif;outline:none;background:white;">
+                <option value="">Selecione...</option>
+              </select>
+            </div>
+            <div style="flex:1;min-width:150px;">
+              <label style="display:block;font-size:0.78rem;font-weight:600;margin-bottom:4px;">Nome da turma *</label>
+              <input type="text" id="nova-turma-nome" placeholder="Ex: Turma A, ELM-2025" maxlength="60"
+                style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.9rem;font-family:'Barlow',sans-serif;outline:none;"/>
+            </div>
+            <div style="flex:1;min-width:130px;">
+              <label style="display:block;font-size:0.78rem;font-weight:600;margin-bottom:4px;">Período *</label>
+              <input type="text" id="nova-turma-periodo" placeholder="Ex: 2025.1" maxlength="20"
+                style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.9rem;font-family:'Barlow',sans-serif;outline:none;"/>
+            </div>
+            <button class="btn btn-sucesso" style="flex:0;min-width:auto;padding:9px 20px;" onclick="salvarTurma()">💾 Cadastrar</button>
+          </div>
+        </div>
+        <!-- Lista de turmas -->
+        <div style="margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <label style="font-size:0.82rem;font-weight:600;color:var(--azul);">Filtrar por curso:</label>
+          <select id="filtro-turmas-lista" onchange="carregarTurmas()"
+            style="padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Barlow',sans-serif;outline:none;min-width:180px;">
+            <option value="">Todos os cursos</option>
+          </select>
+        </div>
+        <div id="lista-turmas"><p style="color:var(--muted);font-size:0.87rem;">Clique em um curso para ver as turmas.</p></div>
       </div>
     </div>
 
@@ -382,20 +433,43 @@ function apiCall(params) {
   });
 }
 
-// POST — para escrita (INSERIR, EDITAR, EXCLUIR)
+// POST via fetch no-cors — funciona para payloads simples (excluir, salvar resultado, inserir turma)
 async function apiPost(params) {
   const tipo = params.tipo;
   try {
     await fetch(getApiUrl() + '?tipo=' + encodeURIComponent(tipo), {
       method: 'POST',
-      redirect: 'follow',
+      mode: 'no-cors',
       body: JSON.stringify(params)
     });
-  } catch(e) {
-    // CORS bloqueia leitura da resposta mas o dado é gravado
-  }
-  await new Promise(r => setTimeout(r, 800));
+  } catch(e) {}
+  await new Promise(r => setTimeout(r, 1000));
   return { status: 'ok' };
+}
+
+// GET via JSONP — usado para EDITAR_QUESTAO onde o no-cors não entrega o body corretamente
+function apiGet(params) {
+  return new Promise((resolve, reject) => {
+    const cbName = 'cbGet_' + Date.now() + '_' + Math.floor(Math.random()*10000);
+    const script = document.createElement('script');
+    const timeout = setTimeout(() => {
+      delete window[cbName]; script.remove();
+      resolve({ status: 'ok' });
+    }, 15000);
+    window[cbName] = (data) => {
+      clearTimeout(timeout); delete window[cbName]; script.remove();
+      resolve(data);
+    };
+    const qs = new URLSearchParams();
+    Object.entries(params).forEach(([k,v]) => qs.set(k, v));
+    qs.set('callback', cbName);
+    script.src = getApiUrl() + '?' + qs.toString();
+    script.onerror = () => {
+      clearTimeout(timeout); delete window[cbName]; script.remove();
+      reject(new Error('Erro ao conectar'));
+    };
+    document.head.appendChild(script);
+  });
 }
 
 const CURSOS = [
@@ -436,7 +510,7 @@ function sair() { sessionStorage.removeItem(AUTH_KEY); location.reload(); }
 
 // SELECTS
 function preencherSelects() {
-  ['sel-curso','filtro-curso-lista','filtro-curso-result'].forEach(id => {
+  ['sel-curso','filtro-curso-lista','filtro-curso-result','nova-turma-curso','filtro-turmas-lista'].forEach(id => {
     const el = document.getElementById(id); if (!el) return;
     const primeiro = el.options[0]; el.innerHTML=''; el.appendChild(primeiro);
     CURSOS.forEach(c => el.appendChild(new Option(c.nome, c.id)));
@@ -448,8 +522,9 @@ function trocarAba(id, btn) {
   document.querySelectorAll('.tab-painel').forEach(p=>p.classList.remove('ativa'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('ativa'));
   document.getElementById('tab-'+id).classList.add('ativa'); btn.classList.add('ativa');
-  if (id==='listar') carregarQuestoes();
+  if (id==='listar')    carregarQuestoes();
   if (id==='resultados') carregarResultados();
+  if (id==='turmas')    carregarTurmas();
 }
 
 // DISCIPLINAS
@@ -607,8 +682,9 @@ function filtrar() {
 
 async function excluir(idx) {
   if (!confirm('Excluir esta questão?')) return;
+  const q = todasQ[idx]; if (!q) return;
   try {
-    const r = await apiPost({ tipo:'EXCLUIR_QUESTAO', indice: idx });
+    const r = await apiPost({ tipo:'EXCLUIR_QUESTAO', indice: q.indice });
     if (r.status==='ok') { toast('Questão excluída.','ok'); carregarQuestoes(); }
     else toast('Erro: '+(r.erro||''),'err');
   } catch(e) { toast('Erro: '+e.message,'err'); }
@@ -617,7 +693,7 @@ async function excluir(idx) {
 // EDITAR
 function abrirEditar(idx) {
   const q = todasQ[idx]; if (!q) return;
-  document.getElementById('edit-indice').value = idx;
+  document.getElementById('edit-indice').value = q.indice; // índice real da planilha, não posição na lista
   const selCurso = document.getElementById('edit-curso');
   selCurso.innerHTML='<option value="">Selecione...</option>';
   CURSOS.forEach(c=>{const o=new Option(c.nome,c.id);if(c.id===q.curso)o.selected=true;selCurso.appendChild(o);});
@@ -637,8 +713,13 @@ function fecharEditar() { document.getElementById('modal-editar-overlay').style.
 async function salvarEdicao() {
   const idx      = parseInt(document.getElementById('edit-indice').value);
   const curso    = document.getElementById('edit-curso').value;
-  const enunciado = document.getElementById('edit-enunciado').innerHTML.trim();
+  let enunciado  = document.getElementById('edit-enunciado').innerHTML.trim();
   if (!curso||!enunciado) { toast('Preencha curso e enunciado.','av'); return; }
+
+  // Remove imagens base64 do enunciado antes de enviar (muito grandes para o POST)
+  // O GAS mantém a imagem original da planilha quando detecta base64 removido
+  enunciado = enunciado.replace(/<img[^>]+src="data:[^"]*"[^>]*>/gi, '<img src="base64_mantido">');
+
   const btn = document.getElementById('btn-salvar-edit');
   btn.disabled=true; btn.innerHTML='<span class="spin"></span>Salvando...';
   try {
@@ -659,22 +740,58 @@ async function salvarEdicao() {
   finally { btn.disabled=false; btn.innerHTML='💾 Salvar Alterações'; }
 }
 
+// FILTRO TURMA dependente do curso
+async function atualizarFiltroTurma() {
+  const curso = document.getElementById('filtro-curso-result').value;
+  const sel = document.getElementById('filtro-turma-result');
+  sel.innerHTML = '<option value="">Todas as turmas</option>';
+  if (!curso) return;
+  try {
+    const data = await apiCall({ tipo:'LISTAR_TURMAS', curso });
+    if (Array.isArray(data)) {
+      data.forEach(t => {
+        const label = t.periodo ? `${t.nome} — ${t.periodo}` : t.nome;
+        sel.appendChild(new Option(label, t.nome));
+      });
+    }
+  } catch(e) {}
+}
+
 // RESULTADOS
 async function carregarResultados() {
-  const div  = document.getElementById('area-resultados');
+  const div   = document.getElementById('area-resultados');
   const curso = document.getElementById('filtro-curso-result').value;
+  const turma = document.getElementById('filtro-turma-result').value;
   div.innerHTML='<p><span class="spin"></span> Carregando...</p>';
   try {
     const params = { tipo:'RANKING' };
     if (curso) params.curso = curso;
+    if (turma) params.turma = turma;
     const data = await apiCall(params);
     if (!Array.isArray(data)||data.length===0) { div.innerHTML='<p style="color:var(--muted)">Nenhum resultado ainda.</p>'; return; }
-    div.innerHTML=`<table class="tabela">
-      <thead><tr><th>#</th><th>Nome</th><th>Acertos</th><th>Total</th><th>%</th></tr></thead>
+
+    // Cabeçalho descritivo do filtro
+    let filtroDesc = '';
+    if (curso) {
+      const cNome = CURSOS.find(c=>c.id===curso)?.nome || curso;
+      filtroDesc += `<strong>${cNome}</strong>`;
+    }
+    if (turma) filtroDesc += ` · Turma: <strong>${turma}</strong>`;
+    const header = filtroDesc ? `<p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px;">Exibindo: ${filtroDesc}</p>` : '';
+
+    div.innerHTML = header + `<table class="tabela">
+      <thead><tr><th>#</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Total</th><th>%</th></tr></thead>
       <tbody>${data.map((r,i)=>{
         const pct=Number(r.percentual||0).toFixed(1);
         const cls=pct>=70?'pct-alto':pct>=50?'pct-medio':'pct-baixo';
-        return `<tr><td style="font-weight:700;color:var(--azul)">${i+1}</td><td>${r.nome||'—'}</td><td>${r.acertos||'—'}</td><td>${r.total||'—'}</td><td class="${cls}">${pct}%</td></tr>`;
+        return `<tr>
+          <td style="font-weight:700;color:var(--azul)">${i+1}</td>
+          <td>${r.nome||'—'}</td>
+          <td style="color:var(--muted);font-size:0.82rem;">${r.turma||'—'}</td>
+          <td>${r.acertos||'—'}</td>
+          <td>${r.total||'—'}</td>
+          <td class="${cls}">${pct}%</td>
+        </tr>`;
       }).join('')}</tbody></table>`;
   } catch(e) { div.innerHTML=`<p style="color:var(--vermelho)">Erro: ${e.message}</p>`; }
 }
@@ -682,6 +799,69 @@ window.addEventListener('DOMContentLoaded', ()=>{
   const sel = document.getElementById('filtro-curso-result');
   CURSOS.forEach(c=>sel.appendChild(new Option(c.nome,c.id)));
 });
+
+// ── TURMAS ──
+let todasTurmas = [];
+
+async function carregarTurmas() {
+  const curso = document.getElementById('filtro-turmas-lista').value;
+  const div = document.getElementById('lista-turmas');
+  div.innerHTML = '<p><span class="spin"></span> Carregando...</p>';
+  try {
+    const params = { tipo:'LISTAR_TURMAS' };
+    if (curso) params.curso = curso;
+    todasTurmas = await apiCall(params);
+    renderTurmas(todasTurmas);
+  } catch(e) {
+    div.innerHTML = `<p style="color:var(--vermelho)">Erro: ${e.message}</p>`;
+  }
+}
+
+function renderTurmas(turmas) {
+  const div = document.getElementById('lista-turmas');
+  if (!turmas.length) {
+    div.innerHTML = '<p style="color:var(--muted);text-align:center;font-size:0.87rem;">Nenhuma turma cadastrada.</p>';
+    return;
+  }
+  div.innerHTML = turmas.map((t, i) => {
+    const cNome = CURSOS.find(c=>c.id===t.curso)?.nome || t.curso || '—';
+    const periodo = t.periodo ? ` <span style="background:#eef4ff;color:var(--azul);border:1px solid #c7d7f5;border-radius:20px;padding:1px 9px;font-size:0.72rem;font-weight:600;">${t.periodo}</span>` : '';
+    return `<div style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:white;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;">
+      <div style="flex:1;">
+        <div style="font-weight:600;font-size:0.9rem;">${t.nome}${periodo}</div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:2px;">${cNome}</div>
+      </div>
+      <button onclick="excluirTurma(${t.indice})"
+        style="padding:5px 12px;font-size:0.76rem;background:#fff0f0;color:var(--vermelho);border:1px solid #fecaca;border-radius:6px;cursor:pointer;font-family:'Barlow',sans-serif;font-weight:600;transition:background 0.2s;"
+        onmouseover="this.style.background='#ffe0e0'" onmouseout="this.style.background='#fff0f0'">🗑 Excluir</button>
+    </div>`;
+  }).join('');
+}
+
+async function salvarTurma() {
+  const curso   = document.getElementById('nova-turma-curso').value.trim();
+  const nome    = document.getElementById('nova-turma-nome').value.trim();
+  const periodo = document.getElementById('nova-turma-periodo').value.trim();
+  if (!curso)   { toast('Selecione o curso.','av'); return; }
+  if (!nome)    { toast('Informe o nome da turma.','av'); return; }
+  if (!periodo) { toast('Informe o período (ex: 2025.1).','av'); return; }
+  try {
+    await apiPost({ tipo:'INSERIR_TURMA', curso, nome, periodo });
+    toast(`✅ Turma "${nome}" cadastrada!`,'ok');
+    document.getElementById('nova-turma-nome').value   = '';
+    document.getElementById('nova-turma-periodo').value = '';
+    carregarTurmas();
+  } catch(e) { toast('Erro: '+e.message,'err'); }
+}
+
+async function excluirTurma(indice) {
+  if (!confirm('Excluir esta turma? Os resultados já gravados não serão afetados.')) return;
+  try {
+    await apiPost({ tipo:'EXCLUIR_TURMA', indice });
+    toast('Turma excluída.','ok');
+    carregarTurmas();
+  } catch(e) { toast('Erro: '+e.message,'err'); }
+}
 
 // CURSOS CONFIG
 function renderCursosConfig() {

@@ -718,7 +718,6 @@ async function salvarEdicao() {
   const btn = document.getElementById('btn-salvar-edit');
   btn.disabled=true; btn.innerHTML='<span class="spin"></span>Salvando...';
   try {
-    // Manda tudo via query string pois o body some no redirect do GAS com no-cors
     const qs = new URLSearchParams({
       tipo: 'EDITAR_QUESTAO',
       indice: idx,
@@ -732,10 +731,9 @@ async function salvarEdicao() {
       D: document.getElementById('edit-altD').innerHTML.trim(),
       gabarito: document.getElementById('edit-gabarito').value
     });
-    await fetch(getApiUrl() + '?' + qs.toString(), {
-      method: 'GET',
-      mode: 'no-cors'
-    });
+    const urlFinal = getApiUrl() + '?' + qs.toString();
+    alert('URL enviada (primeiros 300 chars):\n' + urlFinal.substring(0,300) + '\n\nGabarito: ' + document.getElementById('edit-gabarito').value + '\nÍndice: ' + idx);
+    await fetch(urlFinal, { method: 'GET', mode: 'no-cors' });
     await new Promise(r => setTimeout(r, 1200));
     toast('✅ Questão atualizada!','ok'); fecharEditar(); carregarQuestoes();
   } catch(e) { toast('Erro: '+e.message,'err'); }

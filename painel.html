@@ -433,8 +433,7 @@ function apiCall(params) {
   });
 }
 
-// POST — tipo na URL + body no POST com no-cors
-// O redirect 302 preserva o body quando Content-Type não é setado
+// POST via fetch no-cors — funciona para payloads simples (excluir, salvar resultado, inserir turma)
 async function apiPost(params) {
   const tipo = params.tipo;
   try {
@@ -446,6 +445,31 @@ async function apiPost(params) {
   } catch(e) {}
   await new Promise(r => setTimeout(r, 1000));
   return { status: 'ok' };
+}
+
+// GET via JSONP — usado para EDITAR_QUESTAO onde o no-cors não entrega o body corretamente
+function apiGet(params) {
+  return new Promise((resolve, reject) => {
+    const cbName = 'cbGet_' + Date.now() + '_' + Math.floor(Math.random()*10000);
+    const script = document.createElement('script');
+    const timeout = setTimeout(() => {
+      delete window[cbName]; script.remove();
+      resolve({ status: 'ok' });
+    }, 15000);
+    window[cbName] = (data) => {
+      clearTimeout(timeout); delete window[cbName]; script.remove();
+      resolve(data);
+    };
+    const qs = new URLSearchParams();
+    Object.entries(params).forEach(([k,v]) => qs.set(k, v));
+    qs.set('callback', cbName);
+    script.src = getApiUrl() + '?' + qs.toString();
+    script.onerror = () => {
+      clearTimeout(timeout); delete window[cbName]; script.remove();
+      reject(new Error('Erro ao conectar'));
+    };
+    document.head.appendChild(script);
+  });
 }
 
 const CURSOS = [
@@ -691,10 +715,14 @@ async function salvarEdicao() {
   const curso    = document.getElementById('edit-curso').value;
   const enunciado = document.getElementById('edit-enunciado').innerHTML.trim();
   if (!curso||!enunciado) { toast('Preencha curso e enunciado.','av'); return; }
+
+  // DIAGNÓSTICO TEMPORÁRIO — remover após confirmar
+  alert('DEBUG — índice que será enviado ao GAS: ' + idx + '\nGabarito: ' + document.getElementById('edit-gabarito').value);
+
   const btn = document.getElementById('btn-salvar-edit');
   btn.disabled=true; btn.innerHTML='<span class="spin"></span>Salvando...';
   try {
-    const r = await apiPost({
+    const r = await apiGet({
       tipo:'EDITAR_QUESTAO', indice: idx, curso,
       disciplina:       document.getElementById('edit-disciplina').value,
       enunciado,

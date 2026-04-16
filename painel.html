@@ -718,23 +718,35 @@ async function salvarEdicao() {
   const btn = document.getElementById('btn-salvar-edit');
   btn.disabled=true; btn.innerHTML='<span class="spin"></span>Salvando...';
   try {
-    const qs = new URLSearchParams({
-      tipo: 'EDITAR_QUESTAO',
-      indice: idx,
-      curso,
-      disciplina:       document.getElementById('edit-disciplina').value,
-      enunciado,
-      texto_pos_imagem: document.getElementById('edit-texto-pos').innerHTML.trim(),
-      A: document.getElementById('edit-altA').innerHTML.trim(),
-      B: document.getElementById('edit-altB').innerHTML.trim(),
-      C: document.getElementById('edit-altC').innerHTML.trim(),
-      D: document.getElementById('edit-altD').innerHTML.trim(),
-      gabarito: document.getElementById('edit-gabarito').value
+    await new Promise((resolve, reject) => {
+      const cbName = 'cbEdit_' + Date.now();
+      const script = document.createElement('script');
+      const timeout = setTimeout(() => {
+        delete window[cbName]; script.remove(); resolve({status:'ok'});
+      }, 15000);
+      window[cbName] = (data) => {
+        clearTimeout(timeout); delete window[cbName]; script.remove(); resolve(data);
+      };
+      script.onerror = () => {
+        clearTimeout(timeout); delete window[cbName]; script.remove();
+        reject(new Error('Erro ao conectar'));
+      };
+      const qs = new URLSearchParams({
+        tipo: 'EDITAR_QUESTAO',
+        indice: idx, curso,
+        disciplina:       document.getElementById('edit-disciplina').value,
+        enunciado,
+        texto_pos_imagem: document.getElementById('edit-texto-pos').innerHTML.trim(),
+        A: document.getElementById('edit-altA').innerHTML.trim(),
+        B: document.getElementById('edit-altB').innerHTML.trim(),
+        C: document.getElementById('edit-altC').innerHTML.trim(),
+        D: document.getElementById('edit-altD').innerHTML.trim(),
+        gabarito: document.getElementById('edit-gabarito').value,
+        callback: cbName
+      });
+      script.src = getApiUrl() + '?' + qs.toString();
+      document.head.appendChild(script);
     });
-    const urlFinal = getApiUrl() + '?' + qs.toString();
-    alert('URL enviada (primeiros 300 chars):\n' + urlFinal.substring(0,300) + '\n\nGabarito: ' + document.getElementById('edit-gabarito').value + '\nÍndice: ' + idx);
-    await fetch(urlFinal, { method: 'GET', mode: 'no-cors' });
-    await new Promise(r => setTimeout(r, 1200));
     toast('✅ Questão atualizada!','ok'); fecharEditar(); carregarQuestoes();
   } catch(e) { toast('Erro: '+e.message,'err'); }
   finally { btn.disabled=false; btn.innerHTML='💾 Salvar Alterações'; }

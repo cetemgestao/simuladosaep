@@ -190,6 +190,10 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
           </select>
         </div>
         <div class="form-row">
+          <label>Simulado nº <span style="font-weight:400;color:var(--muted)">(vazio = a questão entra só no Simulado Geral · o número fica mantido entre um cadastro e outro)</span></label>
+          <input type="text" id="simulado" inputmode="numeric" maxlength="10" placeholder="Ex: 1" style="max-width:180px;"/>
+        </div>
+        <div class="form-row">
           <label>Enunciado *</label>
           <div id="aviso-paste" class="paste-aviso">⚠️ Formatação do Word removida automaticamente.</div>
           <div class="editor-toolbar">
@@ -249,7 +253,8 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
         </div>
         <div class="filtros-row">
           <input type="text" id="filtro-txt" placeholder="🔍 Buscar..." onkeyup="filtrar()"/>
-          <select id="filtro-curso-lista" onchange="filtrar()"><option value="">Todos os cursos</option></select>
+          <select id="filtro-curso-lista" onchange="atualizarFiltroSimLista();filtrar()"><option value="">Todos os cursos</option></select>
+          <select id="filtro-sim-lista" onchange="filtrar()"><option value="">Todos os simulados</option></select>
           <button class="btn btn-primary" style="flex:none;padding:8px 18px;min-width:auto" onclick="carregarQuestoes()">🔄</button>
         </div>
         <div id="lista-questoes"><p style="color:var(--muted);text-align:center;">Clique em 🔄 para carregar.</p></div>
@@ -274,6 +279,10 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
           <div class="form-row">
             <label>Disciplina</label>
             <select id="edit-disciplina" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.95rem;font-family:'Barlow',sans-serif;outline:none;"></select>
+          </div>
+          <div class="form-row">
+            <label>Simulado nº <span style="font-weight:400;color:var(--muted)">(vazio = só no Simulado Geral)</span></label>
+            <input type="text" id="edit-simulado" inputmode="numeric" maxlength="10" placeholder="Ex: 1" style="max-width:180px;"/>
           </div>
           <div class="form-row"><label>Enunciado</label><div class="editor" id="edit-enunciado" contenteditable="true"></div></div>
           <div class="form-row"><label>Texto após imagem <span style="font-weight:400;color:var(--muted)">(opcional)</span></label><div class="editor" id="edit-texto-pos" contenteditable="true" style="min-height:44px;"></div></div>
@@ -312,6 +321,14 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
             <select id="filtro-turma-result"
               style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Barlow',sans-serif;outline:none;">
               <option value="">Todas as turmas</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:160px;">
+            <label style="display:block;font-size:0.78rem;font-weight:600;color:var(--muted);margin-bottom:5px;">Simulado</label>
+            <select id="filtro-sim-result"
+              style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Barlow',sans-serif;outline:none;">
+              <option value="">Todos os simulados</option>
+              <option value="geral">Simulado Geral</option>
             </select>
           </div>
           <button class="btn btn-primary" style="min-width:auto;padding:8px 20px;flex:0;" onclick="carregarResultados()">🔄 Carregar</button>
@@ -396,10 +413,10 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
           <tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th><th>K</th></tr>
           <tr><td>curso</td><td>disciplina</td><td>enunciado</td><td>imagem</td><td>texto_pos_imagem</td><td>A</td><td>B</td><td>C</td><td>D</td><td>gabarito</td><td>simulado</td></tr>
         </table>
-        <p style="font-size:0.85rem;color:var(--muted);margin-bottom:14px;">Aba "Resultados" — 5 colunas:</p>
+        <p style="font-size:0.85rem;color:var(--muted);margin-bottom:14px;">Aba "Resultados" — 7 colunas:</p>
         <table class="tabela">
-          <tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>
-          <tr><td>data</td><td>nome</td><td>acertos</td><td>total</td><td>curso</td></tr>
+          <tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th></tr>
+          <tr><td>data</td><td>nome</td><td>acertos</td><td>total</td><td>curso</td><td>turma</td><td>simulado</td></tr>
         </table>
       </div>
     </div>
@@ -476,14 +493,14 @@ const CURSOS = [
   { id:"ciber-sistemas",  nome:"Técnico em Cibersistemas" },
   { id:"eletrotecnica",   nome:"Técnico em Eletrotécnica" },
   { id:"eletromecanica",  nome:"Técnico em Eletromecânica" },
-  { id:"mecatonica",      nome:"Técnico em Mecatrônica" },
+  { id:"mecatronica",     nome:"Técnico em Mecatrônica" },
   { id:"mecanica",        nome:"Técnico em Mecânica" }
 ];
 
 const DISCIPLINAS_POR_CURSO = {
   "ciber-sistemas":  ["Ciber Sistemas","IoT","Redes Industriais","Automação","Segurança Digital","Programação"],
   "eletrotecnica":   ["Comunicação Oral e Escrita","Eletricidade","Leitura e Interpretação de Desenho","Qualidade, Saúde, Meio Ambiente e Segurança no trabalho (QSMS)","Instalações Elétricas Prediais","Projetos Elétricos Prediais","Segurança em Eletricidade","Acionamento de Dispositivos Eletricos Automatizados","Instalações Elétricas Industriais","Projetos Elétricos Industriais","Eficiência Energética","Gestão da Manutenção","Instalações de Sistemas Elétricos de Potência (SEP)","Manutenções e Operações de Sistemas Elétricos de Potência (SEP)","Manutenção Elétrica Predial e Industrial","Projetos de Sistemas Elétricos de Potência (SEP)"],
-  "mecatonica":      ["CLP","Sensores e Atuadores","SCADA","Pneumática","Hidráulica","Instrumentação"],
+  "mecatronica":     ["CLP","Sensores e Atuadores","SCADA","Pneumática","Hidráulica","Instrumentação"],
   "eletromecanica":  ["Eletrônica Analógica","Eletrônica Digital","Microcontroladores","Componentes","Circuitos"],
   "mecanica":        ["TCP/IP","Infraestrutura","Segurança","Cabeamento","Protocolos","Wi-Fi"]
 };
@@ -614,7 +631,8 @@ async function salvar() {
       enunciado, imagem: base64,
       texto_pos_imagem: document.getElementById('texto-pos-imagem').innerHTML.trim(),
       A: alts[0], B: alts[1], C: alts[2], D: alts[3],
-      gabarito: document.getElementById('gabarito').value
+      gabarito: document.getElementById('gabarito').value,
+      simulado: document.getElementById('simulado').value.trim()
     });
     if (r.status==='ok') { toast('✅ Questão salva!','ok'); limparForm(); }
     else toast('Erro: '+(r.erro||JSON.stringify(r)),'err');
@@ -648,9 +666,12 @@ async function carregarQuestoes() {
     document.getElementById('stat-disc').textContent   = discs.size;
     document.getElementById('stat-cursos').textContent = cursos.size;
     const sel = document.getElementById('filtro-curso-lista');
+    const cursoAtual = sel.value;
     sel.innerHTML='<option value="">Todos os cursos</option>';
     CURSOS.forEach(c=>sel.appendChild(new Option(c.nome,c.id)));
-    renderLista(todasQ);
+    sel.value = cursoAtual;
+    atualizarFiltroSimLista();
+    filtrar();
   } catch(e) { lista.innerHTML=`<p style="color:var(--vermelho)">Erro: ${e.message}</p>`; }
 }
 
@@ -665,24 +686,51 @@ function renderLista(questoes) {
         <div class="quest-meta">
           ${q.curso?`<strong>${CURSOS.find(c=>c.id===q.curso)?.nome||q.curso}</strong> · `:''}
           ${q.disciplina?`${q.disciplina} · `:''}
+          ${q.simulado?`Simulado <strong>${q.simulado}</strong> · `:''}
           Gabarito: <strong>${q.gabarito||'?'}</strong>
           ${q.imagem?' · 🖼':''}
         </div>
       </div>
-      <button class="quest-del" style="background:#eef4ff;color:var(--azul);border-color:#c7d7f5;margin-right:4px;" onclick="abrirEditar(${i})">✏️ Editar</button>
-      <button class="quest-del" onclick="excluir(${i})">🗑 Excluir</button>
+      <button class="quest-del" style="background:#eef4ff;color:var(--azul);border-color:#c7d7f5;margin-right:4px;" onclick="abrirEditar(${q.indice})">✏️ Editar</button>
+      <button class="quest-del" onclick="excluir(${q.indice})">🗑 Excluir</button>
     </div>`).join('');
 }
 
 function filtrar() {
   const txt  = document.getElementById('filtro-txt').value.toLowerCase();
   const curso = document.getElementById('filtro-curso-lista').value;
-  renderLista(todasQ.filter(q => (!txt||(q.enunciado||'').toLowerCase().includes(txt)) && (!curso||(q.curso===curso))));
+  const sim  = document.getElementById('filtro-sim-lista').value;
+  renderLista(todasQ.filter(q => {
+    const qs = String(q.simulado||'').trim();
+    return (!txt||(q.enunciado||'').toLowerCase().includes(txt))
+        && (!curso||(q.curso===curso))
+        && (!sim || (sim==='__sem' ? !qs : qs===sim));
+  }));
 }
 
-async function excluir(idx) {
+// Monta o filtro de simulados com a contagem de questões (respeita o curso escolhido)
+function atualizarFiltroSimLista() {
+  const sel   = document.getElementById('filtro-sim-lista');
+  const atual = sel.value;
+  const curso = document.getElementById('filtro-curso-lista').value;
+  const cont = {}; let semSim = 0;
+  todasQ.filter(q => !curso || q.curso === curso).forEach(q => {
+    const s = String(q.simulado||'').trim();
+    if (s) cont[s] = (cont[s]||0) + 1; else semSim++;
+  });
+  const ids = Object.keys(cont).sort((a,b) => {
+    const na = Number(a), nb = Number(b);
+    return (!isNaN(na) && !isNaN(nb)) ? na - nb : a.localeCompare(b);
+  });
+  sel.innerHTML = '<option value="">Todos os simulados</option>' +
+    ids.map(id => `<option value="${id}">Simulado ${id} (${cont[id]} questões)</option>`).join('') +
+    `<option value="__sem">Sem simulado — só Geral (${semSim})</option>`;
+  if ([...sel.options].some(o => o.value === atual)) sel.value = atual;
+}
+
+async function excluir(indice) {
   if (!confirm('Excluir esta questão?')) return;
-  const q = todasQ[idx]; if (!q) return;
+  const q = todasQ.find(x => x.indice === indice); if (!q) return;
   try {
     const r = await apiPost({ tipo:'EXCLUIR_QUESTAO', indice: q.indice });
     if (r.status==='ok') { toast('Questão excluída.','ok'); carregarQuestoes(); }
@@ -691,8 +739,8 @@ async function excluir(idx) {
 }
 
 // EDITAR
-function abrirEditar(idx) {
-  const q = todasQ[idx]; if (!q) return;
+function abrirEditar(indice) {
+  const q = todasQ.find(x => x.indice === indice); if (!q) return;
   document.getElementById('edit-indice').value = q.indice; // índice real da planilha, não posição na lista
   const selCurso = document.getElementById('edit-curso');
   selCurso.innerHTML='<option value="">Selecione...</option>';
@@ -705,6 +753,7 @@ function abrirEditar(idx) {
   document.getElementById('edit-altC').innerHTML = q.C||'';
   document.getElementById('edit-altD').innerHTML = q.D||'';
   document.getElementById('edit-gabarito').value  = q.gabarito||'A';
+  document.getElementById('edit-simulado').value  = q.simulado||'';
   document.getElementById('modal-editar-overlay').style.display='block';
   document.body.style.overflow='hidden';
 }
@@ -732,7 +781,8 @@ async function salvarEdicao() {
       B: document.getElementById('edit-altB').innerHTML.trim(),
       C: document.getElementById('edit-altC').innerHTML.trim(),
       D: document.getElementById('edit-altD').innerHTML.trim(),
-      gabarito: document.getElementById('edit-gabarito').value
+      gabarito: document.getElementById('edit-gabarito').value,
+      simulado: document.getElementById('edit-simulado').value.trim()
     });
     if (r.status==='ok') { toast('✅ Questão atualizada!','ok'); fecharEditar(); carregarQuestoes(); }
     else toast('Erro: '+(r.erro||''),'err');
@@ -741,7 +791,25 @@ async function salvarEdicao() {
 }
 
 // FILTRO TURMA dependente do curso
+// Opções de simulado nos Resultados (dependem do curso)
+async function atualizarFiltroSimResult() {
+  const curso = document.getElementById('filtro-curso-result').value;
+  const sel   = document.getElementById('filtro-sim-result');
+  const atual = sel.value;
+  sel.innerHTML = '<option value="">Todos os simulados</option>';
+  if (curso) {
+    try {
+      const data = await apiCall({ tipo:'LISTAR_SIMULADOS', curso });
+      (data && Array.isArray(data.simulados) ? data.simulados : [])
+        .forEach(s => sel.appendChild(new Option(`Simulado ${s.id}`, s.id)));
+    } catch(e) {}
+  }
+  sel.appendChild(new Option('Simulado Geral', 'geral'));
+  if ([...sel.options].some(o => o.value === atual)) sel.value = atual;
+}
+
 async function atualizarFiltroTurma() {
+  atualizarFiltroSimResult();
   const curso = document.getElementById('filtro-curso-result').value;
   const sel = document.getElementById('filtro-turma-result');
   sel.innerHTML = '<option value="">Todas as turmas</option>';
@@ -762,11 +830,13 @@ async function carregarResultados() {
   const div   = document.getElementById('area-resultados');
   const curso = document.getElementById('filtro-curso-result').value;
   const turma = document.getElementById('filtro-turma-result').value;
+  const simulado = document.getElementById('filtro-sim-result').value;
   div.innerHTML='<p><span class="spin"></span> Carregando...</p>';
   try {
     const params = { tipo:'RANKING' };
     if (curso) params.curso = curso;
     if (turma) params.turma = turma;
+    if (simulado) params.simulado = simulado;
     const data = await apiCall(params);
     if (!Array.isArray(data)||data.length===0) { div.innerHTML='<p style="color:var(--muted)">Nenhum resultado ainda.</p>'; return; }
 
@@ -777,10 +847,11 @@ async function carregarResultados() {
       filtroDesc += `<strong>${cNome}</strong>`;
     }
     if (turma) filtroDesc += ` · Turma: <strong>${turma}</strong>`;
+    if (simulado) filtroDesc += ` · <strong>${simulado==='geral' ? 'Simulado Geral' : 'Simulado '+simulado}</strong>`;
     const header = filtroDesc ? `<p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px;">Exibindo: ${filtroDesc}</p>` : '';
 
     div.innerHTML = header + `<table class="tabela">
-      <thead><tr><th>#</th><th>Nome</th><th>Turma</th><th>Acertos</th><th>Total</th><th>%</th></tr></thead>
+      <thead><tr><th>#</th><th>Nome</th><th>Turma</th><th>Simulado</th><th>Acertos</th><th>Total</th><th>%</th></tr></thead>
       <tbody>${data.map((r,i)=>{
         const pct=Number(r.percentual||0).toFixed(1);
         const cls=pct>=70?'pct-alto':pct>=50?'pct-medio':'pct-baixo';
@@ -788,6 +859,7 @@ async function carregarResultados() {
           <td style="font-weight:700;color:var(--azul)">${i+1}</td>
           <td>${r.nome||'—'}</td>
           <td style="color:var(--muted);font-size:0.82rem;">${r.turma||'—'}</td>
+          <td style="color:var(--muted);font-size:0.82rem;">${r.simulado ? (r.simulado==='geral' ? 'Geral' : r.simulado) : '—'}</td>
           <td>${r.acertos||'—'}</td>
           <td>${r.total||'—'}</td>
           <td class="${cls}">${pct}%</td>

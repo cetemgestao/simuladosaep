@@ -634,6 +634,16 @@ body {
         </select>
         <div id="modal-turma-erro" style="display:none;font-size:0.78rem;color:#e53935;margin-top:5px;">⚠️ Por favor, selecione sua turma para continuar.</div>
       </div>
+      <!-- Campo simulado -->
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:0.82rem;font-weight:600;color:#1a2340;margin-bottom:6px;">📝 Simulado *</label>
+        <select id="modal-simulado"
+          style="width:100%;padding:10px 14px;border:1.5px solid #d0daf0;border-radius:9px;font-size:0.95rem;font-family:'Barlow',sans-serif;outline:none;transition:border-color 0.2s;background:white;color:#1a2340;"
+          onfocus="this.style.borderColor='#004aad'" onblur="this.style.borderColor='#d0daf0'">
+          <option value="">Carregando simulados...</option>
+        </select>
+        <div id="modal-simulado-erro" style="display:none;font-size:0.78rem;color:#e53935;margin-top:5px;">⚠️ Por favor, escolha o simulado para continuar.</div>
+      </div>
       <div class="modal-info-grid">
         <div class="modal-info-item">
           <div class="modal-info-num" id="modal-num-q">40</div>
@@ -674,11 +684,11 @@ const TEMPO_MIN = 120;
 
 // Mapa de IDs para nomes bonitos
 const NOMES_CURSOS = {
-  "ciber-sistemas":        "Ciber Sistemas",
-  "instalacoes-eletricas": "Instalações Elétricas",
-  "automacao-industrial":  "Automação Industrial",
-  "eletronica":            "Eletrônica",
-  "redes-computadores":    "Redes de Computadores"
+  "ciber-sistemas": "Técnico em Cibersistemas",
+  "eletrotecnica":  "Técnico em Eletrotécnica",
+  "eletromecanica": "Técnico em Eletromecânica",
+  "mecatronica":    "Técnico em Mecatrônica",
+  "mecanica":       "Técnico em Mecânica"
 };
 
 // ── Pega curso da URL ──
@@ -686,9 +696,15 @@ const urlParams = new URLSearchParams(location.search);
 const CURSO_ID = urlParams.get('curso') || 'geral';
 const CURSO_NOME = NOMES_CURSOS[CURSO_ID] || CURSO_ID;
 
-// ── Chaves localStorage por curso ──
-const KEY_STATE = `saepState_${CURSO_ID}`;
-const KEY_TIMER = `saepTimer_${CURSO_ID}`;
+// ── Chaves localStorage ──
+// Nome, turma e último simulado escolhido: por curso.
+// Progresso e timer: por curso + simulado (cada simulado tem sua própria tentativa).
+const KEY_ALUNO = `saepAluno_${CURSO_ID}`;
+let SIMULADO_ID = '';     // "1", "2", ... ou "geral"
+let SIMULADOS_INFO = {};  // id do simulado → nº de questões
+function keyState(sim = SIMULADO_ID) { return `saepState_${CURSO_ID}_${sim}`; }
+function keyTimer(sim = SIMULADO_ID) { return `saepTimer_${CURSO_ID}_${sim}`; }
+function nomeSimulado(id) { return id === 'geral' ? 'Simulado Geral' : `Simulado ${id}`; }
 
 let questoesCarregadas = [];
 let timerHandle = null;
@@ -721,10 +737,10 @@ function carregarTurmasModal() {
         return `<option value="${t.nome}">${label}</option>`;
       }).join('');
     // Restaura turma salva
-    const st = getState();
-    if (st.turma) {
-      sel.value = st.turma;
-      TURMA_SELECIONADA = st.turma;
+    const al = getAluno();
+    if (al.turma) {
+      sel.value = al.turma;
+      TURMA_SELECIONADA = al.turma;
     }
   };
 
@@ -737,22 +753,88 @@ function carregarTurmasModal() {
 }
 
 // ================================================================
+//  SIMULADOS — carrega via JSONP e preenche o select do modal
+// ================================================================
+function carregarSimuladosModal() {
+  const sel = document.getElementById('modal-simulado');
+  sel.innerHTML = '<option value="">Carregando simulados...</option>';
+
+  const preencher = (data) => {
+    const lista = (data && Array.isArray(data.simulados)) ? data.simulados : [];
+    const totalCurso = (data && Number(data.total)) || 0;
+    SIMULADOS_INFO = {};
+    lista.forEach(s => { SIMULADOS_INFO[s.id] = s.total; });
+    SIMULADOS_INFO['geral'] = totalCurso ? Math.min(TOTAL_QUESTOES, totalCurso) : TOTAL_QUESTOES;
+
+    sel.innerHTML = '<option value="">Selecione o simulado...</option>' +
+      lista.map(s => `<option value="${txt(s.id)}">${txt(nomeSimulado(s.id))} — ${s.total} questões</option>`).join('') +
+      `<option value="geral">Simulado Geral (aleatório)${totalCurso ? ` — ${SIMULADOS_INFO['geral']} de ${totalCurso} questões` : ''}</option>`;
+
+    // Restaura o último simulado escolhido
+    const al = getAluno();
+    if (al.simulado && [...sel.options].some(o => o.value === al.simulado)) sel.value = al.simulado;
+    aoTrocarSimulado();
+  };
+
+  const cbName = 'cbSim_' + Date.now();
+  const script = document.createElement('script');
+  const timeout = setTimeout(() => {
+    delete window[cbName]; script.remove();
+    preencher(null);
+  }, 10000);
+
+  window[cbName] = (data) => {
+    clearTimeout(timeout); delete window[cbName]; script.remove();
+    preencher(data);
+  };
+
+  script.src = `${API_URL}?tipo=LISTAR_SIMULADOS&curso=${encodeURIComponent(CURSO_ID)}&callback=${cbName}`;
+  script.onerror = () => {
+    clearTimeout(timeout); delete window[cbName];
+    preencher(null);
+  };
+  document.head.appendChild(script);
+}
+
+// Ao trocar o simulado no modal: mostra/esconde "Continuar" e atualiza a contagem
+function aoTrocarSimulado() {
+  const sim = document.getElementById('modal-simulado').value;
+  SIMULADO_ID = sim;
+  const temProgresso = !!sim && hasProgress(sim);
+  document.getElementById('btn-modal-continuar').style.display = temProgresso ? 'block' : 'none';
+  document.getElementById('modal-hint').style.display = temProgresso ? 'block' : 'none';
+  document.getElementById('modal-num-q').textContent =
+    sim && SIMULADOS_INFO[sim] !== undefined ? SIMULADOS_INFO[sim] : TOTAL_QUESTOES;
+}
+
+// ================================================================
 //  ESTADO
 // ================================================================
-function getState() {
-  try { return JSON.parse(localStorage.getItem(KEY_STATE)) || {answers:{},shown:{},allRevealed:false,resultadoHTML:'',nome:'',turma:'',ordemQuestoes:[]}; }
-  catch(e) { return {answers:{},shown:{},allRevealed:false,resultadoHTML:'',nome:'',turma:'',ordemQuestoes:[]}; }
+function estadoVazio() {
+  return {answers:{},shown:{},allRevealed:false,resultadoHTML:'',ordemQuestoes:[]};
 }
-function saveState(s) { localStorage.setItem(KEY_STATE, JSON.stringify(s)); }
+function getState() {
+  try { return JSON.parse(localStorage.getItem(keyState())) || estadoVazio(); }
+  catch(e) { return estadoVazio(); }
+}
+function saveState(s) { localStorage.setItem(keyState(), JSON.stringify(s)); }
 function getTimer() {
-  try { return JSON.parse(localStorage.getItem(KEY_TIMER)) || {}; }
+  try { return JSON.parse(localStorage.getItem(keyTimer())) || {}; }
   catch(e) { return {}; }
 }
-function saveTimer(t) { localStorage.setItem(KEY_TIMER, JSON.stringify(t)); }
+function saveTimer(t) { localStorage.setItem(keyTimer(), JSON.stringify(t)); }
 
-function hasProgress() {
-  const s = getState();
-  return !!(s && Object.keys(s.answers||{}).length > 0);
+function getAluno() {
+  try { return JSON.parse(localStorage.getItem(KEY_ALUNO)) || {}; }
+  catch(e) { return {}; }
+}
+function saveAluno(a) { localStorage.setItem(KEY_ALUNO, JSON.stringify(a)); }
+
+function hasProgress(sim = SIMULADO_ID) {
+  try {
+    const s = JSON.parse(localStorage.getItem(keyState(sim)));
+    return !!(s && Object.keys(s.answers||{}).length > 0);
+  } catch(e) { return false; }
 }
 
 // ================================================================
@@ -764,21 +846,18 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('modal-titulo').textContent = CURSO_NOME.toUpperCase();
   document.getElementById('modal-subtitulo').textContent = `SAEP-CETEM · Simulado Oficial`;
 
-  // Restaura nome salvo
-  const st = getState();
-  if (st.nome) {
-    document.getElementById('modal-nome').value = st.nome;
-    document.getElementById('nome').value = st.nome;
+  // Restaura nome e turma salvos
+  const al = getAluno();
+  if (al.nome) {
+    document.getElementById('modal-nome').value = al.nome;
+    document.getElementById('nome').value = al.nome;
   }
-  if (st.turma) TURMA_SELECIONADA = st.turma;
+  if (al.turma) TURMA_SELECIONADA = al.turma;
 
-  // Carrega turmas do curso
+  // Carrega turmas e simulados do curso
   carregarTurmasModal();
-
-  if (hasProgress()) {
-    document.getElementById('btn-modal-continuar').style.display = 'block';
-    document.getElementById('modal-hint').style.display = 'block';
-  }
+  carregarSimuladosModal();
+  document.getElementById('modal-simulado').addEventListener('change', aoTrocarSimulado);
 
   function validarModal() {
     const nome = document.getElementById('modal-nome').value.trim();
@@ -801,21 +880,29 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('modal-turma-erro').style.display = 'none';
     turmaEl.style.borderColor = '#d0daf0';
 
+    const simEl = document.getElementById('modal-simulado');
+    const sim = simEl.value.trim();
+    if (!sim) {
+      document.getElementById('modal-simulado-erro').style.display = 'block';
+      simEl.style.borderColor = '#e53935';
+      return false;
+    }
+    document.getElementById('modal-simulado-erro').style.display = 'none';
+    simEl.style.borderColor = '#d0daf0';
+
     // Sincroniza
     document.getElementById('nome').value = nome;
     TURMA_SELECIONADA = turma;
-    const s = getState(); s.nome = nome; s.turma = turma; saveState(s);
+    SIMULADO_ID = sim;
+    saveAluno({ nome, turma, simulado: sim });
     return true;
   }
 
   document.getElementById('btn-modal-iniciar').addEventListener('click', () => {
     if (!validarModal()) return;
-    const nomeSalvo = document.getElementById('modal-nome').value.trim();
-    const turmaSalva = document.getElementById('modal-turma').value.trim();
-    localStorage.removeItem(KEY_STATE);
-    localStorage.removeItem(KEY_TIMER);
-    const s = getState(); s.nome = nomeSalvo; s.turma = turmaSalva; saveState(s);
-    TURMA_SELECIONADA = turmaSalva;
+    // Nova tentativa: apaga só o progresso e o timer DESTE simulado
+    localStorage.removeItem(keyState());
+    localStorage.removeItem(keyTimer());
     fecharModal();
     carregarQuestoes();
   });
@@ -835,11 +922,24 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 document.getElementById('nome').addEventListener('input', e => {
-  const st = getState(); st.nome = e.target.value; saveState(st);
+  const al = getAluno(); al.nome = e.target.value; saveAluno(al);
 });
 
 function fecharModal() {
   document.getElementById('modal-overlay').style.display = 'none';
+  // Mostra curso + simulado na barra lateral e na aba do navegador
+  document.getElementById('sidebar-curso-nome').textContent = `${CURSO_NOME} · ${nomeSimulado(SIMULADO_ID)}`;
+  document.title = `${nomeSimulado(SIMULADO_ID)} — ${CURSO_NOME}`;
+}
+
+// Embaralhamento uniforme (Fisher–Yates)
+function embaralhar(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
 // ================================================================
@@ -852,36 +952,37 @@ async function carregarQuestoes(continuar = false) {
   document.getElementById('botoes-finais').style.display = 'none';
 
   try {
-    const url = `${API_URL}?tipo=LISTAR_QUESTOES&curso=${encodeURIComponent(CURSO_ID)}`;
+    const ehGeral = SIMULADO_ID === 'geral';
+    let url = `${API_URL}?tipo=LISTAR_QUESTOES&curso=${encodeURIComponent(CURSO_ID)}`;
+    if (!ehGeral) url += `&simulado=${encodeURIComponent(SIMULADO_ID)}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     let todas = await res.json();
 
     if (!Array.isArray(todas) || todas.length === 0)
-      throw new Error(`Nenhuma questão encontrada para o curso "${CURSO_NOME}".`);
+      throw new Error(ehGeral
+        ? `Nenhuma questão encontrada para o curso "${CURSO_NOME}".`
+        : `Nenhuma questão cadastrada no ${nomeSimulado(SIMULADO_ID)} de "${CURSO_NOME}".`);
 
-    if (continuar) {
-      // Restaura a ordem exata do sorteio original usando os índices salvos
-      const st = getState();
-      if (st.ordemQuestoes && st.ordemQuestoes.length > 0) {
-        // Reconstrói o array na ordem salva (por indice da questão)
-        const mapa = {};
-        todas.forEach(q => { mapa[q.indice] = q; });
-        const restauradas = st.ordemQuestoes.map(idx => mapa[idx]).filter(Boolean);
-        questoesCarregadas = restauradas.length > 0 ? restauradas : todas.slice(0, Math.min(TOTAL_QUESTOES, todas.length));
-      } else {
-        // Estado antigo sem ordemQuestoes salva — sorteio normal (fallback)
-        todas = todas.sort(() => .5 - Math.random());
-        questoesCarregadas = todas.slice(0, Math.min(TOTAL_QUESTOES, todas.length));
-      }
+    // Simulado fixo: sempre as mesmas questões, em ordem embaralhada.
+    // Simulado Geral: sorteia TOTAL_QUESTOES entre todas as questões do curso.
+    const sortear = () => {
+      const emb = embaralhar(todas);
+      return ehGeral ? emb.slice(0, Math.min(TOTAL_QUESTOES, emb.length)) : emb;
+    };
+
+    const st = getState();
+    if (continuar && st.ordemQuestoes && st.ordemQuestoes.length > 0) {
+      // Restaura a ordem exata da tentativa em andamento (por indice da questão)
+      const mapa = {};
+      todas.forEach(q => { mapa[q.indice] = q; });
+      const restauradas = st.ordemQuestoes.map(idx => mapa[idx]).filter(Boolean);
+      questoesCarregadas = restauradas.length > 0 ? restauradas : sortear();
     } else {
-      // Novo simulado — sorteia e salva a ordem
-      todas = todas.sort(() => .5 - Math.random());
-      questoesCarregadas = todas.slice(0, Math.min(TOTAL_QUESTOES, todas.length));
-      const st = getState();
-      st.ordemQuestoes = questoesCarregadas.map(q => q.indice);
-      saveState(st);
+      questoesCarregadas = sortear();
     }
+    st.ordemQuestoes = questoesCarregadas.map(q => q.indice);
+    saveState(st);
 
     document.getElementById('modal-num-q').textContent = questoesCarregadas.length;
     document.getElementById('loading-area').style.display = 'none';
@@ -1107,7 +1208,7 @@ async function verificarResultado() {
   const nome = document.getElementById('nome').value || 'Aluno';
 
   const htmlResultado = `
-    <h3>📊 RESULTADO — ${CURSO_NOME.toUpperCase()}</h3>
+    <h3>📊 RESULTADO — ${CURSO_NOME.toUpperCase()} · ${nomeSimulado(SIMULADO_ID).toUpperCase()}</h3>
     <div class="resultado-stats">
       <div class="stat-box"><div class="stat-num">${total}</div><div class="stat-lbl">questões</div></div>
       <div class="stat-box"><div class="stat-num" style="color:#4ade80">${acertos}</div><div class="stat-lbl">acertos</div></div>
@@ -1128,7 +1229,7 @@ async function verificarResultado() {
   try {
     await fetch(API_URL, {
       method:'POST',
-      body: JSON.stringify({tipo:'SALVAR_RESULTADO', nome, acertos, total, curso: CURSO_ID, turma: TURMA_SELECIONADA})
+      body: JSON.stringify({tipo:'SALVAR_RESULTADO', nome, acertos, total, curso: CURSO_ID, turma: TURMA_SELECIONADA, simulado: SIMULADO_ID})
     });
     //carregarRanking();
   } catch(e) {}
@@ -1138,9 +1239,9 @@ async function verificarResultado() {
 //  REINICIAR
 // ================================================================
 function reiniciar() {
-  if (!confirm('Tem certeza? Todo o progresso será perdido.')) return;
-  localStorage.removeItem(KEY_STATE);
-  localStorage.removeItem(KEY_TIMER);
+  if (!confirm('Tem certeza? Todo o progresso deste simulado será perdido.')) return;
+  localStorage.removeItem(keyState());
+  localStorage.removeItem(keyTimer());
   clearInterval(timerHandle);
   location.reload();
 }

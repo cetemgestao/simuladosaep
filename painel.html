@@ -40,6 +40,10 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
 .btn-sair:hover { background: rgba(255,255,255,0.2); color: white; }
 .btn-ver-sim { background: rgba(255,255,255,0.15); color: white; }
 .btn-ver-sim:hover { background: rgba(255,255,255,0.25); }
+.usuario-logado { color: rgba(255,255,255,0.8); font-size: 0.8rem; margin-right: 4px; }
+@media (max-width: 640px) { .usuario-logado { display: none; } }
+.login-usuario { letter-spacing: normal; }
+.form-row input[type="password"] { width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.95rem; font-family: 'Barlow', sans-serif; outline: none; transition: border-color 0.2s; }
 
 .app-tabs { background: white; border-bottom: 2px solid var(--border); display: flex; padding: 0 28px; gap: 2px; }
 .tab-btn { padding: 14px 20px; border: none; background: none; font-family: 'Barlow', sans-serif; font-weight: 600; font-size: 0.88rem; cursor: pointer; color: var(--muted); border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
@@ -162,11 +166,39 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
     <div class="login-icon">🔐</div>
     <h1>PAINEL SAEP-CETEM</h1>
     <p>Acesso exclusivo para aplicadores</p>
-    <div id="login-erro" class="login-erro">Senha incorreta. Tente novamente.</div>
-    <input type="password" class="login-campo" id="login-senha" placeholder="••••••••" maxlength="30" onkeydown="if(event.key==='Enter') tentarLogin()"/>
-    <button class="btn-login" onclick="tentarLogin()">Entrar</button>
+    <div id="login-erro" class="login-erro"></div>
+    <input type="text" class="login-campo login-usuario" id="login-usuario" placeholder="Usuário" maxlength="60" autocomplete="username" autocapitalize="none" spellcheck="false" onkeydown="if(event.key==='Enter') document.getElementById('login-senha').focus()"/>
+    <input type="password" class="login-campo" id="login-senha" placeholder="Senha" maxlength="60" autocomplete="current-password" onkeydown="if(event.key==='Enter') tentarLogin()"/>
+    <button class="btn-login" id="btn-login" onclick="tentarLogin()">Entrar</button>
     <a href="index.html" style="display:block;margin-top:14px;font-size:0.8rem;color:#aab;text-decoration:none;text-align:center;">← Voltar para os simulados</a>
-    <p class="login-hint">Solicite a senha ao coordenador do curso.</p>
+    <p class="login-hint">Solicite seu usuário ao coordenador do curso.</p>
+  </div>
+</div>
+
+<!-- MODAL TROCAR SENHA (fora do #app para funcionar também logo após o login) -->
+<div id="modal-senha-overlay" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(13,26,48,0.8);backdrop-filter:blur(3px);overflow-y:auto;padding:30px 16px;">
+  <div style="background:white;border-radius:16px;max-width:420px;margin:40px auto 0;box-shadow:0 20px 60px rgba(0,0,0,0.35);">
+    <div style="background:var(--azul);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;border-radius:16px 16px 0 0;">
+      <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1.1rem;color:white;letter-spacing:1px;">🔑 Trocar senha</span>
+      <button id="btn-fechar-senha" onclick="fecharTrocarSenha()" aria-label="Fechar" style="background:rgba(255,255,255,0.15);border:none;color:white;width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:1rem;">✕</button>
+    </div>
+    <div style="padding:24px;">
+      <p id="senha-aviso" style="display:none;font-size:0.88rem;color:var(--texto);background:#fff8e6;border:1px solid #fde4a3;border-radius:8px;padding:10px 12px;margin-bottom:16px;line-height:1.45;">Primeiro acesso: defina uma senha pessoal para continuar.</p>
+      <div class="form-row" id="row-senha-atual">
+        <label>Senha atual</label>
+        <input type="password" id="senha-atual" autocomplete="current-password"/>
+      </div>
+      <div class="form-row">
+        <label>Nova senha <span style="font-weight:400;color:var(--muted)">(mínimo 6 caracteres)</span></label>
+        <input type="password" id="senha-nova" autocomplete="new-password"/>
+      </div>
+      <div class="form-row">
+        <label>Confirme a nova senha</label>
+        <input type="password" id="senha-conf" autocomplete="new-password" onkeydown="if(event.key==='Enter') salvarNovaSenha()"/>
+      </div>
+      <div id="senha-erro" class="login-erro" style="text-align:left;"></div>
+      <button class="btn btn-primary" id="btn-salvar-senha" onclick="salvarNovaSenha()" style="width:100%;">Salvar nova senha</button>
+    </div>
   </div>
 </div>
 
@@ -177,18 +209,20 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
       <div class="header-logo-txt">PAINEL SAEP<br><small>Aplicador</small></div>
     </div>
     <div class="header-acoes">
+      <span id="usuario-logado" class="usuario-logado"></span>
+      <button class="btn-header btn-ver-sim" onclick="abrirTrocarSenha(false)">🔑 Trocar senha</button>
       <button class="btn-header btn-ver-sim" onclick="window.open('index.html','_blank')">🎓 Ver Simulados</button>
       <button class="btn-header btn-sair" onclick="sair()">Sair</button>
     </div>
   </div>
 
   <div class="app-tabs">
-    <button class="tab-btn ativa" onclick="trocarAba('inserir',this)">➕ Inserir Questão</button>
-    <button class="tab-btn" onclick="trocarAba('listar',this)">📋 Questões</button>
-    <button class="tab-btn" onclick="trocarAba('resultados',this)">📊 Resultados</button>
-    <button class="tab-btn" onclick="trocarAba('turmas',this)">🏫 Turmas</button>
-    <button class="tab-btn" onclick="trocarAba('cursos',this)">🎓 Cursos</button>
-    <button class="tab-btn" onclick="trocarAba('config',this)">⚙️ Config</button>
+    <button class="tab-btn ativa" data-aba="inserir" onclick="trocarAba('inserir',this)">➕ Inserir Questão</button>
+    <button class="tab-btn" data-aba="listar" onclick="trocarAba('listar',this)">📋 Questões</button>
+    <button class="tab-btn" data-aba="resultados" onclick="trocarAba('resultados',this)">📊 Resultados</button>
+    <button class="tab-btn" data-aba="turmas" onclick="trocarAba('turmas',this)">🏫 Turmas</button>
+    <button class="tab-btn" data-aba="cursos" onclick="trocarAba('cursos',this)">🎓 Cursos</button>
+    <button class="tab-btn" data-aba="config" onclick="trocarAba('config',this)">⚙️ Config</button>
   </div>
 
   <div class="app-body">
@@ -428,10 +462,6 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
           <label>URL do Google Apps Script</label>
           <input type="text" id="cfg-url" placeholder="https://script.google.com/macros/s/..."/>
         </div>
-        <div class="form-row">
-          <label>Alterar senha do painel</label>
-          <input type="password" id="cfg-senha-nova" placeholder="Nova senha (mín. 4 caracteres)"/>
-        </div>
         <div class="btn-row">
           <button class="btn btn-primary" onclick="salvarConfig()">💾 Salvar</button>
           <button class="btn btn-outline" onclick="testarConexao()">🔗 Testar Conexão</button>
@@ -450,6 +480,11 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
           <tr><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th></tr>
           <tr><td>data</td><td>nome</td><td>acertos</td><td>total</td><td>curso</td><td>turma</td><td>simulado</td><td>disciplinas</td></tr>
         </table>
+        <p style="font-size:0.85rem;color:var(--muted);margin:18px 0 14px;">Aba "Usuarios" — 4 colunas (perfil: <strong>admin</strong> ou <strong>instrutor</strong>; senha é preenchida pelo sistema, apague para resetar):</p>
+        <table class="tabela">
+          <tr><th>A</th><th>B</th><th>C</th><th>D</th></tr>
+          <tr><td>login</td><td>nome</td><td>perfil</td><td>senha</td></tr>
+        </table>
       </div>
     </div>
 
@@ -460,12 +495,22 @@ body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--te
 
 <script>
 const CFG_KEY   = 'saepPainelCfg';
-const AUTH_KEY  = 'saepPainelAuth';
-const SENHA_PADRAO = '346100';
+const TOKEN_KEY = 'saepToken';     // compartilhado com o importar.html
+const USER_KEY  = 'saepUsuario';
 
 function getCfg() { try { return JSON.parse(localStorage.getItem(CFG_KEY)) || {}; } catch(e) { return {}; } }
 function getApiUrl() { return getCfg().apiUrl || "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec"; }
-function getSenha() { return getCfg().senha || SENHA_PADRAO; }
+function getToken() { return localStorage.getItem(TOKEN_KEY) || ''; }
+function getUsuario() { try { return JSON.parse(localStorage.getItem(USER_KEY)) || null; } catch(e) { return null; } }
+
+// Trata as respostas de acesso negado do Apps Script. Retorna true se tratou.
+function tratarErroAuth(data) {
+  if (!data || !data.erro) return false;
+  if (data.erro === 'SESSAO_INVALIDA')          { encerrarSessao('Sua sessão expirou. Entre novamente.'); return true; }
+  if (data.erro === 'TROCAR_SENHA_OBRIGATORIA') { abrirTrocarSenha(true); return true; }
+  if (data.erro === 'SEM_PERMISSAO')            { toast('Seu usuário não tem permissão para esta ação.','err'); return true; }
+  return false;
+}
 
 // JSONP — para leitura (GET)
 function apiCall(params) {
@@ -473,8 +518,13 @@ function apiCall(params) {
     const cbName = 'cb_' + Date.now() + '_' + Math.floor(Math.random()*10000);
     const script = document.createElement('script');
     const timeout = setTimeout(() => { delete window[cbName]; script.remove(); reject(new Error('Timeout')); }, 15000);
-    window[cbName] = (data) => { clearTimeout(timeout); delete window[cbName]; script.remove(); resolve(data); };
+    window[cbName] = (data) => {
+      clearTimeout(timeout); delete window[cbName]; script.remove();
+      if (tratarErroAuth(data)) { reject(new Error(data.erro)); return; }
+      resolve(data);
+    };
     const qs = new URLSearchParams(params);
+    if (getToken()) qs.set('token', getToken());
     qs.set('callback', cbName);
     script.src = getApiUrl() + '?' + qs.toString();
     script.onerror = () => { clearTimeout(timeout); delete window[cbName]; reject(new Error('Erro ao carregar script')); };
@@ -482,18 +532,21 @@ function apiCall(params) {
   });
 }
 
-// POST via fetch no-cors — funciona para payloads simples (excluir, salvar resultado, inserir turma)
+// POST — envia o token e lê a resposta real do Apps Script (mesmo método do importar.html)
 async function apiPost(params) {
-  const tipo = params.tipo;
+  let data;
   try {
-    await fetch(getApiUrl() + '?tipo=' + encodeURIComponent(tipo), {
+    const r = await fetch(getApiUrl(), {
       method: 'POST',
-      mode: 'no-cors',
-      body: JSON.stringify(params)
+      body: JSON.stringify({ ...params, token: getToken() })
     });
-  } catch(e) {}
-  await new Promise(r => setTimeout(r, 1000));
-  return { status: 'ok' };
+    data = await r.json();
+  } catch(e) {
+    throw new Error('falha de conexão com o Apps Script');
+  }
+  if (tratarErroAuth(data)) throw new Error(data.erro);
+  if (data && data.erro) throw new Error(data.erro);
+  return data;
 }
 
 // GET via JSONP — usado para EDITAR_QUESTAO onde o no-cors não entrega o body corretamente
@@ -511,6 +564,7 @@ function apiGet(params) {
     };
     const qs = new URLSearchParams();
     Object.entries(params).forEach(([k,v]) => qs.set(k, v));
+    if (getToken()) qs.set('token', getToken());
     qs.set('callback', cbName);
     script.src = getApiUrl() + '?' + qs.toString();
     script.onerror = () => {
@@ -538,24 +592,136 @@ const DISCIPLINAS_POR_CURSO = {
 };
 
 // LOGIN
-window.addEventListener('DOMContentLoaded', () => {
-  if (sessionStorage.getItem(AUTH_KEY) === 'ok') mostrarApp();
+window.addEventListener('DOMContentLoaded', async () => {
   const cfg = getCfg();
   if (cfg.apiUrl) document.getElementById('cfg-url').value = cfg.apiUrl;
   preencherSelects();
+  // Já tem login salvo? Confere no servidor se a sessão ainda vale
+  if (getToken()) {
+    try {
+      const u = await apiCall({ tipo:'VALIDAR_SESSAO' });
+      if (u && u.status === 'ok') {
+        salvarUsuario(u);
+        if (u.trocarSenha) abrirTrocarSenha(true); else mostrarApp();
+      }
+    } catch(e) { /* sessão inválida: permanece na tela de login */ }
+  }
 });
-function tentarLogin() {
+
+let senhaDoLogin = '';  // usada só na troca obrigatória logo após o login (fica apenas na memória)
+
+async function tentarLogin() {
+  const login = document.getElementById('login-usuario').value.trim();
   const senha = document.getElementById('login-senha').value;
-  if (senha === getSenha()) { sessionStorage.setItem(AUTH_KEY,'ok'); mostrarApp(); }
-  else { document.getElementById('login-erro').style.display='block'; document.getElementById('login-senha').value=''; document.getElementById('login-senha').focus(); }
+  const btn   = document.getElementById('btn-login');
+  document.getElementById('login-erro').style.display = 'none';
+  if (!login || !senha) { mostrarErroLogin('Informe usuário e senha.'); return; }
+  btn.disabled = true; btn.textContent = 'Entrando...';
+  try {
+    const r = await fetch(getApiUrl(), { method:'POST', body: JSON.stringify({ tipo:'LOGIN', login, senha }) });
+    const d = await r.json();
+    if (d.status !== 'ok') { mostrarErroLogin(d.erro || 'Não foi possível entrar.'); return; }
+    localStorage.setItem(TOKEN_KEY, d.token);
+    salvarUsuario(d);
+    document.getElementById('login-senha').value = '';
+    if (d.trocarSenha) { senhaDoLogin = senha; abrirTrocarSenha(true); }
+    else mostrarApp();
+  } catch(e) {
+    mostrarErroLogin('Falha de conexão. Verifique a internet e tente de novo.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Entrar';
+  }
 }
+function mostrarErroLogin(msg) {
+  const e = document.getElementById('login-erro');
+  e.textContent = msg; e.style.display = 'block';
+  document.getElementById('login-senha').value = '';
+}
+function salvarUsuario(d) {
+  localStorage.setItem(USER_KEY, JSON.stringify({ login: d.login, nome: d.nome, perfil: d.perfil }));
+}
+
 function mostrarApp() {
+  const u = getUsuario() || {};
+  const admin = u.perfil === 'admin';
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='flex';
   document.getElementById('app').style.flexDirection='column';
+  document.getElementById('usuario-logado').textContent = `${u.nome || u.login || ''} · ${admin ? 'Administrador' : 'Instrutor'}`;
+  // Instrutor: só a aba Resultados (o Apps Script também bloqueia as demais ações)
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.style.display = (admin || b.dataset.aba === 'resultados') ? '' : 'none';
+  });
+  if (!admin) trocarAba('resultados', document.querySelector('.tab-btn[data-aba="resultados"]'));
   renderCursosConfig();
 }
-function sair() { sessionStorage.removeItem(AUTH_KEY); location.reload(); }
+
+// Volta para a tela de login (sessão expirada ou inválida)
+function encerrarSessao(msg) {
+  localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(USER_KEY);
+  document.querySelectorAll('[id$="-overlay"]').forEach(o => o.style.display = 'none');
+  document.body.style.overflow = '';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = '';
+  if (msg) mostrarErroLogin(msg);
+}
+
+async function sair() {
+  const token = getToken();
+  if (token) {
+    try { await fetch(getApiUrl(), { method:'POST', body: JSON.stringify({ tipo:'SAIR', token }) }); } catch(e) {}
+  }
+  localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(USER_KEY);
+  location.reload();
+}
+
+// TROCAR SENHA
+let trocaObrigatoria = false;
+function abrirTrocarSenha(obrigatoria) {
+  trocaObrigatoria = !!obrigatoria;
+  ['senha-atual','senha-nova','senha-conf'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('senha-erro').style.display = 'none';
+  document.getElementById('senha-aviso').style.display = trocaObrigatoria ? 'block' : 'none';
+  document.getElementById('btn-fechar-senha').style.display = trocaObrigatoria ? 'none' : '';
+  // Logo após o login, a senha atual já é conhecida: não precisa digitar de novo
+  const jaTemAtual = trocaObrigatoria && !!senhaDoLogin;
+  document.getElementById('row-senha-atual').style.display = jaTemAtual ? 'none' : '';
+  if (jaTemAtual) document.getElementById('senha-atual').value = senhaDoLogin;
+  document.getElementById('modal-senha-overlay').style.display = 'block';
+  setTimeout(() => document.getElementById(jaTemAtual ? 'senha-nova' : 'senha-atual').focus(), 50);
+}
+function fecharTrocarSenha() {
+  if (trocaObrigatoria) return;
+  document.getElementById('modal-senha-overlay').style.display = 'none';
+}
+async function salvarNovaSenha() {
+  const atual = document.getElementById('senha-atual').value;
+  const nova  = document.getElementById('senha-nova').value;
+  const conf  = document.getElementById('senha-conf').value;
+  const erro  = document.getElementById('senha-erro');
+  const btn   = document.getElementById('btn-salvar-senha');
+  const falha = msg => { erro.textContent = msg; erro.style.display = 'block'; };
+  erro.style.display = 'none';
+  if (!atual)          return falha('Informe a senha atual.');
+  if (nova.length < 6) return falha('A nova senha precisa ter pelo menos 6 caracteres.');
+  if (nova !== conf)   return falha('A confirmação não é igual à nova senha.');
+  btn.disabled = true; btn.textContent = 'Salvando...';
+  try {
+    const r = await fetch(getApiUrl(), { method:'POST', body: JSON.stringify({ tipo:'TROCAR_SENHA', token: getToken(), senhaAtual: atual, senhaNova: nova }) });
+    const d = await r.json();
+    if (d.erro === 'SESSAO_INVALIDA') { encerrarSessao('Sua sessão expirou. Entre novamente.'); return; }
+    if (d.status !== 'ok') return falha(d.erro || 'Não foi possível trocar a senha.');
+    const eraObrigatoria = trocaObrigatoria;
+    trocaObrigatoria = false; senhaDoLogin = '';
+    document.getElementById('modal-senha-overlay').style.display = 'none';
+    toast('✅ Senha alterada!','ok');
+    if (eraObrigatoria) mostrarApp();
+  } catch(e) {
+    falha('Falha de conexão. Tente de novo.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Salvar nova senha';
+  }
+}
 
 // SELECTS
 function preencherSelects() {
@@ -1052,15 +1218,11 @@ function renderCursosConfig() {
 
 // CONFIG
 function salvarConfig() {
-  const url   = document.getElementById('cfg-url').value.trim();
-  const senha = document.getElementById('cfg-senha-nova').value.trim();
-  const cfg   = getCfg();
+  const url = document.getElementById('cfg-url').value.trim();
+  const cfg = getCfg();
   if (url) cfg.apiUrl = url;
-  if (senha && senha.length>=4) cfg.senha = senha;
-  else if (senha) { toast('Senha muito curta (mín. 4 chars)','av'); return; }
   localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
   toast('Configurações salvas!','ok');
-  if (senha) { toast('Senha alterada. Você precisará fazer login novamente.','av'); setTimeout(sair,2000); }
 }
 async function testarConexao() {
   const st = document.getElementById('cfg-status');

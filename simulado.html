@@ -1186,6 +1186,7 @@ async function verificarResultado() {
   }
 
   let acertos = 0; const total = questoes.length;
+  const porDisciplina = {};  // { "Eletricidade": [acertos, total], ... }
   questoes.forEach(q => {
     const num = q.id.replace('q','');
     const radios = q.querySelectorAll('input[type="radio"]');
@@ -1200,7 +1201,14 @@ async function verificarResultado() {
     radios.forEach(r => r.disabled = true);
     if (idx) idx.classList.add('respondida');
 
-    if (marcado.value === gabLetra) acertos++;
+    const acertou = marcado.value === gabLetra;
+    if (acertou) acertos++;
+
+    // Contagem por disciplina (vai junto com o resultado para o painel)
+    const disc = String(questoesCarregadas[Number(num) - 1]?.disciplina || '').trim() || 'Sem disciplina';
+    if (!porDisciplina[disc]) porDisciplina[disc] = [0, 0];
+    porDisciplina[disc][1]++;
+    if (acertou) porDisciplina[disc][0]++;
   });
 
   const erros = total - acertos;
@@ -1229,7 +1237,7 @@ async function verificarResultado() {
   try {
     await fetch(API_URL, {
       method:'POST',
-      body: JSON.stringify({tipo:'SALVAR_RESULTADO', nome, acertos, total, curso: CURSO_ID, turma: TURMA_SELECIONADA, simulado: SIMULADO_ID})
+      body: JSON.stringify({tipo:'SALVAR_RESULTADO', nome, acertos, total, curso: CURSO_ID, turma: TURMA_SELECIONADA, simulado: SIMULADO_ID, disciplinas: porDisciplina})
     });
     //carregarRanking();
   } catch(e) {}

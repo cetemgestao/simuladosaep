@@ -1106,7 +1106,7 @@ function registrarEventos() {
     });
   });
 
-  document.getElementById('btn-checar').addEventListener('click', verificarResultado);
+  document.getElementById('btn-checar').addEventListener('click', () => verificarResultado(false));
   document.getElementById('btn-reiniciar').addEventListener('click', reiniciar);
 }
 
@@ -1122,7 +1122,9 @@ function mostrarGabarito(num, respostaAluno) {
   gabDiv.className = `gabarito-feedback ${acertou ? 'correto' : 'errado'}`;
   gabDiv.innerHTML = acertou
     ? `✅ Correto! Gabarito: <strong>${gabLetra}</strong>`
-    : `❌ Incorreto. Gabarito: <strong>${gabLetra}</strong>`;
+    : respostaAluno
+      ? `❌ Incorreto. Gabarito: <strong>${gabLetra}</strong>`
+      : `⚪ Não respondida. Gabarito: <strong>${gabLetra}</strong>`;
   gabDiv.style.display = 'flex';
 }
 
@@ -1175,13 +1177,15 @@ function atualizarProgresso() {
 // ================================================================
 //  VERIFICAR RESULTADO
 // ================================================================
-async function verificarResultado() {
+// forcado = true quando o tempo esgota: envia o que foi respondido e conta as em branco como erro
+async function verificarResultado(forcado = false) {
+  if (getState().allRevealed) return;  // já finalizado: não envia de novo
   const questoes = document.querySelectorAll('.questao');
   let naoRespondidas = 0;
   questoes.forEach(q => {
     if (![...q.querySelectorAll('input[type="radio"]')].some(r => r.checked)) naoRespondidas++;
   });
-  if (naoRespondidas > 0) {
+  if (naoRespondidas > 0 && !forcado) {
     alert(`Faltam ${naoRespondidas} questão(ões) sem resposta.`); return;
   }
 
@@ -1195,13 +1199,14 @@ async function verificarResultado() {
     const gabDiv = document.getElementById('gab'+num);
     const gabLetra = gabDiv.dataset.gabarito;
     const marcado = [...radios].find(r => r.checked);
+    const resposta = marcado ? marcado.value : null;
 
-    mostrarGabarito(num, marcado.value);
+    mostrarGabarito(num, resposta);
     btn.disabled = true; btn.dataset.mostrado = 'true';
     radios.forEach(r => r.disabled = true);
     if (idx) idx.classList.add('respondida');
 
-    const acertou = marcado.value === gabLetra;
+    const acertou = resposta === gabLetra;
     if (acertou) acertos++;
 
     // Contagem por disciplina (vai junto com o resultado para o painel)
@@ -1223,11 +1228,16 @@ async function verificarResultado() {
       <div class="stat-box"><div class="stat-num" style="color:#f87171">${erros}</div><div class="stat-lbl">erros</div></div>
     </div>
     <div class="resultado-pct">${pct}<small>%</small></div>
+    ${forcado ? `<p style="margin-top:12px;font-size:0.9rem;opacity:0.85;">⏰ Tempo esgotado: o simulado foi enviado automaticamente.${naoRespondidas ? ` ${naoRespondidas} questão(ões) em branco foram contadas como erro.` : ''}</p>` : ''}
   `;
 
   const rd = document.getElementById('resultado');
   rd.style.display = 'block'; rd.innerHTML = htmlResultado;
   rd.scrollIntoView({behavior:'smooth'});
+
+  // Para o cronômetro
+  clearInterval(timerHandle);
+  mostrarTimerFinal(forcado);
 
   const st = getState();
   st.allRevealed = true; st.resultadoHTML = htmlResultado;
@@ -1263,6 +1273,7 @@ function iniciarTimer() {
   rodarTimer(t);
 }
 function restaurarTimer() {
+  if (getState().allRevealed) { mostrarTimerFinal(getTimer().locked); return; }
   const t = getTimer();
   if (!t.startAt) { iniciarTimer(); return; }
   if (t.locked) { travarPorTempo(); return; }
@@ -1285,6 +1296,7 @@ function rodarTimer(t) {
   tick(); timerHandle = setInterval(tick, 1000);
 }
 function travarPorTempo() {
+  if (getState().allRevealed) { clearInterval(timerHandle); return; }  // já finalizado
   const badge = document.getElementById('timer-badge');
   badge.style.display = 'block';
   badge.textContent = '⏰ TEMPO ESGOTADO';
@@ -1295,6 +1307,16 @@ function travarPorTempo() {
   document.getElementById('btn-checar').disabled = true;
 
   const t = getTimer(); t.locked = true; saveTimer(t);
+
+  // Envia automaticamente o que foi respondido (se ainda não foi enviado)
+  if (!getState().allRevealed) verificarResultado(true);
+}
+
+function mostrarTimerFinal(porTempo) {
+  const badge = document.getElementById('timer-badge');
+  badge.style.display = 'block';
+  badge.textContent = porTempo ? '⏰ TEMPO ESGOTADO' : '✅ FINALIZADO';
+  badge.classList.toggle('urgente', !!porTempo);
 }
 
 // ================================================================

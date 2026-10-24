@@ -632,6 +632,7 @@ body {
           onfocus="this.style.borderColor='#004aad'" onblur="this.style.borderColor='#d0daf0'">
           <option value="">Carregando turmas...</option>
         </select>
+        <button type="button" id="btn-retry-turmas" onclick="carregarTurmasModal()" style="display:none;margin-top:6px;background:none;border:none;padding:0;color:#004aad;font-weight:600;font-size:0.82rem;cursor:pointer;font-family:'Barlow',sans-serif;">↻ Tentar de novo</button>
         <div id="modal-turma-erro" style="display:none;font-size:0.78rem;color:#e53935;margin-top:5px;">⚠️ Por favor, selecione sua turma para continuar.</div>
       </div>
       <!-- Campo simulado -->
@@ -642,6 +643,7 @@ body {
           onfocus="this.style.borderColor='#004aad'" onblur="this.style.borderColor='#d0daf0'">
           <option value="">Carregando simulados...</option>
         </select>
+        <button type="button" id="btn-retry-simulados" onclick="carregarSimuladosModal()" style="display:none;margin-top:6px;background:none;border:none;padding:0;color:#004aad;font-weight:600;font-size:0.82rem;cursor:pointer;font-family:'Barlow',sans-serif;">↻ Tentar de novo</button>
         <div id="modal-simulado-erro" style="display:none;font-size:0.78rem;color:#e53935;margin-top:5px;">⚠️ Por favor, escolha o simulado para continuar.</div>
       </div>
       <div class="modal-info-grid">
@@ -714,49 +716,85 @@ let TURMA_SELECIONADA = ''; // turma escolhida no modal
 // ================================================================
 //  TURMAS — carrega via JSONP e preenche o select do modal
 // ================================================================
-function carregarTurmasModal() {
+// ================================================================
+//  JSONP com limite de tempo e novas tentativas automáticas
+//  (o Apps Script às vezes demora para "acordar" na primeira chamada)
+// ================================================================
+const TENTATIVAS_API = 3;
+
+function jsonp(params, timeoutMs) {
+  return new Promise((resolve, reject) => {
+    const cbName = 'cb_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
+    const script = document.createElement('script');
+    // Ao encerrar, deixa uma função vazia no lugar: se a resposta chegar atrasada, não gera erro
+    const encerrar = () => { clearTimeout(timer); script.remove(); window[cbName] = () => {}; };
+    const timer = setTimeout(() => { encerrar(); reject(new Error('tempo esgotado')); }, timeoutMs);
+    window[cbName] = (data) => {
+      encerrar();
+      if (data && data.erro) reject(new Error(data.erro)); else resolve(data);
+    };
+    const qs = new URLSearchParams({ ...params, callback: cbName });
+    script.src = `${API_URL}?${qs}`;
+    script.onerror = () => { encerrar(); reject(new Error('falha de conexão')); };
+    document.head.appendChild(script);
+  });
+}
+
+// Tenta até TENTATIVAS_API vezes, com prazo crescente (15 s, 20 s, 25 s)
+async function jsonpComRetentativas(params, aoTentarDeNovo) {
+  let ultimoErro;
+  for (let i = 0; i < TENTATIVAS_API; i++) {
+    if (i > 0 && aoTentarDeNovo) aoTentarDeNovo(i + 1);
+    try { return await jsonp(params, 15000 + i * 5000); }
+    catch (e) {
+      ultimoErro = e;
+      if (i < TENTATIVAS_API - 1) await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+    }
+  }
+  throw ultimoErro;
+}
+
+async function carregarTurmasModal() {
   const sel = document.getElementById('modal-turma');
-  sel.innerHTML = '<option value="">Carregando...</option>';
+  const btnRetry = document.getElementById('btn-retry-turmas');
+  btnRetry.style.display = 'none';
+  sel.innerHTML = '<option value="">Carregando turmas...</option>';
 
-  const cbName = 'cbTurmas_' + Date.now();
-  const script = document.createElement('script');
-  const timeout = setTimeout(() => {
-    delete window[cbName]; script.remove();
-    sel.innerHTML = '<option value="">Sem turmas cadastradas</option>';
-  }, 10000);
+  let data;
+  try {
+    data = await jsonpComRetentativas({ tipo: 'LISTAR_TURMAS', curso: CURSO_ID }, n => {
+      sel.innerHTML = `<option value="">Carregando turmas... (tentativa ${n} de ${TENTATIVAS_API})</option>`;
+    });
+  } catch (e) {
+    sel.innerHTML = '<option value="">Não foi possível carregar as turmas</option>';
+    btnRetry.style.display = 'inline-block';
+    return;
+  }
 
-  window[cbName] = (data) => {
-    clearTimeout(timeout); delete window[cbName]; script.remove();
-    if (!Array.isArray(data) || data.length === 0) {
-      sel.innerHTML = '<option value="">Sem turmas cadastradas para este curso</option>';
-      return;
-    }
-    sel.innerHTML = '<option value="">Selecione sua turma...</option>' +
-      data.map(t => {
-        const label = t.periodo ? `${t.nome} — ${t.periodo}` : t.nome;
-        return `<option value="${t.nome}">${label}</option>`;
-      }).join('');
-    // Restaura turma salva
-    const al = getAluno();
-    if (al.turma) {
-      sel.value = al.turma;
-      TURMA_SELECIONADA = al.turma;
-    }
-  };
-
-  script.src = `${API_URL}?tipo=LISTAR_TURMAS&curso=${encodeURIComponent(CURSO_ID)}&callback=${cbName}`;
-  script.onerror = () => {
-    clearTimeout(timeout); delete window[cbName];
-    sel.innerHTML = '<option value="">Erro ao carregar turmas</option>';
-  };
-  document.head.appendChild(script);
+  if (!Array.isArray(data) || data.length === 0) {
+    sel.innerHTML = '<option value="">Sem turmas cadastradas para este curso</option>';
+    return;
+  }
+  sel.innerHTML = '<option value="">Selecione sua turma...</option>' +
+    data.map(t => {
+      const label = t.periodo ? `${t.nome} — ${t.periodo}` : t.nome;
+      return `<option value="${t.nome}">${label}</option>`;
+    }).join('');
+  // Restaura turma salva
+  const al = getAluno();
+  if (al.turma) {
+    sel.value = al.turma;
+    TURMA_SELECIONADA = al.turma;
+  }
 }
 
 // ================================================================
 //  SIMULADOS — carrega via JSONP e preenche o select do modal
 // ================================================================
-function carregarSimuladosModal() {
+async function carregarSimuladosModal() {
   const sel = document.getElementById('modal-simulado');
+  const btnRetry = document.getElementById('btn-retry-simulados');
+  btnRetry.style.display = 'none';
   sel.innerHTML = '<option value="">Carregando simulados...</option>';
 
   const preencher = (data) => {
@@ -776,24 +814,16 @@ function carregarSimuladosModal() {
     aoTrocarSimulado();
   };
 
-  const cbName = 'cbSim_' + Date.now();
-  const script = document.createElement('script');
-  const timeout = setTimeout(() => {
-    delete window[cbName]; script.remove();
-    preencher(null);
-  }, 10000);
-
-  window[cbName] = (data) => {
-    clearTimeout(timeout); delete window[cbName]; script.remove();
+  try {
+    const data = await jsonpComRetentativas({ tipo: 'LISTAR_SIMULADOS', curso: CURSO_ID }, n => {
+      sel.innerHTML = `<option value="">Carregando simulados... (tentativa ${n} de ${TENTATIVAS_API})</option>`;
+    });
     preencher(data);
-  };
-
-  script.src = `${API_URL}?tipo=LISTAR_SIMULADOS&curso=${encodeURIComponent(CURSO_ID)}&callback=${cbName}`;
-  script.onerror = () => {
-    clearTimeout(timeout); delete window[cbName];
-    preencher(null);
-  };
-  document.head.appendChild(script);
+  } catch (e) {
+    sel.innerHTML = '<option value="">Não foi possível carregar os simulados</option>';
+    btnRetry.style.display = 'inline-block';
+    aoTrocarSimulado();
+  }
 }
 
 // Ao trocar o simulado no modal: mostra/esconde "Continuar" e atualiza a contagem

@@ -129,6 +129,8 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--texto);min
 
 <div class="page">
 
+  <div id="aviso-login" style="display:none;background:#fff8e6;border:1px solid #fde4a3;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:0.9rem;color:#1a2340;line-height:1.5;"></div>
+
   <!-- PASSO 1: UPLOAD -->
   <div class="card" id="card-upload">
     <div class="passo-h">
@@ -221,6 +223,19 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--texto);min
 
 <script>
 const API = "https://script.google.com/macros/s/AKfycbzrLDvGQAMCLednv5XB4hF7_xC2U90tsAd-vafWGzBgHbNb2bkaHPfoDMzMl3npXI_MbA/exec";
+
+// Acesso: usa o login feito no painel.html (o Apps Script confere de novo a cada questão)
+(function verificarAcesso(){
+  let u=null; try{u=JSON.parse(localStorage.getItem('saepUsuario'));}catch(e){}
+  const token=localStorage.getItem('saepToken');
+  if(token&&u&&u.perfil==='admin') return;
+  const av=document.getElementById('aviso-login');
+  av.innerHTML=(token&&u)
+    ? '🔒 Seu usuário não tem permissão para importar questões.'
+    : '🔒 Para importar, entre primeiro no <a href="painel.html">Painel</a> com um usuário administrador e depois volte a esta página.';
+  av.style.display='block';
+  document.getElementById('btn-imp').disabled=true;
+})();
 
 // Mesma lista do painel.html (DISCIPLINAS_POR_CURSO) — manter as duas iguais
 const DISCS = {
@@ -432,7 +447,7 @@ async function importar(){
   const btn=document.getElementById('btn-imp');
   btn.disabled=true;
   const ativas=QQ.filter(q=>!q.ign);
-  let ok=0,err=0;
+  let ok=0,err=0,acessoNegado='';
   for(let i=0;i<QQ.length;i++){
     const q=QQ[i];
     if(q.ign)continue;
@@ -449,11 +464,13 @@ async function importar(){
       C:document.getElementById('a-'+i+'-C')?.innerHTML?.trim()||q.C,
       D:document.getElementById('a-'+i+'-D')?.innerHTML?.trim()||q.D,
       gabarito:q.gabarito||'',
-      simulado:document.getElementById('cfg-sim').value.trim()
+      simulado:document.getElementById('cfg-sim').value.trim(),
+      token:localStorage.getItem('saepToken')||''
     };
     try{
       const r=await fetch(API,{method:'POST',body:JSON.stringify(payload)});
       const j=await r.json();
+      if(['SESSAO_INVALIDA','SEM_PERMISSAO','TROCAR_SENHA_OBRIGATORIA'].includes(j.erro)){acessoNegado=j.erro;break;}
       j.status==='ok'?ok++:err++;
     }catch(e){err++;}
     await delay(220);
@@ -464,6 +481,9 @@ async function importar(){
   document.getElementById('resultado').style.display='block';
   const simImp=document.getElementById('cfg-sim').value.trim();
   document.getElementById('rmsg').textContent=`${ok} questão(ões) importada(s) com sucesso${simImp?` no Simulado ${simImp}`:' (sem simulado — só no Geral)'}${err>0?` · ${err} com erro`:''}. Verifique no Painel.`;
+  if(acessoNegado){
+    document.getElementById('rmsg').textContent=`Importação interrompida após ${ok} questão(ões): ${acessoNegado==='SEM_PERMISSAO'?'seu usuário não é administrador':acessoNegado==='TROCAR_SENHA_OBRIGATORIA'?'troque sua senha no Painel antes de importar':'sua sessão expirou, entre de novo no Painel'}.`;
+  }
   document.getElementById('resultado').scrollIntoView({behavior:'smooth'});
 }
 
